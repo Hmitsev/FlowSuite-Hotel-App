@@ -575,21 +575,18 @@ st.markdown(
                 width: 90px;
                 height: 2px;
                 margin: 12px auto 0 auto;
-                background:
-                    linear-gradient(
-                        90deg,
-                        transparent,
-                        #D4AF37,
-                        transparent
-                    );
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    #D4AF37,
+                    transparent
+                );
             "
         ></div>
     </div>
     """,
     unsafe_allow_html=True
 )
-
-
 # =========================================================
 # КАРТИ НА УСЛУГИТЕ
 # =========================================================
