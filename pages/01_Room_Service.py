@@ -28,6 +28,54 @@ if "room_service_sent" not in st.session_state:
 if "room_service_error" not in st.session_state:
     st.session_state.room_service_error = None
 
+
+# =====================================
+# ФУНКЦИИ ЗА КОЛИЧКАТА
+# =====================================
+
+def add_to_cart(
+    item_id,
+    item_name,
+    price,
+    note=""
+):
+    st.session_state.cart.append(
+        {
+            "id": int(item_id),
+            "name": str(item_name),
+            "price": float(price),
+            "note": str(note).strip()
+        }
+    )
+
+
+def remove_one_from_cart(
+    item_id,
+    note=""
+):
+    note = str(note).strip()
+
+    for index, cart_item in enumerate(
+        st.session_state.cart
+    ):
+        same_item = (
+            int(cart_item["id"]) == int(item_id)
+        )
+
+        same_note = (
+            str(
+                cart_item.get(
+                    "note",
+                    ""
+                )
+            ).strip()
+            == note
+        )
+
+        if same_item and same_note:
+            st.session_state.cart.pop(index)
+            break
+
 # =====================================
 # НАВИГАЦИЯ
 # =====================================
