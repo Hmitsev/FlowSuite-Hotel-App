@@ -396,13 +396,13 @@ if hotel_banner_path:
         use_container_width=True
     )
 
-st.markdown(
-    f"# {t['welcome']}"
-)
-
-st.markdown(
-    f"### 🛎️ {t['room']} № {room_number}"
-)
+    st.markdown(
+        f"# {t['welcome']}"
+    )
+    
+    st.markdown(
+        f"### 🛎️ {t['room']} № {room_number}"
+    )
         margin-top:10px;
         margin-bottom:20px;
         background:rgba(15,23,42,0.85);
