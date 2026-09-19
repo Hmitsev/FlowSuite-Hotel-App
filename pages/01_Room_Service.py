@@ -267,8 +267,24 @@ try:
         "assets/room_service_banner.png",
         use_container_width=True
     )
-except Exception:
+except:
     pass
+
+st.markdown(
+    """
+    <div style="
+        text-align:center;
+        color:#D4AF37;
+        font-size:36px;
+        font-weight:800;
+        margin-top:15px;
+        margin-bottom:10px;
+    ">
+        🍽️ ROOM SERVICE
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # =====================================
