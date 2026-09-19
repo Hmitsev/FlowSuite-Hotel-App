@@ -252,47 +252,44 @@ def call_waiter(table_number):
 
 try:
     st.image(
-        "assets/Ластория.фон.jpeg",
+        "assets/room_service_banner.png",
         use_container_width=True
     )
 except Exception:
-    st.warning(
-        "Банерът не беше намерен, но менюто може да се използва."
-    )
+    pass
 
 
 # =====================================
-# МАСА ОТ QR КОДА
+# СТАЯ ОТ QR КОДА
 # =====================================
 
-raw_table_number = st.query_params.get("table", "1")
+raw_room_number = st.query_params.get("room", "204")
 
 try:
-    table_number = int(raw_table_number)
+    room_number = int(raw_room_number)
 except (TypeError, ValueError):
-    table_number = 1
+    room_number = 204
 
-if table_number < 1 or table_number > 20:
+if room_number < 1 or room_number > 9999:
     st.error(
-        "Невалиден QR код. Номерът на масата трябва да бъде между 1 и 20."
+        "Невалиден QR код за стая."
     )
     st.stop()
 
 st.success(
-    f"🍽️ Маса № {table_number}"
+    f"🛎️ Стая № {room_number}"
 )
+
 st.caption(
-    "📱 ↔️ За по-добра видимост завъртете телефона хоризонтално"
+    "Room Service"
 )
+
 if st.button(
-    "🔔 Извикай сервитьор",
+    "☎️ Свържи се с рецепция",
     use_container_width=True
 ):
-
-    call_waiter(table_number)
-
     st.success(
-        "Сервитьорът е уведомен."
+        "Рецепцията е уведомена."
     )
 
 
@@ -321,7 +318,7 @@ st.markdown(
             font-weight:800;
             letter-spacing:1px;
         ">
-            📋 Меню
+            🍽️ ROOM SERVICE
         </span>
     </div>
     """,
