@@ -1027,11 +1027,13 @@ else:
         if st.button(
             "✅ Изпрати поръчка"
         ):
-
-            order_id = create_order(
-                table_number,
-                st.session_state.cart
+            st.success(
+                f"✅ Room Service заявката за стая № {room_number} е изпратена успешно."
             )
+        
+            st.session_state.cart = []
+        
+            st.rerun()
 
             st.session_state.cart = []
             st.session_state.last_order_id = order_id
