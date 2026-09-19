@@ -470,62 +470,14 @@ room_service_column, spa_column, activities_column = st.columns(
 # =========================================================
 with room_service_column:
 
-    st.markdown(
-        f"""
-        <div
-            class="hotel-card"
-            style="
-                min-height: 145px;
-                padding: 22px 20px;
-                margin-bottom: 12px;
-                border: 1px solid rgba(212,175,55,0.42);
-                border-radius: 18px;
-                background:
-                    linear-gradient(
-                        145deg,
-                        rgba(19,24,32,0.94),
-                        rgba(7,10,15,0.97)
-                    );
-                box-shadow: 0 10px 30px rgba(0,0,0,0.28);
-                text-align: center;
-            "
-        >
-            <div
-                style="
-                    font-size: 34px;
-                    margin-bottom: 9px;
-                "
-            >
-                🍽️
-            </div>
+    st.markdown("### 🍽️ Room Service")
 
-            <div
-                style="
-                    color: #F5D77B;
-                    font-size: 22px;
-                    font-weight: 800;
-                "
-            >
-                {t["room_service"]}
-            </div>
-
-            <div
-                style="
-                    color: #C8C4B9;
-                    font-size: 14px;
-                    line-height: 1.45;
-                    margin-top: 8px;
-                "
-            >
-                {t["room_service_description"]}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.caption(
+        "Поръчайте храна и напитки директно до Вашата стая."
     )
 
     if st.button(
-        f"🍽️ {t['room_service']}",
+        "🍽️ Room Service",
         key="open_room_service",
         type="primary",
         use_container_width=True
@@ -536,68 +488,19 @@ with room_service_column:
             "Room Service"
         )
 
-
 # =========================================================
 # SPA
 # =========================================================
 with spa_column:
 
-    st.markdown(
-        f"""
-        <div
-            class="hotel-card"
-            style="
-                min-height: 145px;
-                padding: 22px 20px;
-                margin-bottom: 12px;
-                border: 1px solid rgba(212,175,55,0.42);
-                border-radius: 18px;
-                background:
-                    linear-gradient(
-                        145deg,
-                        rgba(19,24,32,0.94),
-                        rgba(7,10,15,0.97)
-                    );
-                box-shadow: 0 10px 30px rgba(0,0,0,0.28);
-                text-align: center;
-            "
-        >
-            <div
-                style="
-                    font-size: 34px;
-                    margin-bottom: 9px;
-                "
-            >
-                💆
-            </div>
+    st.markdown("### 💆 SPA")
 
-            <div
-                style="
-                    color: #F5D77B;
-                    font-size: 22px;
-                    font-weight: 800;
-                "
-            >
-                {t["spa"]}
-            </div>
-
-            <div
-                style="
-                    color: #C8C4B9;
-                    font-size: 14px;
-                    line-height: 1.45;
-                    margin-top: 8px;
-                "
-            >
-                {t["spa_description"]}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.caption(
+        "Изпратете заявка за масаж или SPA процедура."
     )
 
     if st.button(
-        f"💆 {t['spa']}",
+        "💆 SPA",
         key="open_spa",
         type="primary",
         use_container_width=True
@@ -606,6 +509,29 @@ with spa_column:
             "pages/02_SPA.py",
             "SPA",
             "SPA"
+        )
+
+# =========================================================
+# ACTIVITIES
+# =========================================================
+with activities_column:
+
+    st.markdown("### 🎿 Дейности")
+
+    st.caption(
+        "Разгледайте и резервирайте хотелски активности."
+    )
+
+    if st.button(
+        "🎿 Дейности",
+        key="open_activities",
+        type="primary",
+        use_container_width=True
+    ):
+        open_hotel_page(
+            "pages/03_Activities.py",
+            "Дейности",
+            "Activities"
         )
 
 
