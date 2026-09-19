@@ -636,8 +636,11 @@ else:
     st.success(
         f"Общо: € {total:.2f}"
     )
+       # =====================================
+    # ФИНАЛНИ БУТОНИ НА КОЛИЧКАТА
+    # =====================================
 
-        col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
     with col1:
         if st.button(
@@ -660,7 +663,7 @@ else:
 
 
 # =====================================
-# ПОТВЪРЖДЕНИЕ
+# ПОТВЪРЖДЕНИЕ ЗА ИЗПРАТЕНА ПОРЪЧКА
 # =====================================
 
 if st.session_state.get("room_service_sent", False):
@@ -677,4 +680,8 @@ if st.session_state.get("room_service_sent", False):
 # БРАНДИРАНЕ
 # =====================================
 
-st.caption("Powered by HMITSEVAPPS")
+st.divider()
+
+st.caption(
+    "Powered by HMITSEVAPPS"
+)
