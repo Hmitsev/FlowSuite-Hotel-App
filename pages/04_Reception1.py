@@ -36,22 +36,6 @@ st.set_page_config(
     layout="wide"
 )
 
-
-# =====================================
-# НАВИГАЦИЯ
-# =====================================
-
-nav_col1, nav_col2 = st.columns([1, 5])
-
-with nav_col1:
-    if st.button(
-        "⬅ Back",
-        key="reception_back",
-        use_container_width=True
-    ):
-        st.switch_page("app.py")
-
-
 # =====================================
 # ДОСТЪП ДО РЕЦЕПЦИЯ
 # =====================================
