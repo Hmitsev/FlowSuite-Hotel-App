@@ -393,7 +393,7 @@ else:
 
             with title_col:
                 st.subheader(
-                    f"🍽️ Room Service Order #{order_id}"
+                    f" Room Service Order #{order_id}"
                 )
 
                 st.markdown(
