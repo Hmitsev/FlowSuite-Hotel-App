@@ -893,19 +893,18 @@ else:
         f"Общо: € {total:.2f}"
     )
 
-    col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
     with col1:
-
         if st.button(
-            "🗑️ Изчисти количката"
+            "🗑️ Изчисти количката",
+            key="clear_room_service_cart",
+            use_container_width=True
         ):
-
             st.session_state.cart = []
-
             st.rerun()
 
-        with col2:
+    with col2:
         if st.button(
             "✅ Изпрати поръчка",
             key="send_room_service_order",
