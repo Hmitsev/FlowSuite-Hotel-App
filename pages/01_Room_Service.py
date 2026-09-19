@@ -325,7 +325,12 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-categories = get_categories()
+categories = [
+    ("Breakfast",),
+    ("Main Course",),
+    ("Desserts",),
+    ("Drinks",)
+]
 
 category_display = {
     "Дневно меню": "📅 🔥 ДНЕВНО МЕНЮ",
@@ -411,8 +416,27 @@ if main_section_grams:
         """,
         unsafe_allow_html=True
     )
-items = get_items_by_category(
-    selected_category
+    demo_items = {
+        "Breakfast": [
+            (1, "English Breakfast", 18, "Fresh breakfast")
+        ],
+    
+        "Main Course": [
+            (2, "Club Sandwich", 24, "Served with fries")
+        ],
+    
+        "Desserts": [
+            (3, "Chocolate Soufflé", 12, "Homemade dessert")
+        ],
+    
+        "Drinks": [
+            (4, "Mineral Water", 4, "330ml")
+        ]
+    }
+
+items = demo_items.get(
+    selected_category,
+    []
 )
 main_banner = category_banners.get(selected_display)
 
