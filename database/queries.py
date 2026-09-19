@@ -287,3 +287,166 @@ def get_completed_orders():
 
         cur.close()
         conn.close()
+        # =====================================
+# СЪЗДАВАНЕ НА ROOM SERVICE ПОРЪЧКА
+# =====================================
+
+def create_room_service_order(room_number, cart):
+    if not cart:
+        raise ValueError("Количката е празна.")
+
+    try:
+        room_number = int(room_number)
+    except (TypeError, ValueError) as error:
+        raise ValueError(
+            "Невалиден номер на стая."
+        ) from error
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        # =====================================
+        # НАМИРАНЕ НА СТАЯТА
+        # =====================================
+
+        cur.execute(
+            """
+            SELECT id
+            FROM hotel_rooms
+            WHERE room_number = %s
+              AND is_active = TRUE
+            LIMIT 1
+            """,
+            (room_number,)
+        )
+
+        room_result = cur.fetchone()
+
+        if room_result is None:
+            raise ValueError(
+                f"Стая №{room_number} не е намерена "
+                "или не е активна."
+            )
+
+        room_id = room_result[0]
+
+        # =====================================
+        # ГРУПИРАНЕ НА АРТИКУЛИТЕ
+        # =====================================
+
+        grouped_items = {}
+
+        for cart_item in cart:
+            item_id = int(cart_item["id"])
+            item_name = str(cart_item["name"])
+            price = float(cart_item["price"])
+            note = str(
+                cart_item.get("note", "")
+            ).strip()
+
+            group_key = (
+                item_id,
+                item_name,
+                note
+            )
+
+            if group_key not in grouped_items:
+                grouped_items[group_key] = {
+                    "id": item_id,
+                    "name": item_name,
+                    "price": price,
+                    "note": note,
+                    "quantity": 0
+                }
+
+            grouped_items[group_key]["quantity"] += 1
+
+        # =====================================
+        # ИЗЧИСЛЯВАНЕ НА ОБЩАТА СУМА
+        # =====================================
+
+        total_amount = sum(
+            item["price"] * item["quantity"]
+            for item in grouped_items.values()
+        )
+
+        # =====================================
+        # СЪЗДАВАНЕ НА ПОРЪЧКАТА
+        # =====================================
+
+        cur.execute(
+            """
+            INSERT INTO room_service_orders
+            (
+                room_id,
+                total_amount,
+                order_status
+            )
+            VALUES
+            (
+                %s,
+                %s,
+                'NEW'
+            )
+            RETURNING id
+            """,
+            (
+                room_id,
+                total_amount
+            )
+        )
+
+        order_id = cur.fetchone()[0]
+
+        # =====================================
+        # ЗАПИСВАНЕ НА АРТИКУЛИТЕ
+        # =====================================
+
+        for item in grouped_items.values():
+            cur.execute(
+                """
+                INSERT INTO room_service_order_items
+                (
+                    order_id,
+                    item_id,
+                    item_name,
+                    quantity,
+                    unit_price,
+                    notes,
+                    item_status
+                )
+                VALUES
+                (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    'NEW'
+                )
+                """,
+                (
+                    order_id,
+                    item["id"],
+                    item["name"],
+                    item["quantity"],
+                    item["price"],
+                    item["note"]
+                    if item["note"]
+                    else None
+                )
+            )
+
+        conn.commit()
+
+        return order_id
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
