@@ -31,7 +31,6 @@ with nav_col1:
 
 ROOM_SERVICE_BANNER_CANDIDATES = [
     "room_service_banner.png",
-    "ChatGPT Image 19.09.2026 г., 16_12_00.png",
     "Screenshot 2026-09-09 025759.png",
     "room_service.png",
     "Room Service.png",
