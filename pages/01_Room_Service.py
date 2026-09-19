@@ -1,5 +1,6 @@
 
 import base64
+from pathlib import Path
 
 import streamlit as st
 # =====================================
@@ -25,38 +26,43 @@ with nav_col1:
 
 
 # =====================================
-# ЗАГЛАВИЕ И БАНЕР
+# БАНЕР НА ROOM SERVICE
 # =====================================
 
+ROOM_SERVICE_BANNER_CANDIDATES = [
+    "room_service_banner.png",
+    "ChatGPT Image 19.09.2026 г., 16_12_00.png",
+    "Screenshot 2026-09-09 025759.png",
+    "room_service.png",
+    "Room Service.png",
+    "room_service_banner.jpg",
+    "room_service_banner.jpeg",
+]
+
+room_service_banner_path = None
+
+for banner_name in ROOM_SERVICE_BANNER_CANDIDATES:
+    candidate_path = Path("assets") / banner_name
+
+    if candidate_path.exists():
+        room_service_banner_path = candidate_path
+        break
 
 
-try:
+if room_service_banner_path:
     st.image(
-        "assets/room_service_banner.png",
+        str(room_service_banner_path),
         use_container_width=True
     )
-except:
-    pass
-
-st.markdown(
-    """
-    <div style="
-        text-align:center;
-        color:#D4AF37;
-        font-size:36px;
-        font-weight:800;
-        margin-top:15px;
-        margin-bottom:10px;
-    ">
-        🍽️ ROOM SERVICE
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+else:
+    st.warning(
+        "Room Service банерът не е намерен. "
+        "Провери точното име на снимката в папка assets."
+    )
 
 
 # =====================================
-# СТАЯ ОТ QR КОДА
+# НОМЕР НА СТАЯТА ОТ QR КОДА
 # =====================================
 
 raw_room_number = st.query_params.get("room", "204")
@@ -70,18 +76,29 @@ if room_number < 1 or room_number > 9999:
     st.error("Невалиден QR код за стая.")
     st.stop()
 
+
+# =====================================
+# КАРТА С НОМЕРА НА СТАЯТА
+# =====================================
+
 st.markdown(
     f"""
     <div style="
         border:1px solid #D4AF37;
-        border-radius:12px;
-        padding:10px;
+        border-radius:14px;
+        padding:14px 18px;
+        margin-top:14px;
+        margin-bottom:18px;
         text-align:center;
         color:#F5E6C8;
-        background:#0F172A;
-        font-size:20px;
-        font-weight:700;
-        margin-bottom:20px;
+        background:linear-gradient(
+            135deg,
+            rgba(15,23,42,0.96),
+            rgba(8,14,25,0.96)
+        );
+        font-size:22px;
+        font-weight:800;
+        box-shadow:0 0 12px rgba(212,175,55,0.18);
     ">
         🛎️ Room {room_number}
     </div>
@@ -89,46 +106,41 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.caption("Room Service")
+
+# =====================================
+# ВРЪЗКА С РЕЦЕПЦИЯТА
+# =====================================
 
 if st.button(
     "☎️ Свържи се с рецепция",
     key="contact_reception_room_service",
     use_container_width=True
 ):
-    st.success("Рецепцията е уведомена.")
+    st.success(
+        "Заявката е изпратена. Рецепцията е уведомена."
+    )
+
+
 # =====================================
-# МЕНЮ
+# ЗАГЛАВИЕ НА МЕНЮТО
 # =====================================
 
 st.markdown(
     """
     <div style="
-        border:2px solid #D4AF37;
-        border-radius:16px;
-        padding:14px 20px 50px 20px;
-        margin-bottom:35px;
-        background:linear-gradient(
-            135deg,
-            rgba(15,23,42,0.95),
-            rgba(10,18,30,0.95)
-        );
-        box-shadow:
-            0 0 12px rgba(212,175,55,0.25);
+        color:#F5E6C8;
+        font-size:28px;
+        font-weight:800;
+        margin-top:28px;
+        margin-bottom:18px;
+        padding-bottom:10px;
+        border-bottom:1px solid rgba(212,175,55,0.40);
     ">
-        <span style="
-            color:#F5E6C8;
-            font-size:32px;
-            font-weight:800;
-            letter-spacing:1px;
-        ">
-            🍽️ ROOM SERVICE
-        </span>
+        🍽️ Room Service Menu
     </div>
     """,
     unsafe_allow_html=True
 )
-
 categories = [
     ("Breakfast",),
     ("Main Course",),
