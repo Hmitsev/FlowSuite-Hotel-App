@@ -21,7 +21,7 @@ st.markdown(
         margin-top:15px;
         margin-bottom:20px;
     ">
-        🍽️ ROOM SERVICE
+         ROOM SERVICE
     </div>
     """,
     unsafe_allow_html=True
@@ -265,7 +265,7 @@ def update_room_service_order_status(
 view_mode = st.radio(
     "Изглед",
     [
-        "🍽️ Активни Room Service поръчки",
+        " Активни Room Service поръчки",
         "📜 Приключени поръчки"
     ],
     horizontal=True,
