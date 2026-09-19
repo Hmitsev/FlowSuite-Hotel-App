@@ -519,12 +519,6 @@ st.caption(
 
 st.caption("Powered by HMITSEVAPPS")
 
-# =====================================
-# СТАЯ ОТ QR КОДА
-# =====================================
-
-raw_room_number = st.query_params.get("room", "204")
-
 try:
     room_number = int(raw_room_number)
 except (TypeError, ValueError):
