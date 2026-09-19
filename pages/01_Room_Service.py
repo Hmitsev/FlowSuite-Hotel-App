@@ -333,44 +333,16 @@ categories = [
 ]
 
 category_display = {
-    "Дневно меню": "📅 🔥 ДНЕВНО МЕНЮ",
-    "Салати": "⚜ Салати",
-    "Разядки и студени предястия": "⚜ Предястия",
-    "Топли предложения за споделяне": "⚜ За споделяне",
-    "Риба и морски дарове": "⚜ Морски дарове",
-    "Паста и ризото": "⚜ Паста и ризото",
-    "Приготвено на плоча": "⚜ На плоча",
-    "Основни ястия": "⚜ Основни ястия",
-    "От краче до уше": "⚜ От краче до уше",
-    "Бургери": "⚜ Бургери",
-    "Десерти": "⚜ Десерти",
-    "Напитки": "🥂 Напитки"
+    "Breakfast": "🍳 Breakfast",
+    "Main Course": "🍽️ Main Course",
+    "Desserts": "🍰 Desserts",
+    "Drinks": "🥤 Drinks"
 }
-category_grams = {
-    "Салати": "400 гр.",
-    "Разядки и студени предястия": "300 гр.",
-    "Топли предложения за споделяне": "350 гр.",
-    "Риба и морски дарове": "450 гр.",
-    "Паста и ризото": "400 гр.",
-    "Приготвено на плоча": "450 гр.",
-    "Основни ястия": "450 гр.",
-    "От краче до уше": "400 гр.",
-    "Бургери": "450 гр.",
-    "Десерти": "1 бр."
-}
-category_banners = {
-    "📅 🔥 ДНЕВНО МЕНЮ": "assets/01_dnevno_menu.png",
-    "⚜ Салати": "assets/02_salati.png",
-    "⚜ Предястия": "assets/03_predyastiya.png",
-    "⚜ За споделяне": "assets/04_za_spodelyane.png",
-    "⚜ Морски дарове": "assets/05_morski_darove.png",
-    "⚜ Паста и ризото": "assets/06_pasta_i_rizoto.png",
-    "⚜ На плоча": "assets/07_na_plocha.png",
-    "⚜ Основни ястия": "assets/08_osnovni_yastiya.png",
-    "⚜ От краче до уше": "assets/09_ot_krache_do_ushe.png",
-    "⚜ Бургери": "assets/10_burgeri.png",
-    "⚜ Десерти": "assets/11_deserti.png"
-}
+
+category_grams = {}
+
+category_banners = {}
+
 reverse_display = {
     value: key
     for key, value in category_display.items()
@@ -440,11 +412,28 @@ items = demo_items.get(
 )
 main_banner = category_banners.get(selected_display)
 
-if main_banner:
-    st.image(
-        main_banner,
-        use_container_width=True
-    )
+demo_items = {
+    "Breakfast": [
+        (1, "English Breakfast", 18, "Fresh breakfast")
+    ],
+
+    "Main Course": [
+        (2, "Club Sandwich", 24, "Served with fries")
+    ],
+
+    "Desserts": [
+        (3, "Chocolate Soufflé", 12, "Homemade dessert")
+    ],
+
+    "Drinks": [
+        (4, "Mineral Water", 4, "330ml")
+    ]
+}
+
+items = demo_items.get(
+    selected_category,
+    []
+)
 # =====================================
 # ПОДКАТЕГОРИИ НА ДНЕВНОТО МЕНЮ
 # =====================================
