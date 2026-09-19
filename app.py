@@ -470,15 +470,13 @@ room_service_column, spa_column, activities_column = st.columns(
 # =========================================================
 with room_service_column:
 
-    st.markdown("### 🍽️ Room Service")
-
-    st.caption(
-        "Поръчайте храна и напитки директно до Вашата стая."
-    )
+    st.markdown("## 🍽️")
+    st.subheader("Room Service")
+    st.caption("Поръчайте храна и напитки директно до Вашата стая.")
 
     if st.button(
         "🍽️ Room Service",
-        key="open_room_service",
+        key="room_service_btn",
         type="primary",
         use_container_width=True
     ):
@@ -493,15 +491,13 @@ with room_service_column:
 # =========================================================
 with spa_column:
 
-    st.markdown("### 💆 SPA")
-
-    st.caption(
-        "Изпратете заявка за масаж или SPA процедура."
-    )
+    st.markdown("## 💆")
+    st.subheader("SPA")
+    st.caption("Изпратете заявка за масаж или SPA процедура.")
 
     if st.button(
         "💆 SPA",
-        key="open_spa",
+        key="spa_btn",
         type="primary",
         use_container_width=True
     ):
@@ -510,21 +506,18 @@ with spa_column:
             "SPA",
             "SPA"
         )
-
 # =========================================================
 # ACTIVITIES
 # =========================================================
 with activities_column:
 
-    st.markdown("### 🎿 Дейности")
-
-    st.caption(
-        "Разгледайте и резервирайте хотелски активности."
-    )
+    st.markdown("## 🎿")
+    st.subheader("Дейности")
+    st.caption("Разгледайте и резервирайте хотелски активности.")
 
     if st.button(
         "🎿 Дейности",
-        key="open_activities",
+        key="activities_btn",
         type="primary",
         use_container_width=True
     ):
@@ -533,8 +526,6 @@ with activities_column:
             "Дейности",
             "Activities"
         )
-
-
 # =========================================================
 # ACTIVITIES
 # =========================================================
