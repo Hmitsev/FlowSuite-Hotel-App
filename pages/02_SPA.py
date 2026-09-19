@@ -1,4 +1,15 @@
+# =====================================
+# НАВИГАЦИЯ
+# =====================================
 
+nav_col1, nav_col2 = st.columns([1, 5])
+
+with nav_col1:
+    if st.button(
+        "🏠 Home",
+        use_container_width=True
+    ):
+        st.switch_page("app.py")
 import streamlit as st
 
 st.set_page_config(
