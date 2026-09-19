@@ -397,10 +397,12 @@ if hotel_banner_path:
     )
 
 st.markdown(
-    f"""
-    <div style="
-        text-align:center;
-        padding:20px;
+    f"# {t['welcome']}"
+)
+
+st.markdown(
+    f"### 🛎️ {t['room']} № {room_number}"
+)
         margin-top:10px;
         margin-bottom:20px;
         background:rgba(15,23,42,0.85);
@@ -557,39 +559,14 @@ st.markdown(
 # =========================================================
 st.markdown(
     """
-    <div
-        style="
-            position: fixed;
-            right: 18px;
-            bottom: 12px;
-            color: #D4AF37;
-            font-family: Arial, sans-serif;
-            text-align: right;
-            opacity: 0.78;
-            z-index: 999;
-            pointer-events: none;
-        "
-    >
-        <div
-            style="
-                font-size: 17px;
-                font-weight: 900;
-                line-height: 1;
-            "
-        >
-            HA
-        </div>
-
-        <div
-            style="
-                margin-top: 3px;
-                font-size: 9px;
-                font-weight: 700;
-                letter-spacing: 2px;
-            "
-        >
-            HMITSEVAPPS
-        </div>
+    <div style="
+        text-align:center;
+        color:#D4AF37;
+        margin-top:30px;
+        opacity:0.7;
+        font-size:12px;
+    ">
+        Powered by HMITSEVAPPS
     </div>
     """,
     unsafe_allow_html=True
