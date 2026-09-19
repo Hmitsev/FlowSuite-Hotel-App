@@ -387,208 +387,74 @@ with language_column:
 
 
 # =========================================================
-# ХОТЕЛСКИ HERO БАНЕР
+# ХОТЕЛСКИ БАНЕР
 # =========================================================
-if hotel_banner_base64:
 
-    st.markdown(
-        f"""
-        <div
-            class="hotel-hero"
-            style="
-                position: relative;
-                min-height: 360px;
-                margin-top: 4px;
-                margin-bottom: 26px;
-                border: 1px solid rgba(212,175,55,0.60);
-                border-radius: 22px;
-                overflow: hidden;
-                background-image:
-                    linear-gradient(
-                        90deg,
-                        rgba(3,5,8,0.86) 0%,
-                        rgba(3,5,8,0.40) 52%,
-                        rgba(3,5,8,0.10) 100%
-                    ),
-                    linear-gradient(
-                        0deg,
-                        rgba(3,5,8,0.68) 0%,
-                        rgba(3,5,8,0.05) 58%
-                    ),
-                    url('data:image/png;base64,{hotel_banner_base64}');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                box-shadow:
-                    0 18px 50px rgba(0,0,0,0.50),
-                    0 0 18px rgba(212,175,55,0.10);
-            "
-        >
-            <div
-                class="hotel-hero-content"
-                style="
-                    position: absolute;
-                    left: 0;
-                    bottom: 0;
-                    max-width: 700px;
-                    padding: 42px 46px;
-                "
-            >
-                <div
-                    style="
-                        color: #D4AF37;
-                        font-size: 14px;
-                        font-weight: 800;
-                        letter-spacing: 4px;
-                        text-transform: uppercase;
-                        margin-bottom: 10px;
-                    "
-                >
-                    FlowSuite Hotel
-                </div>
-
-                <div
-                    class="hotel-hero-title"
-                    style="
-                        color: #FFF5D6;
-                        font-size: 43px;
-                        font-weight: 800;
-                        line-height: 1.05;
-                        text-shadow: 0 4px 18px rgba(0,0,0,0.70);
-                    "
-                >
-                    {t["welcome"]}
-                </div>
-
-                <div
-                    class="hotel-hero-room"
-                    style="
-                        display: inline-block;
-                        margin-top: 18px;
-                        padding: 9px 18px;
-                        color: #F5D77B;
-                        background: rgba(3,5,8,0.76);
-                        border: 1px solid rgba(212,175,55,0.72);
-                        border-radius: 999px;
-                        font-size: 19px;
-                        font-weight: 800;
-                        letter-spacing: 0.5px;
-                        backdrop-filter: blur(8px);
-                    "
-                >
-                    🛎️ {t["room"]} № {room_number}
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+if hotel_banner_path:
+    st.image(
+        str(hotel_banner_path),
+        use_container_width=True
     )
 
-else:
-    st.warning(
-        "Хотелската снимка не е намерена в папка assets. "
-        "Провери името в HOTEL_BANNER_CANDIDATES."
-    )
-
-    st.markdown(
-        f"""
-        <div
-            style="
-                padding: 38px 30px;
-                margin-bottom: 26px;
-                border: 1px solid rgba(212,175,55,0.60);
-                border-radius: 22px;
-                background:
-                    linear-gradient(
-                        135deg,
-                        rgba(19,24,32,0.98),
-                        rgba(7,10,15,0.98)
-                    );
-                text-align: center;
-            "
-        >
-            <div
-                style="
-                    color: #D4AF37;
-                    font-size: 14px;
-                    font-weight: 800;
-                    letter-spacing: 4px;
-                    text-transform: uppercase;
-                "
-            >
-                FlowSuite Hotel
-            </div>
-
-            <div
-                style="
-                    color: #FFF5D6;
-                    font-size: 38px;
-                    font-weight: 800;
-                    margin-top: 10px;
-                "
-            >
-                {t["welcome"]}
-            </div>
-
-            <div
-                style="
-                    color: #F5D77B;
-                    font-size: 19px;
-                    font-weight: 700;
-                    margin-top: 12px;
-                "
-            >
-                🛎️ {t["room"]} № {room_number}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-# =========================================================
-# ЗАГЛАВИЕ НА УСЛУГИТЕ
-# =========================================================
 st.markdown(
     f"""
-    <div
-        style="
-            text-align: center;
-            margin-top: 10px;
-            margin-bottom: 24px;
-        "
-    >
-        <div
-            class="hotel-services-title"
-            style="
-                color: #F5E6C8;
-                font-size: 31px;
-                font-weight: 800;
-                letter-spacing: 0.5px;
-            "
-        >
-            {t["hotel_services"]}
+    <div style="
+        text-align:center;
+        padding:20px;
+        margin-top:10px;
+        margin-bottom:20px;
+        background:rgba(15,23,42,0.85);
+        border:1px solid #D4AF37;
+        border-radius:16px;
+    ">
+        <div style="
+            color:#D4AF37;
+            font-size:16px;
+            font-weight:700;
+            letter-spacing:3px;
+        ">
+            FLOWSUITE HOTEL
         </div>
 
-        <div
-            style="
-                width: 90px;
-                height: 2px;
-                margin: 12px auto 0 auto;
-                background:
-                    linear-gradient(
-                        90deg,
-                        transparent,
-                        #D4AF37,
-                        transparent
-                    );
-            "
-        ></div>
+        <div style="
+            color:#FFFFFF;
+            font-size:34px;
+            font-weight:800;
+            margin-top:10px;
+        ">
+            {t["welcome"]}
+        </div>
+
+        <div style="
+            color:#F5D77B;
+            font-size:20px;
+            font-weight:700;
+            margin-top:12px;
+        ">
+            🛎️ {t["room"]} № {room_number}
+        </div>
     </div>
     """,
     unsafe_allow_html=True
 )
 
+# =========================================================
+# ЗАГЛАВИЕ НА УСЛУГИТЕ
+# =========================================================
+
+st.markdown(
+    f"""
+    <h2 style="
+        text-align:center;
+        color:#F5E6C8;
+        margin-top:20px;
+        margin-bottom:30px;
+    ">
+        {t["hotel_services"]}
+    </h2>
+    """,
+    unsafe_allow_html=True
+)
 
 # =========================================================
 # КАРТИ НА УСЛУГИТЕ
