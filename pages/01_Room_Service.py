@@ -304,8 +304,24 @@ if room_number < 1 or room_number > 9999:
     )
     st.stop()
 
-st.success(
-    f"🛎️ Стая № {room_number}"
+st.markdown(
+    f"""
+    <div style="
+        border:1px solid #D4AF37;
+        border-radius:12px;
+        padding:10px;
+        text-align:center;
+        color:#F5E6C8;
+        background:#0F172A;
+        font-size:20px;
+        font-weight:700;
+        margin-bottom:20px;
+    ">
+        🛎️ Room {room_number}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 )
 
 st.caption(
