@@ -3,7 +3,29 @@ import streamlit as st
 
 from database.db import get_connection
 
+# =====================================
+# БАНЕР НА ROOM SERVICE
+# =====================================
 
+st.image(
+    "assets/Screenshot 2026-09-09 025744.png",
+    use_container_width=True
+)
+st.markdown(
+    """
+    <div style="
+        text-align:center;
+        color:#D4AF37;
+        font-size:34px;
+        font-weight:800;
+        margin-top:15px;
+        margin-bottom:20px;
+    ">
+        🍽️ ROOM SERVICE
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # =====================================
 # НАСТРОЙКИ
 # =====================================
@@ -83,10 +105,10 @@ with logout_col2:
 # ЗАГЛАВИЕ
 # =====================================
 
-st.title("🛎️ Reception Dashboard")
+st.title("🏨 Hotel Reception")
 
 st.caption(
-    "Room Service поръчки и хотелски заявки"
+    "Room Service • SPA • Activities"
 )
 
 
@@ -373,7 +395,7 @@ else:
 
             with title_col:
                 st.subheader(
-                    f"🍽️ Room Service №{order_id}"
+                    f"🍽️ Room Service Order #{order_id}"
                 )
 
                 st.markdown(
@@ -387,8 +409,16 @@ else:
                         f"{created_at.strftime('%d.%m.%Y %H:%M')}"
                     )
 
+                status_colors = {
+                    "NEW": "🔴 NEW",
+                    "PREPARING": "🟡 PREPARING",
+                    "READY": "🟢 READY",
+                    "DELIVERING": "🚚 DELIVERING",
+                    "COMPLETED": "✅ COMPLETED"
+                }
+                
                 st.write(
-                    f"Статус: **{order_status}**"
+                    f"Статус: {status_colors.get(order_status, order_status)}"
                 )
 
             with total_col:
