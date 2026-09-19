@@ -299,9 +299,7 @@ except (TypeError, ValueError):
     room_number = 204
 
 if room_number < 1 or room_number > 9999:
-    st.error(
-        "Невалиден QR код за стая."
-    )
+    st.error("Невалиден QR код за стая.")
     st.stop()
 
 st.markdown(
@@ -322,21 +320,15 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-)
 
-st.caption(
-    "Room Service"
-)
+st.caption("Room Service")
 
 if st.button(
     "☎️ Свържи се с рецепция",
+    key="contact_reception_room_service",
     use_container_width=True
 ):
-    st.success(
-        "Рецепцията е уведомена."
-    )
-
-
+    st.success("Рецепцията е уведомена.")
 # =====================================
 # МЕНЮ
 # =====================================
@@ -411,9 +403,45 @@ selected_category = reverse_display.get(
     selected_display,
     selected_display
 )
-main_section_grams = category_grams.get(
+
+demo_items = {
+    "Breakfast": [
+        (
+            1,
+            "English Breakfast",
+            18,
+            "Fresh breakfast"
+        )
+    ],
+    "Main Course": [
+        (
+            2,
+            "Club Sandwich",
+            24,
+            "Served with fries"
+        )
+    ],
+    "Desserts": [
+        (
+            3,
+            "Chocolate Soufflé",
+            12,
+            "Homemade dessert"
+        )
+    ],
+    "Drinks": [
+        (
+            4,
+            "Mineral Water",
+            4,
+            "330 ml"
+        )
+    ]
+}
+
+items = demo_items.get(
     selected_category,
-    ""
+    []
 )
 
 demo_items = {
@@ -438,202 +466,13 @@ items = demo_items.get(
     selected_category,
     []
 )
-main_banner = category_banners.get(selected_display)
 
-demo_items = {
-    "Breakfast": [
-        (1, "English Breakfast", 18, "Fresh breakfast")
-    ],
-
-    "Main Course": [
-        (2, "Club Sandwich", 24, "Served with fries")
-    ],
-
-    "Desserts": [
-        (3, "Chocolate Soufflé", 12, "Homemade dessert")
-    ],
-
-    "Drinks": [
-        (4, "Mineral Water", 4, "330ml")
-    ]
-}
-
-items = demo_items.get(
-    selected_category,
-    []
-)
-# =====================================
-# ПОДКАТЕГОРИИ НА ДНЕВНОТО МЕНЮ
-# =====================================
-
-if selected_category == "Дневно меню":
-
-    selected_daily_group = st.segmented_control(
-        "",
-        [
-            "🍲 Супи",
-            "🍽️ Готови ястия",
-            "🍰 Десерт"
-        ],
-        default="🍲 Супи",
-        key="daily_group_selector"
-    )
-
-    items = [
-        item
-        for item in items
-        if len(item) > 7
-        and item[7] == selected_daily_group
-    ]
-
-    st.markdown(
-        f"""
-        <div style="
-            color:#FFD54F;
-            font-size:22px;
-            font-weight:700;
-            margin-top:12px;
-            margin-bottom:10px;
-        ">
-            {selected_daily_group}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-section_title = ""
 
 # =====================================
-# ПОДКАТЕГОРИИ НА НАПИТКИТЕ
+# СНИМКИ НА ROOM SERVICE АРТИКУЛИТЕ
 # =====================================
 
-if selected_category == "Напитки":
-
-    selected_drink_group = st.segmented_control(
-        "",
-        [
-            "☕ Топли напитки",
-            "🥤 Безалкохолни",
-            "🍺 Бира и сайдер",
-            "🍷 Вина",
-            "🥃 Алкохол"
-        ],
-        default="☕ Топли напитки",
-        key="drink_group_selector"
-    )
-
-    drink_banners = {
-        "☕ Топли напитки": "assets/12_topli_napitki.png",
-        "🥤 Безалкохолни": "assets/13_gazirani_napitki.png",
-        "🍺 Бира и сайдер": "assets/фон бира.png",
-        "🍷 Вина": "assets/фон вина.jpeg",
-        "🥃 Алкохол": "assets/фон алкохол.jpeg"
-    }
-
-    banner_path = drink_banners.get(selected_drink_group)
-
-    if banner_path:
-        st.image(
-            banner_path,
-            width=700
-        )
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-    items = [
-        item
-        for item in items
-        if len(item) > 4
-        and item[4] == selected_drink_group
-    ]
-
-    section_title = selected_drink_group
-
-    # =====================================
-    # ПОДКАТЕГОРИИ НА ВИНАТА
-    # =====================================
-
-    if selected_drink_group == "🍷 Вина":
-
-        selected_wine_type = st.segmented_control(
-            "",
-            [
-                "🤍 Бели вина",
-                "🍷 Червени вина",
-                "🌹 Розе",
-                "🥂 Просеко"
-            ],
-            default="🤍 Бели вина",
-            key="wine_type_selector"
-        )
-
-        items = [
-            item
-            for item in items
-            if len(item) > 5
-            and item[5] == selected_wine_type
-        ]
-
-        section_title = selected_wine_type
-
-    # =====================================
-    # ПОДКАТЕГОРИИ НА АЛКОХОЛА
-    # =====================================
-
-    elif selected_drink_group == "🥃 Алкохол":
-
-        selected_alcohol_type = st.segmented_control(
-            "",
-            [
-                "🥃 Уиски",
-                "🍸 Водка",
-                "🥃 Ракия",
-                "🥃 Джин",
-                "🌿 Анасонови",
-                "🥃 Ром / Коняк",
-                "🍷 Дижестив"
-            ],
-            default="🥃 Уиски",
-            key="alcohol_type_selector"
-        )
-
-        items = [
-            item
-            for item in items
-            if len(item) > 6
-            and item[6] == selected_alcohol_type
-        ]
-
-        section_title = selected_alcohol_type
-
-    st.markdown(
-        f"""
-        <div style="
-            color:#FFD54F;
-            font-size:22px;
-            font-weight:700;
-            margin-top:12px;
-            margin-bottom:10px;
-        ">
-            {section_title}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-# =====================================
-# СНИМКИ НА БУРГЕРИТЕ
-# =====================================
-
-burger_images = {
-    "Американски хот-дог": "assets/shared image (15).jpeg",
-    "Свински бургер": "assets/shared image (16).jpeg",
-    "Телешки бургер": "assets/shared image (4).jpeg",
-    "Пилешки бургер": "assets/shared image (6).jpeg",
-    "Пържени картофи с пилешко": "assets/shared image (9).jpeg",
-    "Пържени картофи със сьомга": "assets/shared image (12).jpeg",
-    "Пържени картофи с бекон": "assets/shared image (13).jpeg",
-    "Пържени картофи с телешко": "assets/01d65c96-56f8-4703-99ed-a1ac6d9b5065.jpg"
-}
+burger_images = {}
 
 # =====================================
 # ПОКАЗВАНЕ НА АРТИКУЛИТЕ
@@ -1066,44 +905,33 @@ else:
 
             st.rerun()
 
-    with col2:
-
+        with col2:
         if st.button(
-            "✅ Изпрати поръчка"
+            "✅ Изпрати поръчка",
+            key="send_room_service_order",
+            use_container_width=True
         ):
-            st.success(
-                f"✅ Room Service заявката за стая № {room_number} е изпратена успешно."
-            )
-        
             st.session_state.cart = []
-        
+            st.session_state.room_service_sent = True
             st.rerun()
 
-            st.session_state.cart = []
-            st.session_state.last_order_id = order_id
 
-            st.rerun()
-            st.markdown("""
-<div style="
-    position: fixed;
-    bottom: 12px;
-    right: 18px;
-    color: #D4AF37;
-    font-family: Arial, sans-serif;
-    text-align: right;
-    opacity: 0.75;
-    z-index: 999;
-">
-    <div style="
-        font-size: 18px;
-        font-weight: 800;
-        line-height: 1;
-    ">HA</div>
+# =====================================
+# ПОТВЪРЖДЕНИЕ
+# =====================================
 
-    <div style="
-        font-size: 11px;
-        letter-spacing: 2px;
-        font-weight: 600;
-    ">HMITSEV</div>
-</div>
-""", unsafe_allow_html=True)
+if st.session_state.get("room_service_sent", False):
+    st.success(
+        f"✅ Room Service заявката за стая № {room_number} "
+        "е изпратена успешно.\n\n"
+        "Рецепцията ще се свърже с Вас при необходимост."
+    )
+
+    st.session_state.room_service_sent = False
+
+
+# =====================================
+# БРАНДИРАНЕ
+# =====================================
+
+st.caption("Powered by HMITSEVAPPS")
