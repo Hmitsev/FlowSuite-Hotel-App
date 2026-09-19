@@ -1,171 +1,210 @@
-import streamlit as st
-from database.db import get_connection
-from database.queries import (
-    get_categories,
-    get_items_by_category,
-    create_order
-)
-# =====================================
-# НАСТРОЙКИ НА СТРАНИЦАТА
-# =====================================
-st.set_page_config(
-   page_icon="🍽️",
-    layout="wide"
-)
-# =====================================
-# LANGUAGE
-# =====================================
+import base64
+from pathlib import Path
 
+import streamlit as st
+
+
+# =========================================================
+# НАСТРОЙКИ НА СТРАНИЦАТА
+# =========================================================
+st.set_page_config(
+    page_title="FlowSuite Hotel",
+    page_icon="🏨",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+
+# =========================================================
+# ПЪТИЩА ДО ФАЙЛОВЕТЕ
+# =========================================================
+ASSETS_DIR = Path("assets")
+
+# Приложението ще потърси първата намерена снимка.
+# Ако в GitHub името е различно, добави го най-отгоре в списъка.
+HOTEL_BANNER_CANDIDATES = [
+    "Screenshot 2026-09-09 025734.png",
+    "hotel_banner.png",
+    "hotel.png",
+    "Hotel.png",
+    "hotel.jpeg",
+    "hotel.jpg",
+]
+
+
+# =========================================================
+# ПОМОЩНИ ФУНКЦИИ
+# =========================================================
+@st.cache_data
+def get_base64_image(file_path):
+    with open(file_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode()
+
+
+def find_asset(file_names):
+    """
+    Връща първия намерен файл от assets.
+    """
+    for file_name in file_names:
+        file_path = ASSETS_DIR / file_name
+
+        if file_path.exists():
+            return file_path
+
+    return None
+
+
+def open_hotel_page(page_path, service_name_bg, service_name_en):
+    """
+    Отваря съответната Streamlit страница, ако вече съществува.
+    Ако още не е създадена, показва информационно съобщение.
+    """
+    target_page = Path(page_path)
+
+    if target_page.exists():
+        st.switch_page(page_path)
+    else:
+        if st.session_state.lang == "bg":
+            st.info(
+                f"Секция „{service_name_bg}“ ще бъде добавена "
+                "в следващата стъпка."
+            )
+        else:
+            st.info(
+                f"The “{service_name_en}” section will be added "
+                "in the next step."
+            )
+
+
+# =========================================================
+# SESSION STATE
+# =========================================================
 if "lang" not in st.session_state:
     st.session_state.lang = "bg"
 
-lang_col1, lang_col2 = st.columns([8, 1])
 
-with lang_col2:
-
-    if st.button(
-        " BG" if st.session_state.lang == "bg" else " ENG",
-        key="lang_toggle",
-        use_container_width=True
-    ):
-        st.session_state.lang = (
-            "en"
-            if st.session_state.lang == "bg"
-            else "bg"
-        )
-        st.rerun()
-
+# =========================================================
+# ПРЕВОДИ
+# =========================================================
 T = {
     "bg": {
-        "menu": "📋 Меню",
-        "cart": "🛒 Вашата поръчка",
-        "order": "✅ Изпрати поръчка",
-        "call_waiter": "🔔 Извикай сервитьор",
-        "table": "🍽️ Маса №",
-        "empty_cart": "Няма избрани артикули.",
-        "add": "🛒 Добави",
-        "comment": "Коментар"
+        "hotel_services": "Хотелски услуги",
+        "welcome": "Добре дошли",
+        "room": "Стая",
+        "room_service": "Room Service",
+        "room_service_description": (
+            "Поръчайте храна и напитки директно до Вашата стая."
+        ),
+        "spa": "SPA",
+        "spa_description": (
+            "Изпратете заявка за масаж или SPA процедура."
+        ),
+        "activities": "Дейности",
+        "activities_description": (
+            "Разгледайте и резервирайте хотелски активности."
+        ),
+        "reception_help": (
+            "За допълнителна информация се свържете с рецепцията."
+        ),
+        "invalid_room": "Невалиден номер на стая.",
+        "language": "BG",
     },
-
     "en": {
-        "menu": "📋 Menu",
-        "cart": "🛒 Your Order",
-        "order": "✅ Send Order",
-        "call_waiter": "🔔 Call Waiter",
-        "table": "🍽️ Table No.",
-        "empty_cart": "No items selected.",
-        "add": "🛒 Add",
-        "comment": "Comment"
-    }
+        "hotel_services": "Hotel Services",
+        "welcome": "Welcome",
+        "room": "Room",
+        "room_service": "Room Service",
+        "room_service_description": (
+            "Order food and drinks directly to your room."
+        ),
+        "spa": "SPA",
+        "spa_description": (
+            "Send a request for a massage or SPA treatment."
+        ),
+        "activities": "Activities",
+        "activities_description": (
+            "Explore and book hotel activities."
+        ),
+        "reception_help": (
+            "For additional information, please contact reception."
+        ),
+        "invalid_room": "Invalid room number.",
+        "language": "ENG",
+    },
 }
 
 t = T[st.session_state.lang]
 
-# =====================================
-# ВИЗИЯ
-# =====================================
 
-import base64
+# =========================================================
+# НОМЕР НА СТАЯТА ОТ QR КОДА
+# Пример: ?room=204
+# =========================================================
+raw_room_number = st.query_params.get("room", "204")
 
-@st.cache_data
-def get_base64(file_path):
-    with open(file_path, "rb") as f:
-        return base64.b64encode(
-            f.read()
-        ).decode()
+try:
+    room_number = int(raw_room_number)
+except (TypeError, ValueError):
+    room_number = 204
 
-bg_image = get_base64(
-    "assets/Designer (4).png"
-)
+if room_number < 1 or room_number > 9999:
+    st.error(t["invalid_room"])
+    st.stop()
 
+
+# =========================================================
+# ЗАРЕЖДАНЕ НА ХОТЕЛСКАТА СНИМКА
+# =========================================================
+hotel_banner_path = find_asset(HOTEL_BANNER_CANDIDATES)
+
+hotel_banner_base64 = ""
+
+if hotel_banner_path:
+    hotel_banner_base64 = get_base64_image(hotel_banner_path)
+
+
+# =========================================================
+# ОСНОВЕН CSS
+# =========================================================
 page_style = f"""
 <style>
 
+/* =====================================================
+   ОСНОВЕН ФОН
+===================================================== */
 .stApp {{
-    background-image:
-        linear-gradient(
-            rgba(0,0,0,0.72),
-            rgba(0,0,0,0.72)
-        ),
-        url("data:image/png;base64,{bg_image}");
-
-    background-size: cover;
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
+    background:
+        radial-gradient(
+            circle at top,
+            rgba(28, 23, 15, 0.96) 0%,
+            rgba(7, 10, 15, 0.98) 45%,
+            rgba(3, 5, 8, 1) 100%
+        );
+    color: #F5E6C8;
 }}
 
-/* =====================================
-   ЛУКСОЗНИ КАТЕГОРИИ
-===================================== */
 
-[data-testid="stSegmentedControl"] button {{
-
-    background: rgba(
-        15,
-        23,
-        42,
-        0.90
-    ) !important;
-
-    border: 1px solid #D4AF37 !important;
-
-    border-radius: 14px !important;
-
-    color: #D4AF37 !important;
-
-    font-weight: 700 !important;
-
-    min-height: 48px !important;
-
-    padding-left: 16px !important;
-    padding-right: 16px !important;
+/* =====================================================
+   СКРИВАНЕ НА STREAMLIT ЕЛЕМЕНТИ
+===================================================== */
+[data-testid="stSidebar"] {{
+    display: none !important;
 }}
 
-[data-testid="stSegmentedControl"] button:hover {{
-
-    border: 1px solid #FFD54F !important;
-
-    color: #FFD54F !important;
+[data-testid="collapsedControl"] {{
+    display: none !important;
 }}
 
-[data-testid="stSegmentedControl"] button[aria-pressed="true"] {{
-
-    background: linear-gradient(
-        135deg,
-        #D4AF37,
-        #FFD54F
-    ) !important;
-
-    color: #FFD54F !important;
-
-    border: none !important;
-
-    font-weight: 800 !important;
-
-    box-shadow:
-        0 0 12px rgba(
-            255,
-            213,
-            79,
-            0.35
-        ) !important;
+[data-testid="stHeader"] {{
+    background: transparent !important;
 }}
 
-/* =====================================
-   СКРИВА STREAMLIT STATUS
-===================================== */
+[data-testid="stToolbar"] {{
+    right: 1rem;
+}}
 
 [data-testid="stStatusWidget"] {{
     display: none !important;
-}}
-
-div[data-testid="stStatusWidget"] {{
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    min-height: 0 !important;
 }}
 
 [data-testid="stSpinner"] {{
@@ -176,16 +215,141 @@ div[data-testid="stStatusWidget"] {{
     display: none !important;
 }}
 
-/* =====================================
-   ХЕДЪР
-===================================== */
-
-[data-testid="stHeader"] {{
-    background: rgba(0,0,0,0);
+footer {{
+    visibility: hidden;
 }}
 
-[data-testid="stToolbar"] {{
-    right: 2rem;
+
+/* =====================================================
+   ОСНОВЕН КОНТЕЙНЕР
+===================================================== */
+.block-container {{
+    max-width: 1450px;
+    padding-top: 1.2rem;
+    padding-bottom: 4rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}}
+
+
+/* =====================================================
+   ТЕКСТОВЕ
+===================================================== */
+h1, h2, h3 {{
+    color: #F5E6C8 !important;
+}}
+
+p, label, span {{
+    color: #F5E6C8;
+}}
+
+
+/* =====================================================
+   ЕЗИКОВ БУТОН
+===================================================== */
+div[data-testid="stButton"] button {{
+    border-radius: 14px;
+    transition: all 0.25s ease;
+}}
+
+
+/* =====================================================
+   ОСНОВНИ БУТОНИ
+===================================================== */
+div[data-testid="stButton"] button[kind="primary"] {{
+    min-height: 66px;
+    width: 100%;
+    background:
+        linear-gradient(
+            135deg,
+            #B98528 0%,
+            #D4AF37 48%,
+            #F5D77B 100%
+        ) !important;
+    border: 1px solid #F5D77B !important;
+    border-radius: 16px !important;
+    color: #101010 !important;
+    font-size: 19px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.4px !important;
+    box-shadow:
+        0 8px 24px rgba(212, 175, 55, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}}
+
+div[data-testid="stButton"] button[kind="primary"]:hover {{
+    transform: translateY(-2px);
+    border-color: #FFF0B3 !important;
+    box-shadow:
+        0 12px 30px rgba(212, 175, 55, 0.35),
+        0 0 14px rgba(245, 215, 123, 0.18);
+}}
+
+div[data-testid="stButton"] button[kind="primary"] p {{
+    color: #101010 !important;
+    font-weight: 800 !important;
+}}
+
+
+/* =====================================================
+   ВТОРИЧНИ БУТОНИ
+===================================================== */
+div[data-testid="stButton"] button[kind="secondary"] {{
+    min-height: 42px;
+    background: rgba(8, 12, 18, 0.86) !important;
+    border: 1px solid rgba(212, 175, 55, 0.72) !important;
+    color: #F5D77B !important;
+    font-weight: 700 !important;
+}}
+
+div[data-testid="stButton"] button[kind="secondary"]:hover {{
+    border-color: #FFD96A !important;
+    color: #FFD96A !important;
+    background: rgba(20, 23, 28, 0.95) !important;
+}}
+
+
+/* =====================================================
+   МОБИЛЕН ИЗГЛЕД
+===================================================== */
+@media only screen and (max-width: 768px) {{
+
+    .block-container {{
+        padding-top: 0.8rem;
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+        padding-bottom: 4rem;
+    }}
+
+    .hotel-hero {{
+        min-height: 210px !important;
+        border-radius: 16px !important;
+    }}
+
+    .hotel-hero-content {{
+        padding: 22px 18px !important;
+    }}
+
+    .hotel-hero-title {{
+        font-size: 28px !important;
+    }}
+
+    .hotel-hero-room {{
+        font-size: 17px !important;
+    }}
+
+    .hotel-services-title {{
+        font-size: 25px !important;
+    }}
+
+    .hotel-card {{
+        min-height: 122px !important;
+    }}
+
+    div[data-testid="stButton"] button[kind="primary"] {{
+        min-height: 58px;
+        font-size: 17px !important;
+    }}
 }}
 
 </style>
@@ -195,921 +359,526 @@ st.markdown(
     page_style,
     unsafe_allow_html=True
 )
-# =====================================
-# SESSION STATE
-# =====================================
-
-if "cart" not in st.session_state:
-    st.session_state.cart = []
-
-if "last_order_id" not in st.session_state:
-    st.session_state.last_order_id = None
 
 
-# =====================================
-# ПОМОЩНИ ФУНКЦИИ
-# =====================================
+# =========================================================
+# ЕЗИКОВ БУТОН
+# =========================================================
+language_space, language_column = st.columns([8.6, 1.4])
 
-def add_to_cart(item_id, item_name, price, note=""):
-
-    st.session_state.cart.append(
-        {
-            "id": int(item_id),
-            "name": str(item_name),
-            "price": float(price),
-            "note": str(note).strip()
-        }
+with language_column:
+    language_button_text = (
+        "🇧🇬 BG"
+        if st.session_state.lang == "bg"
+        else "🇬🇧 ENG"
     )
 
-
-def remove_one_from_cart(item_id, note):
-
-    for index, cart_item in enumerate(st.session_state.cart):
-
-        same_item = cart_item["id"] == item_id
-
-        same_note = (
-            cart_item.get("note", "").strip()
-            == note.strip()
-        )
-
-        if same_item and same_note:
-            st.session_state.cart.pop(index)
-            break
-
-def call_waiter(table_number):
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-
-        cur.execute(
-            """
-            SELECT id
-            FROM restaurant_tables
-            WHERE table_number = %s
-            LIMIT 1
-            """,
-            (table_number,)
-        )
-
-        result = cur.fetchone()
-
-        if not result:
-            return
-
-        table_id = result[0]
-
-        cur.execute(
-            """
-            INSERT INTO notifications
-            (
-                table_id,
-                notification_type,
-                message,
-                is_read
-            )
-            VALUES
-            (
-                %s,
-                'CALL_WAITER',
-                %s,
-                FALSE
-            )
-            """,
-            (
-                table_id,
-                f'Маса №{table_number} извика сервитьор'
-            )
-        )
-
-        conn.commit()
-
-    finally:
-
-        cur.close()
-        conn.close()
-# =====================================
-# ЗАГЛАВИЕ И БАНЕР
-# =====================================
-
-
-
-try:
-    st.image(
-        "assets/Ластория.фон.jpeg",
+    if st.button(
+        language_button_text,
+        key="language_toggle",
         use_container_width=True
+    ):
+        st.session_state.lang = (
+            "en"
+            if st.session_state.lang == "bg"
+            else "bg"
+        )
+        st.rerun()
+
+
+# =========================================================
+# ХОТЕЛСКИ HERO БАНЕР
+# =========================================================
+if hotel_banner_base64:
+
+    st.markdown(
+        f"""
+        <div
+            class="hotel-hero"
+            style="
+                position: relative;
+                min-height: 360px;
+                margin-top: 4px;
+                margin-bottom: 26px;
+                border: 1px solid rgba(212,175,55,0.60);
+                border-radius: 22px;
+                overflow: hidden;
+                background-image:
+                    linear-gradient(
+                        90deg,
+                        rgba(3,5,8,0.86) 0%,
+                        rgba(3,5,8,0.40) 52%,
+                        rgba(3,5,8,0.10) 100%
+                    ),
+                    linear-gradient(
+                        0deg,
+                        rgba(3,5,8,0.68) 0%,
+                        rgba(3,5,8,0.05) 58%
+                    ),
+                    url('data:image/png;base64,{hotel_banner_base64}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                box-shadow:
+                    0 18px 50px rgba(0,0,0,0.50),
+                    0 0 18px rgba(212,175,55,0.10);
+            "
+        >
+            <div
+                class="hotel-hero-content"
+                style="
+                    position: absolute;
+                    left: 0;
+                    bottom: 0;
+                    max-width: 700px;
+                    padding: 42px 46px;
+                "
+            >
+                <div
+                    style="
+                        color: #D4AF37;
+                        font-size: 14px;
+                        font-weight: 800;
+                        letter-spacing: 4px;
+                        text-transform: uppercase;
+                        margin-bottom: 10px;
+                    "
+                >
+                    FlowSuite Hotel
+                </div>
+
+                <div
+                    class="hotel-hero-title"
+                    style="
+                        color: #FFF5D6;
+                        font-size: 43px;
+                        font-weight: 800;
+                        line-height: 1.05;
+                        text-shadow: 0 4px 18px rgba(0,0,0,0.70);
+                    "
+                >
+                    {t["welcome"]}
+                </div>
+
+                <div
+                    class="hotel-hero-room"
+                    style="
+                        display: inline-block;
+                        margin-top: 18px;
+                        padding: 9px 18px;
+                        color: #F5D77B;
+                        background: rgba(3,5,8,0.76);
+                        border: 1px solid rgba(212,175,55,0.72);
+                        border-radius: 999px;
+                        font-size: 19px;
+                        font-weight: 800;
+                        letter-spacing: 0.5px;
+                        backdrop-filter: blur(8px);
+                    "
+                >
+                    🛎️ {t["room"]} № {room_number}
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
-except Exception:
+
+else:
     st.warning(
-        "Банерът не беше намерен, но менюто може да се използва."
+        "Хотелската снимка не е намерена в папка assets. "
+        "Провери името в HOTEL_BANNER_CANDIDATES."
+    )
+
+    st.markdown(
+        f"""
+        <div
+            style="
+                padding: 38px 30px;
+                margin-bottom: 26px;
+                border: 1px solid rgba(212,175,55,0.60);
+                border-radius: 22px;
+                background:
+                    linear-gradient(
+                        135deg,
+                        rgba(19,24,32,0.98),
+                        rgba(7,10,15,0.98)
+                    );
+                text-align: center;
+            "
+        >
+            <div
+                style="
+                    color: #D4AF37;
+                    font-size: 14px;
+                    font-weight: 800;
+                    letter-spacing: 4px;
+                    text-transform: uppercase;
+                "
+            >
+                FlowSuite Hotel
+            </div>
+
+            <div
+                style="
+                    color: #FFF5D6;
+                    font-size: 38px;
+                    font-weight: 800;
+                    margin-top: 10px;
+                "
+            >
+                {t["welcome"]}
+            </div>
+
+            <div
+                style="
+                    color: #F5D77B;
+                    font-size: 19px;
+                    font-weight: 700;
+                    margin-top: 12px;
+                "
+            >
+                🛎️ {t["room"]} № {room_number}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 
-# =====================================
-# МАСА ОТ QR КОДА
-# =====================================
-
-raw_table_number = st.query_params.get("table", "1")
-
-try:
-    table_number = int(raw_table_number)
-except (TypeError, ValueError):
-    table_number = 1
-
-if table_number < 1 or table_number > 20:
-    st.error(
-        "Невалиден QR код. Номерът на масата трябва да бъде между 1 и 20."
-    )
-    st.stop()
-
-st.success(
-    f"🍽️ Маса № {table_number}"
-)
-st.caption(
-    "📱 ↔️ За по-добра видимост може да завъртете телефона хоризонтално"
-)
-if st.button(
-    "🔔 Извикай сервитьор",
-    use_container_width=True
-):
-
-    call_waiter(table_number)
-
-    st.success(
-        "Сервитьорът е уведомен."
-    )
-
-
-# =====================================
-# МЕНЮ
-# =====================================
-
+# =========================================================
+# ЗАГЛАВИЕ НА УСЛУГИТЕ
+# =========================================================
 st.markdown(
-    """
-    <div style="
-        border:2px solid #D4AF37;
-        border-radius:16px;
-        padding:14px 20px 50px 20px;
-        margin-bottom:35px;
-        background:linear-gradient(
-            135deg,
-            rgba(15,23,42,0.95),
-            rgba(10,18,30,0.95)
-        );
-        box-shadow:
-            0 0 12px rgba(212,175,55,0.25);
-    ">
-        <span style="
-            color:#F5E6C8;
-            font-size:32px;
-            font-weight:800;
-            letter-spacing:1px;
-        ">
-            📋 Меню
-        </span>
+    f"""
+    <div
+        style="
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 24px;
+        "
+    >
+        <div
+            class="hotel-services-title"
+            style="
+                color: #F5E6C8;
+                font-size: 31px;
+                font-weight: 800;
+                letter-spacing: 0.5px;
+            "
+        >
+            {t["hotel_services"]}
+        </div>
+
+        <div
+            style="
+                width: 90px;
+                height: 2px;
+                margin: 12px auto 0 auto;
+                background:
+                    linear-gradient(
+                        90deg,
+                        transparent,
+                        #D4AF37,
+                        transparent
+                    );
+            "
+        ></div>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-categories = get_categories()
 
-category_display = {
-    "Дневно меню": "📅 🔥 ДНЕВНО МЕНЮ",
-    "Салати": "⚜ Салати",
-    "Разядки и студени предястия": "⚜ Предястия",
-    "Топли предложения за споделяне": "⚜ За споделяне",
-    "Риба и морски дарове": "⚜ Морски дарове",
-    "Паста и ризото": "⚜ Паста и ризото",
-    "Приготвено на плоча": "⚜ На плоча",
-    "Основни ястия": "⚜ Основни ястия",
-    "От краче до уше": "⚜ От краче до уше",
-    "Бургери": "⚜ Бургери",
-    "Десерти": "⚜ Десерти",
-    "Напитки": "🥂 Напитки"
-}
-category_grams = {
-    "Салати": "400 гр.",
-    "Разядки и студени предястия": "300 гр.",
-    "Топли предложения за споделяне": "350 гр.",
-    "Риба и морски дарове": "450 гр.",
-    "Паста и ризото": "400 гр.",
-    "Приготвено на плоча": "450 гр.",
-    "Основни ястия": "450 гр.",
-    "От краче до уше": "400 гр.",
-    "Бургери": "450 гр.",
-    "Десерти": "1 бр."
-}
-category_banners = {
-    "📅 🔥 ДНЕВНО МЕНЮ": "assets/01_dnevno_menu.png",
-    "⚜ Салати": "assets/02_salati.png",
-    "⚜ Предястия": "assets/03_predyastiya.png",
-    "⚜ За споделяне": "assets/04_za_spodelyane.png",
-    "⚜ Морски дарове": "assets/05_morski_darove.png",
-    "⚜ Паста и ризото": "assets/06_pasta_i_rizoto.png",
-    "⚜ На плоча": "assets/07_na_plocha.png",
-    "⚜ Основни ястия": "assets/08_osnovni_yastiya.png",
-    "⚜ От краче до уше": "assets/09_ot_krache_do_ushe.png",
-    "⚜ Бургери": "assets/10_burgeri.png",
-    "⚜ Десерти": "assets/11_deserti.png"
-}
-reverse_display = {
-    value: key
-    for key, value in category_display.items()
-}
-
-category_names = [
-    category_display.get(
-        category[0],
-        category[0]
-    )
-    for category in categories
-]
-
-selected_display = st.segmented_control(
-    "",
-    category_names,
-    default=category_names[0],
-    key="main_category_selector"
+# =========================================================
+# КАРТИ НА УСЛУГИТЕ
+# =========================================================
+room_service_column, spa_column, activities_column = st.columns(
+    3,
+    gap="large"
 )
 
-selected_category = reverse_display.get(
-    selected_display,
-    selected_display
-)
-main_section_grams = category_grams.get(
-    selected_category,
-    ""
-)
 
-if main_section_grams:
+# =========================================================
+# ROOM SERVICE
+# =========================================================
+with room_service_column:
 
     st.markdown(
         f"""
-        <div style="
-            color:#CFCFCF;
-            font-size:16px;
-            font-weight:600;
-            margin-top:4px;
-            margin-bottom:10px;
-        ">
-            ⚖️ {main_section_grams}
+        <div
+            class="hotel-card"
+            style="
+                min-height: 145px;
+                padding: 22px 20px;
+                margin-bottom: 12px;
+                border: 1px solid rgba(212,175,55,0.42);
+                border-radius: 18px;
+                background:
+                    linear-gradient(
+                        145deg,
+                        rgba(19,24,32,0.94),
+                        rgba(7,10,15,0.97)
+                    );
+                box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+                text-align: center;
+            "
+        >
+            <div
+                style="
+                    font-size: 34px;
+                    margin-bottom: 9px;
+                "
+            >
+                🍽️
+            </div>
+
+            <div
+                style="
+                    color: #F5D77B;
+                    font-size: 22px;
+                    font-weight: 800;
+                "
+            >
+                {t["room_service"]}
+            </div>
+
+            <div
+                style="
+                    color: #C8C4B9;
+                    font-size: 14px;
+                    line-height: 1.45;
+                    margin-top: 8px;
+                "
+            >
+                {t["room_service_description"]}
+            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
-items = get_items_by_category(
-    selected_category
-)
-main_banner = category_banners.get(selected_display)
 
-if main_banner:
-    st.image(
-        main_banner,
+    if st.button(
+        f"🍽️ {t['room_service']}",
+        key="open_room_service",
+        type="primary",
         use_container_width=True
-    )
-# =====================================
-# ПОДКАТЕГОРИИ НА ДНЕВНОТО МЕНЮ
-# =====================================
+    ):
+        open_hotel_page(
+            "pages/01_Room_Service.py",
+            "Room Service",
+            "Room Service"
+        )
 
-if selected_category == "Дневно меню":
 
-    selected_daily_group = st.segmented_control(
-        "",
-        [
-            "🍲 Супи",
-            "🍽️ Готови ястия",
-            "🍰 Десерт"
-        ],
-        default="🍲 Супи",
-        key="daily_group_selector"
-    )
-
-    items = [
-        item
-        for item in items
-        if len(item) > 7
-        and item[7] == selected_daily_group
-    ]
+# =========================================================
+# SPA
+# =========================================================
+with spa_column:
 
     st.markdown(
         f"""
-        <div style="
-            color:#FFD54F;
-            font-size:22px;
-            font-weight:700;
-            margin-top:12px;
-            margin-bottom:10px;
-        ">
-            {selected_daily_group}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-section_title = ""
+        <div
+            class="hotel-card"
+            style="
+                min-height: 145px;
+                padding: 22px 20px;
+                margin-bottom: 12px;
+                border: 1px solid rgba(212,175,55,0.42);
+                border-radius: 18px;
+                background:
+                    linear-gradient(
+                        145deg,
+                        rgba(19,24,32,0.94),
+                        rgba(7,10,15,0.97)
+                    );
+                box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+                text-align: center;
+            "
+        >
+            <div
+                style="
+                    font-size: 34px;
+                    margin-bottom: 9px;
+                "
+            >
+                💆
+            </div>
 
-# =====================================
-# ПОДКАТЕГОРИИ НА НАПИТКИТЕ
-# =====================================
+            <div
+                style="
+                    color: #F5D77B;
+                    font-size: 22px;
+                    font-weight: 800;
+                "
+            >
+                {t["spa"]}
+            </div>
 
-if selected_category == "Напитки":
-
-    selected_drink_group = st.segmented_control(
-        "",
-        [
-            "☕ Топли напитки",
-            "🥤 Безалкохолни",
-            "🍺 Бира и сайдер",
-            "🍷 Вина",
-            "🥃 Алкохол"
-        ],
-        default="☕ Топли напитки",
-        key="drink_group_selector"
-    )
-
-    drink_banners = {
-        "☕ Топли напитки": "assets/12_topli_napitki.png",
-        "🥤 Безалкохолни": "assets/13_gazirani_napitki.png",
-        "🍺 Бира и сайдер": "assets/фон бира.png",
-        "🍷 Вина": "assets/фон вина.jpeg",
-        "🥃 Алкохол": "assets/фон алкохол.jpeg"
-    }
-
-    banner_path = drink_banners.get(selected_drink_group)
-
-    if banner_path:
-        st.image(
-            banner_path,
-            width=700
-        )
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-    items = [
-        item
-        for item in items
-        if len(item) > 4
-        and item[4] == selected_drink_group
-    ]
-
-    section_title = selected_drink_group
-
-    # =====================================
-    # ПОДКАТЕГОРИИ НА ВИНАТА
-    # =====================================
-
-    if selected_drink_group == "🍷 Вина":
-
-        selected_wine_type = st.segmented_control(
-            "",
-            [
-                "🤍 Бели вина",
-                "🍷 Червени вина",
-                "🌹 Розе",
-                "🥂 Просеко"
-            ],
-            default="🤍 Бели вина",
-            key="wine_type_selector"
-        )
-
-        items = [
-            item
-            for item in items
-            if len(item) > 5
-            and item[5] == selected_wine_type
-        ]
-
-        section_title = selected_wine_type
-
-    # =====================================
-    # ПОДКАТЕГОРИИ НА АЛКОХОЛА
-    # =====================================
-
-    elif selected_drink_group == "🥃 Алкохол":
-
-        selected_alcohol_type = st.segmented_control(
-            "",
-            [
-                "🥃 Уиски",
-                "🍸 Водка",
-                "🥃 Ракия",
-                "🥃 Джин",
-                "🌿 Анасонови",
-                "🥃 Ром / Коняк",
-                "🍷 Дижестив"
-            ],
-            default="🥃 Уиски",
-            key="alcohol_type_selector"
-        )
-
-        items = [
-            item
-            for item in items
-            if len(item) > 6
-            and item[6] == selected_alcohol_type
-        ]
-
-        section_title = selected_alcohol_type
-
-    st.markdown(
-        f"""
-        <div style="
-            color:#FFD54F;
-            font-size:22px;
-            font-weight:700;
-            margin-top:12px;
-            margin-bottom:10px;
-        ">
-            {section_title}
+            <div
+                style="
+                    color: #C8C4B9;
+                    font-size: 14px;
+                    line-height: 1.45;
+                    margin-top: 8px;
+                "
+            >
+                {t["spa_description"]}
+            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-# =====================================
-# СНИМКИ НА БУРГЕРИТЕ
-# =====================================
-
-burger_images = {
-    "Американски хот-дог": "assets/shared image (15).jpeg",
-    "Свински бургер": "assets/shared image (16).jpeg",
-    "Телешки бургер": "assets/shared image (4).jpeg",
-    "Пилешки бургер": "assets/shared image (6).jpeg",
-    "Пържени картофи с пилешко": "assets/shared image (9).jpeg",
-    "Пържени картофи със сьомга": "assets/shared image (12).jpeg",
-    "Пържени картофи с бекон": "assets/shared image (13).jpeg",
-    "Пържени картофи с телешко": "assets/01d65c96-56f8-4703-99ed-a1ac6d9b5065.jpg"
-}
-
-# =====================================
-# ПОКАЗВАНЕ НА АРТИКУЛИТЕ
-# =====================================
-
-if not items:
-
-    st.info(
-        "В тази секция все още няма налични артикули."
-    )
-
-else:
-
-    for item_index, item in enumerate(items):
-
-        item_id = item[0]
-        item_name = item[1]
-        price = float(item[2])
-        description = item[3] if len(item) > 3 else ""
-        item_drink_group = item[4] if len(item) > 4 else ""
-        item_wine_type = item[5] if len(item) > 5 else ""
-        item_alcohol_type = item[6] if len(item) > 6 else ""
-
-        col1, col2, col3, col4 = st.columns(
-            [6, 0.7, 1.3, 1.7]
+    if st.button(
+        f"💆 {t['spa']}",
+        key="open_spa",
+        type="primary",
+        use_container_width=True
+    ):
+        open_hotel_page(
+            "pages/02_SPA.py",
+            "SPA",
+            "SPA"
         )
 
-        # =====================================
-        # ИМЕ НА АРТИКУЛА
-        # =====================================
 
-        with col1:
+# =========================================================
+# ACTIVITIES
+# =========================================================
+with activities_column:
 
-            st.markdown(
-                f"""
-                <div style="
-                    background-color:#0F172A;
-                    border:1px solid #24324A;
-                    border-radius:12px;
-                    padding:12px 14px;
-                    color:#F5E6C8;
-                    font-weight:700;
-                    font-size:18px;
-                    min-height:52px;
-                    display:flex;
-                    align-items:center;
-                ">
-                    {item_name}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            drink_variants = {
+    st.markdown(
+        f"""
+        <div
+            class="hotel-card"
+            style="
+                min-height: 145px;
+                padding: 22px 20px;
+                margin-bottom: 12px;
+                border: 1px solid rgba(212,175,55,0.42);
+                border-radius: 18px;
+                background:
+                    linear-gradient(
+                        145deg,
+                        rgba(19,24,32,0.94),
+                        rgba(7,10,15,0.97)
+                    );
+                box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+                text-align: center;
+            "
+        >
+            <div
+                style="
+                    font-size: 34px;
+                    margin-bottom: 9px;
+                "
+            >
+                🎿
+            </div>
 
-                "Кока-Кола 250ml": [
-                    "Coca-Cola",
-                    "Coca-Cola Zero"
-                ],
+            <div
+                style="
+                    color: #F5D77B;
+                    font-size: 22px;
+                    font-weight: 800;
+                "
+            >
+                {t["activities"]}
+            </div>
 
-                "Фанта 250ml": [
-                    "Портокал",
-                    "Лимон",
-                    "Екзотик"
-                ],
-
-                "Натурален сок Cappy": [
-                    "Праскова",
-                    "Портокал",
-                    "Ябълка",
-                    "Мултивитамин"
-                ],
-
-                "Студен чай Fuzetea": [
-                    "Праскова",
-                    "Лимон",
-                    "Зелен чай"
-                ],
-
-                "Schweppes Сода": [
-                    "Сода",
-                    "Тоник",
-                    "Bitter Lemon"
-                ]
-            }
-
-            selected_variant = ""
-
-            if item_name in drink_variants:
-                
-                variant_col, _ = st.columns([2, 8])
-
-                with variant_col:
-                
-                    selected_variant = st.selectbox(
-                        "",
-                        drink_variants[item_name],
-                        key=f"variant_{item_id}_{item_index}"
-                    )
-
-        # =====================================
-        # ИНФОРМАЦИЯ И КОМЕНТАР
-        # =====================================
-        
-        with col2:
-        
-            with st.popover("ℹ️"):
-        
-                st.markdown(
-                    f"""
-                    <div style="
-                        color:#F5E6C8;
-                        font-size:28px;
-                        font-weight:800;
-                        text-align:center;
-                        margin-bottom:10px;
-                    ">
-                        {item_name}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-            )
-    
-                drink_images = {
-                    "Кока-Кола 250ml": "assets/kola.png",
-                    "Спрайт 250ml": "assets/sprite.png",
-                    "Фанта 250ml": "assets/fanta port.png",
-                    "Минерална вода Банкя 330ml": "assets/bankq.png",
-                
-                    "Натурален сок Cappy": "assets/kapu praskova.png",
-                    "Студен чай Fuzetea": "assets/stud.chai.png",
-                    "Red Bull": "assets/red bul.png",
-                    "Фреш 200ml": "assets/фреш.png",
-                
-                    "Капучино": "assets/kapochino.png",
-                    "Бяло фрапе": "assets/фон топла напитка.png",
-                    "Бяло фрапе с вкус": "assets/фон топла напитка.png",
-                    "Черно фрапе": "assets/фон топла напитка.png",
-                
-                    "Beluga": "assets/beluga.png",
-                    "Руски стандарт": "assets/ruski stand.png",
-                    "Бургас 63": "assets/burgas 63.png",
-                
-                    "Bushmills": "assets/bushmils.png",
-                    "Bushmills Black": "assets/bushmils black.png",
-                    "Jack Daniels": "assets/jack.png",
-                    "Jameson": "assets/jameson.png",
-                    "Jameson Black Barrel": "assets/jameson.png"
-                }
-    
-                image_path = burger_images.get(item_name)
-    
-                if not image_path:
-                    image_path = drink_images.get(item_name)
-
-                if image_path:
-        
-                    try:
-                        st.image(
-                            image_path,
-                            use_container_width=True
-                        )
-        
-                    except Exception:
-                        st.caption(
-                            "Снимката временно не е налична."
-                        )
-        
-                if item_drink_group == "🥃 Алкохол":
-        
-                    st.markdown(
-                        """
-                        <div style="
-                            background:#1F2937;
-                            color:#FFD54F;
-                            border:1px solid #D4AF37;
-                            border-radius:10px;
-                            padding:10px;
-                            text-align:center;
-                            font-weight:700;
-                            margin-bottom:10px;
-                        ">
-                            🥃 Посочената цена е за 50 мл.
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-        
-                if description:
-        
-                    st.write(
-                        description
-                    )
-        
-                else:
-        
-                    st.info(
-                        "Няма описание."
-                    )
-        
-                comment_label = "Коментар"
-        
-                if selected_category not in (
-                    "Напитки",
-                ):
-                    comment_label = "Коментар към кухнята"
-        
-                comment = st.text_area(
-                    comment_label,
-                    placeholder=" коментар",
-                    key=f"comment_{item_id}_{item_index}",
-                    height=80
-                )
-        
-                if st.button(
-                    "Запази коментар",
-                    key=f"save_{item_id}_{item_index}"
-                ):
-        
-                    st.session_state[
-                        f"saved_note_{item_id}_{item_index}"
-                    ] = comment
-        
-                    st.success(
-                        "Коментарът е запазен."
-                    )
-        # =====================================
-        # ЦЕНА
-        # =====================================
-
-        with col3:
-
-            st.markdown(
-                f"""
-                <div style="
-                    color:#FFD54F;
-                    font-weight:700;
-                    font-size:18px;
-                    padding-left:15px;
-                ">
-                    € {price:.2f}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        # =====================================
-        # ДОБАВЯНЕ В КОЛИЧКАТА
-        # =====================================
-        
-
-        with col4:
-
-            item_is_in_cart = any(
-                cart_item["id"] == item_id
-                for cart_item in st.session_state.cart
-            )
-
-            if item_is_in_cart:
-
-                st.markdown(
-                    """
-                    <div style="
-                        background:#198754;
-                        color:white;
-                        border-radius:8px;
-                        padding:4px 8px;
-                        text-align:center;
-                        font-size:12px;
-                        font-weight:700;
-                        margin-bottom:4px;
-                    ">
-                        ✅ Добавено
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-            if st.button(
-                "🛒 Добави",
-                key=f"add_{item_id}_{item_index}"
-            ):
-
-                saved_comment = st.session_state.get(
-                    f"saved_note_{item_id}_{item_index}",
-                    ""
-                )
-
-                final_name = item_name
-
-                if item_name in drink_variants and selected_variant:
-                    final_name = (
-                        f"{item_name} - {selected_variant}"
-                    )
-
-                add_to_cart(
-                    item_id=item_id,
-                    item_name=final_name,
-                    price=price,
-                    note=saved_comment
-                )
-
-                st.rerun()
-# =====================================
-# КОЛИЧКА
-# =====================================
-
-st.divider()
-
-st.subheader("🛒 Вашата поръчка")
-
-if st.session_state.last_order_id is not None:
-
-    st.success(
-        f"✅ Поръчката е изпратена успешно!\n\n"
-        f"🧾 Номер на поръчката: {st.session_state.last_order_id}\n\n"
-        "👨‍🍳 Кухнята и сервитьорът вече виждат вашата поръчка.\n\n"
-        "🔔 Ако имате нужда от нещо допълнително, "
-        "използвайте бутона „Извикай сервитьор“ "
-        "или просто махнете с 👋."
+            <div
+                style="
+                    color: #C8C4B9;
+                    font-size: 14px;
+                    line-height: 1.45;
+                    margin-top: 8px;
+                "
+            >
+                {t["activities_description"]}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-    st.session_state.last_order_id = None
-
-elif not st.session_state.cart:
-
-    st.info("Няма избрани артикули.")
-
-else:
-
-    grouped = {}
-
-    for item in st.session_state.cart:
-
-        key = (
-            item["id"],
-            item.get("note", "")
+    if st.button(
+        f"🎿 {t['activities']}",
+        key="open_activities",
+        type="primary",
+        use_container_width=True
+    ):
+        open_hotel_page(
+            "pages/03_Activities.py",
+            "Дейности",
+            "Activities"
         )
 
-        if key not in grouped:
 
-            grouped[key] = {
-                "id": item["id"],
-                "name": item["name"],
-                "price": item["price"],
-                "note": item.get("note", ""),
-                "qty": 0
-            }
+# =========================================================
+# ИНФОРМАЦИЯ ЗА РЕЦЕПЦИЯТА
+# =========================================================
+st.markdown(
+    f"""
+    <div
+        style="
+            max-width: 820px;
+            margin: 36px auto 0 auto;
+            padding: 15px 20px;
+            border-top: 1px solid rgba(212,175,55,0.34);
+            border-bottom: 1px solid rgba(212,175,55,0.18);
+            color: #C8C4B9;
+            font-size: 14px;
+            text-align: center;
+            letter-spacing: 0.2px;
+        "
+    >
+        ☎️ {t["reception_help"]}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-        grouped[key]["qty"] += 1
 
-    total = 0
+# =========================================================
+# БРАНДИРАНЕ
+# =========================================================
+st.markdown(
+    """
+    <div
+        style="
+            position: fixed;
+            right: 18px;
+            bottom: 12px;
+            color: #D4AF37;
+            font-family: Arial, sans-serif;
+            text-align: right;
+            opacity: 0.78;
+            z-index: 999;
+            pointer-events: none;
+        "
+    >
+        <div
+            style="
+                font-size: 17px;
+                font-weight: 900;
+                line-height: 1;
+            "
+        >
+            HA
+        </div>
 
-    for data in grouped.values():
-
-        qty = data["qty"]
-
-        row_total = qty * data["price"]
-
-        c1, c2, c3, c4, c5 = st.columns(
-            [5, 1, 1, 1, 1]
-        )
-
-        with c1:
-
-            st.write(data["name"])
-
-            if data["note"]:
-
-                st.caption(
-                    f"📝 {data['note']}"
-                )
-
-        with c2:
-
-            if st.button(
-                "➖",
-                key=f"minus_{data['id']}_{data['note']}"
-            ):
-
-                remove_one_from_cart(
-                    data["id"],
-                    data["note"]
-                )
-
-                st.rerun()
-
-        with c3:
-
-            st.write(
-                f"x{qty}"
-            )
-
-        with c4:
-
-            if st.button(
-                "➕",
-                key=f"plus_{data['id']}_{data['note']}"
-            ):
-
-                add_to_cart(
-                    item_id=data["id"],
-                    item_name=data["name"],
-                    price=data["price"],
-                    note=data["note"]
-                )
-
-                st.rerun()
-
-        with c5:
-
-            st.write(
-                f"€ {row_total:.2f}"
-            )
-
-        total += row_total
-
-    st.success(
-        f"Общо: € {total:.2f}"
-    )
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-
-        if st.button(
-            "🗑️ Изчисти количката"
-        ):
-
-            st.session_state.cart = []
-
-            st.rerun()
-
-    with col2:
-
-        if st.button(
-            "✅ Изпрати поръчка"
-        ):
-
-            order_id = create_order(
-                table_number,
-                st.session_state.cart
-            )
-
-            st.session_state.cart = []
-            st.session_state.last_order_id = order_id
-
-            st.rerun()
-            st.markdown("""
-<div style="
-    position: fixed;
-    bottom: 12px;
-    right: 18px;
-    color: #D4AF37;
-    font-family: Arial, sans-serif;
-    text-align: right;
-    opacity: 0.75;
-    z-index: 999;
-">
-    <div style="
-        font-size: 18px;
-        font-weight: 800;
-        line-height: 1;
-    ">HA</div>
-
-    <div style="
-        font-size: 11px;
-        letter-spacing: 2px;
-        font-weight: 600;
-    ">HMITSEV</div>
-</div>
-""", unsafe_allow_html=True)
+        <div
+            style="
+                margin-top: 3px;
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: 2px;
+            "
+        >
+            HMITSEVAPPS
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
