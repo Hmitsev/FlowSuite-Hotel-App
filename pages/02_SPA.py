@@ -1,3 +1,5 @@
+
+import streamlit as st
 # =====================================
 # НАВИГАЦИЯ
 # =====================================
@@ -10,8 +12,6 @@ with nav_col1:
         use_container_width=True
     ):
         st.switch_page("app.py")
-import streamlit as st
-
 st.set_page_config(
     page_title="SPA",
     page_icon="💆",
