@@ -3,6 +3,8 @@ import base64
 from pathlib import Path
 
 import streamlit as st
+from database.queries import create_room_service_order
+
 # =====================================
 # НАСТРОЙКИ НА СТРАНИЦАТА
 # =====================================
@@ -10,6 +12,21 @@ st.set_page_config(
    page_icon="🍽️",
     layout="wide"
 )
+# =====================================
+# SESSION STATE
+# =====================================
+
+if "cart" not in st.session_state:
+    st.session_state.cart = []
+
+if "last_order_id" not in st.session_state:
+    st.session_state.last_order_id = None
+
+if "room_service_sent" not in st.session_state:
+    st.session_state.room_service_sent = False
+
+if "room_service_error" not in st.session_state:
+    st.session_state.room_service_error = None
 # =====================================
 # НАВИГАЦИЯ
 # =====================================
@@ -550,6 +567,9 @@ if st.session_state.last_order_id is not None:
     )
 
     st.session_state.last_order_id = None
+   if "room_service_error" not in st.session_state:
+    st.session_state.room_service_error = None
+
 
 elif not st.session_state.cart:
 
@@ -647,7 +667,7 @@ else:
     st.success(
         f"Общо: € {total:.2f}"
     )
-       # =====================================
+        # =====================================
     # ФИНАЛНИ БУТОНИ НА КОЛИЧКАТА
     # =====================================
 
@@ -666,25 +686,59 @@ else:
         if st.button(
             "✅ Изпрати поръчка",
             key="send_room_service_order",
+            type="primary",
             use_container_width=True
         ):
-            st.session_state.cart = []
-            st.session_state.room_service_sent = True
-            st.rerun()
+            try:
+                order_id = create_room_service_order(
+                    room_number=room_number,
+                    cart=st.session_state.cart
+                )
 
+                st.session_state.cart = []
+
+                st.session_state.last_order_id = (
+                    order_id
+                )
+
+                st.session_state.room_service_error = (
+                    None
+                )
+
+                st.rerun()
+
+            except Exception as error:
+                st.session_state.room_service_error = (
+                    str(error)
+                )
+
+                st.rerun()
 
 # =====================================
 # ПОТВЪРЖДЕНИЕ ЗА ИЗПРАТЕНА ПОРЪЧКА
 # =====================================
 
-if st.session_state.get("room_service_sent", False):
-    st.success(
-        f"✅ Room Service заявката за стая № {room_number} "
-        "е изпратена успешно.\n\n"
-        "Рецепцията ще се свърже с Вас при необходимост."
+if st.session_state.room_service_error:
+    st.error(
+        "Поръчката не беше изпратена.\n\n"
+        f"Причина: "
+        f"{st.session_state.room_service_error}"
     )
 
-    st.session_state.room_service_sent = False
+    st.session_state.room_service_error = None
+
+
+if st.session_state.last_order_id is not None:
+    st.success(
+        f"✅ Room Service поръчката е изпратена "
+        f"успешно!\n\n"
+        f"🧾 Номер на поръчката: "
+        f"{st.session_state.last_order_id}\n\n"
+        f"🛎️ Стая № {room_number}\n\n"
+        "Рецепцията вече вижда Вашата поръчка."
+    )
+
+    st.session_state.last_order_id = None
 
 
 # =====================================
