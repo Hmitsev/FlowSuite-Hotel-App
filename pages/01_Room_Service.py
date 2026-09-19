@@ -25,8 +25,6 @@ if "last_order_id" not in st.session_state:
 if "room_service_sent" not in st.session_state:
     st.session_state.room_service_sent = False
 
-if "room_service_error" not in st.session_state:
-    st.session_state.room_service_error = None
 # =====================================
 # НАВИГАЦИЯ
 # =====================================
@@ -555,40 +553,44 @@ st.divider()
 
 st.subheader("🛒 Вашата поръчка")
 
-if st.session_state.last_order_id is not None:
 
-    st.success(
-        f"✅ Поръчката е изпратена успешно!\n\n"
-        f"🧾 Номер на поръчката: {st.session_state.last_order_id}\n\n"
-        "👨‍🍳 Кухнята и сервитьорът вече виждат вашата поръчка.\n\n"
-        "🔔 Ако имате нужда от нещо допълнително, "
-        "използвайте бутона „Извикай сервитьор“ "
-        "или просто махнете с 👋."
+if st.session_state.room_service_error:
+    st.error(
+        "Поръчката не беше изпратена.\n\n"
+        f"Причина: {st.session_state.room_service_error}"
     )
 
-    st.session_state.last_order_id = None
-   if "room_service_error" not in st.session_state:
     st.session_state.room_service_error = None
 
 
-elif not st.session_state.cart:
+if st.session_state.last_order_id is not None:
+    st.success(
+        f"✅ Room Service поръчката е изпратена успешно!\n\n"
+        f"🧾 Номер на поръчката: "
+        f"{st.session_state.last_order_id}\n\n"
+        f"🛎️ Стая № {room_number}\n\n"
+        "Рецепцията вече вижда Вашата поръчка."
+    )
 
-    st.info("Няма избрани артикули.")
+    st.session_state.last_order_id = None
+
+
+if not st.session_state.cart:
+    st.info(
+        "Няма избрани артикули."
+    )
 
 else:
-
     grouped = {}
 
     for item in st.session_state.cart:
-
-        key = (
+        group_key = (
             item["id"],
             item.get("note", "")
         )
 
-        if key not in grouped:
-
-            grouped[key] = {
+        if group_key not in grouped:
+            grouped[group_key] = {
                 "id": item["id"],
                 "name": item["name"],
                 "price": item["price"],
@@ -596,14 +598,12 @@ else:
                 "qty": 0
             }
 
-        grouped[key]["qty"] += 1
+        grouped[group_key]["qty"] += 1
 
     total = 0
 
     for data in grouped.values():
-
         qty = data["qty"]
-
         row_total = qty * data["price"]
 
         c1, c2, c3, c4, c5 = st.columns(
@@ -611,22 +611,23 @@ else:
         )
 
         with c1:
-
-            st.write(data["name"])
+            st.write(
+                data["name"]
+            )
 
             if data["note"]:
-
                 st.caption(
                     f"📝 {data['note']}"
                 )
 
         with c2:
-
             if st.button(
                 "➖",
-                key=f"minus_{data['id']}_{data['note']}"
+                key=(
+                    f"minus_{data['id']}_"
+                    f"{data['note']}"
+                )
             ):
-
                 remove_one_from_cart(
                     data["id"],
                     data["note"]
@@ -635,18 +636,18 @@ else:
                 st.rerun()
 
         with c3:
-
             st.write(
                 f"x{qty}"
             )
 
         with c4:
-
             if st.button(
                 "➕",
-                key=f"plus_{data['id']}_{data['note']}"
+                key=(
+                    f"plus_{data['id']}_"
+                    f"{data['note']}"
+                )
             ):
-
                 add_to_cart(
                     item_id=data["id"],
                     item_name=data["name"],
@@ -657,7 +658,6 @@ else:
                 st.rerun()
 
         with c5:
-
             st.write(
                 f"€ {row_total:.2f}"
             )
@@ -667,13 +667,14 @@ else:
     st.success(
         f"Общо: € {total:.2f}"
     )
-        # =====================================
-    # ФИНАЛНИ БУТОНИ НА КОЛИЧКАТА
+
+    # =====================================
+    # ФИНАЛНИ БУТОНИ
     # =====================================
 
-    col1, col2 = st.columns(2)
+    clear_col, send_col = st.columns(2)
 
-    with col1:
+    with clear_col:
         if st.button(
             "🗑️ Изчисти количката",
             key="clear_room_service_cart",
@@ -682,7 +683,7 @@ else:
             st.session_state.cart = []
             st.rerun()
 
-    with col2:
+    with send_col:
         if st.button(
             "✅ Изпрати поръчка",
             key="send_room_service_order",
@@ -696,49 +697,17 @@ else:
                 )
 
                 st.session_state.cart = []
-
-                st.session_state.last_order_id = (
-                    order_id
-                )
-
-                st.session_state.room_service_error = (
-                    None
-                )
+                st.session_state.last_order_id = order_id
+                st.session_state.room_service_error = None
 
                 st.rerun()
 
             except Exception as error:
-                st.session_state.room_service_error = (
-                    str(error)
+                st.session_state.room_service_error = str(
+                    error
                 )
 
                 st.rerun()
-
-# =====================================
-# ПОТВЪРЖДЕНИЕ ЗА ИЗПРАТЕНА ПОРЪЧКА
-# =====================================
-
-if st.session_state.room_service_error:
-    st.error(
-        "Поръчката не беше изпратена.\n\n"
-        f"Причина: "
-        f"{st.session_state.room_service_error}"
-    )
-
-    st.session_state.room_service_error = None
-
-
-if st.session_state.last_order_id is not None:
-    st.success(
-        f"✅ Room Service поръчката е изпратена "
-        f"успешно!\n\n"
-        f"🧾 Номер на поръчката: "
-        f"{st.session_state.last_order_id}\n\n"
-        f"🛎️ Стая № {room_number}\n\n"
-        "Рецепцията вече вижда Вашата поръчка."
-    )
-
-    st.session_state.last_order_id = None
 
 
 # =====================================
