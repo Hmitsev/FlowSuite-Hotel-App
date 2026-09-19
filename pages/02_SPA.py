@@ -1,1 +1,55 @@
 
+import streamlit as st
+
+st.set_page_config(
+    page_title="SPA",
+    page_icon="💆",
+    layout="wide"
+)
+
+try:
+    st.image(
+        "assets/spa_banner.png",
+        use_container_width=True
+    )
+except:
+    pass
+
+st.title("💆 SPA & Wellness")
+
+st.markdown("---")
+
+st.subheader("💆 Relaxing Massage")
+
+st.write(
+    "Professional full body massage."
+)
+
+with st.popover("ℹ️ Информация и резервация"):
+
+    st.markdown("""
+### Резервация
+
+Моля напишете за кой ден и час желаете резервация.
+
+От рецепция ще се свържат с Вас.
+""")
+
+    reservation_text = st.text_area(
+        "Вашето съобщение",
+        placeholder="Желая масаж на 22.09.2026 от 16:00 часа."
+    )
+
+    if st.button(
+        "✅ Изпрати заявка",
+        key="massage_request"
+    ):
+        st.success(
+            "Заявката е изпратена успешно."
+        )
+
+st.markdown("---")
+
+st.caption(
+    "Hotel SPA Reservation Demo"
+)
