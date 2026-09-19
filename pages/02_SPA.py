@@ -48,7 +48,7 @@ with st.popover("ℹ️ Информация и резервация"):
 
     reservation_text = st.text_area(
         "Вашето съобщение",
-        placeholder="Желая масаж на 22.09.2026 от 16:00 часа."
+        placeholder="Пример: Желая масаж на 22.09.2026 от 16:00 часа."
     )
 
     if st.button(
