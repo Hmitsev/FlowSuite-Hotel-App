@@ -518,3 +518,36 @@ st.caption(
 # =========================================================
 
 st.caption("Powered by HMITSEVAPPS")
+
+# =====================================
+# СТАЯ ОТ QR КОДА
+# =====================================
+
+raw_room_number = st.query_params.get("room", "204")
+
+try:
+    room_number = int(raw_room_number)
+except (TypeError, ValueError):
+    room_number = 204
+
+if room_number < 1 or room_number > 9999:
+    st.error(
+        "Невалиден QR код за стая."
+    )
+    st.stop()
+
+st.success(
+    f"🛎️ Стая № {room_number}"
+)
+
+st.caption(
+    "Room Service Menu"
+)
+
+if st.button(
+    "☎️ Свържи се с рецепция",
+    use_container_width=True
+):
+    st.success(
+        "Заявката е изпратена до рецепция."
+    )
