@@ -105,8 +105,6 @@ with logout_col2:
 # ЗАГЛАВИЕ
 # =====================================
 
-st.title("🏨 Hotel Reception")
-
 st.caption(
     "Room Service • SPA • Activities"
 )
