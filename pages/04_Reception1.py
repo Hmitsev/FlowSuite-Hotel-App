@@ -262,11 +262,14 @@ def update_room_service_order_status(
 # ИЗБОР НА ИЗГЛЕД
 # =====================================
 
+ACTIVE_VIEW = " Активни Room Service поръчки"
+COMPLETED_VIEW = "📜 Приключени поръчки"
+
 view_mode = st.radio(
     "Изглед",
     [
-        " Активни Room Service поръчки",
-        "📜 Приключени поръчки"
+        ACTIVE_VIEW,
+        COMPLETED_VIEW
     ],
     horizontal=True,
     label_visibility="collapsed",
@@ -274,12 +277,13 @@ view_mode = st.radio(
 )
 
 
+
 # =====================================
 # ЗАРЕЖДАНЕ НА ДАННИТЕ
 # =====================================
 
 try:
-    if view_mode.startswith("🍽️"):
+    if view_mode == ACTIVE_VIEW:
         rows = get_room_service_orders()
     else:
         rows = get_completed_room_service_orders()
@@ -291,7 +295,6 @@ except Exception as error:
     )
 
     st.stop()
-
 
 # =====================================
 # ГРУПИРАНЕ ПО ПОРЪЧКА
@@ -441,7 +444,7 @@ else:
                         f"€ {item_total:.2f}"
                     )
 
-            if view_mode.startswith("🍽️"):
+            if view_mode == ACTIVE_VIEW:
                 status_col, action_col = st.columns(
                     [2, 3]
                 )
