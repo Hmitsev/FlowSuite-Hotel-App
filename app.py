@@ -396,50 +396,13 @@ if hotel_banner_path:
         use_container_width=True
     )
 
-        st.markdown(
-            f"# {t['welcome']}"
-        )
-        
-        st.markdown(
-            f"### 🛎️ {t['room']} № {room_number}"
-        )
-        margin-top:10px;
-        margin-bottom:20px;
-        background:rgba(15,23,42,0.85);
-        border:1px solid #D4AF37;
-        border-radius:16px;
-    ">
-        <div style="
-            color:#D4AF37;
-            font-size:16px;
-            font-weight:700;
-            letter-spacing:3px;
-        ">
-            FLOWSUITE HOTEL
-        </div>
-
-        <div style="
-            color:#FFFFFF;
-            font-size:34px;
-            font-weight:800;
-            margin-top:10px;
-        ">
-            {t["welcome"]}
-        </div>
-
-        <div style="
-            color:#F5D77B;
-            font-size:20px;
-            font-weight:700;
-            margin-top:12px;
-        ">
-            🛎️ {t["room"]} № {room_number}
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
+st.markdown(
+    f"# {t['welcome']}"
 )
 
+st.markdown(
+    f"### 🛎️ {t['room']} № {room_number}"
+)
 # =========================================================
 # ЗАГЛАВИЕ НА УСЛУГИТЕ
 # =========================================================
