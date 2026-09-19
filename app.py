@@ -403,6 +403,7 @@ st.markdown(
 st.markdown(
     f"### 🛎️ {t['room']} № {room_number}"
 )
+
 # =========================================================
 # ЗАГЛАВИЕ НА УСЛУГИТЕ
 # =========================================================
@@ -424,20 +425,23 @@ st.markdown(
 # =========================================================
 # КАРТИ НА УСЛУГИТЕ
 # =========================================================
+
 room_service_column, spa_column, activities_column = st.columns(
     3,
     gap="large"
 )
 
-
 # =========================================================
 # ROOM SERVICE
 # =========================================================
+
 with room_service_column:
 
     st.markdown("## 🍽️")
     st.subheader("Room Service")
-    st.caption("Поръчайте храна и напитки директно до Вашата стая.")
+    st.caption(
+        "Поръчайте храна и напитки директно до Вашата стая."
+    )
 
     if st.button(
         "🍽️ Room Service",
@@ -454,11 +458,14 @@ with room_service_column:
 # =========================================================
 # SPA
 # =========================================================
+
 with spa_column:
 
     st.markdown("## 💆")
     st.subheader("SPA")
-    st.caption("Изпратете заявка за масаж или SPA процедура.")
+    st.caption(
+        "Изпратете заявка за масаж или SPA процедура."
+    )
 
     if st.button(
         "💆 SPA",
@@ -471,14 +478,18 @@ with spa_column:
             "SPA",
             "SPA"
         )
+
 # =========================================================
 # ACTIVITIES
 # =========================================================
+
 with activities_column:
 
     st.markdown("## 🎿")
     st.subheader("Дейности")
-    st.caption("Разгледайте и резервирайте хотелски активности.")
+    st.caption(
+        "Разгледайте и резервирайте хотелски активности."
+    )
 
     if st.button(
         "🎿 Дейности",
@@ -495,42 +506,15 @@ with activities_column:
 # =========================================================
 # ИНФОРМАЦИЯ ЗА РЕЦЕПЦИЯТА
 # =========================================================
-st.markdown(
-    f"""
-    <div
-        style="
-            max-width: 820px;
-            margin: 36px auto 0 auto;
-            padding: 15px 20px;
-            border-top: 1px solid rgba(212,175,55,0.34);
-            border-bottom: 1px solid rgba(212,175,55,0.18);
-            color: #C8C4B9;
-            font-size: 14px;
-            text-align: center;
-            letter-spacing: 0.2px;
-        "
-    >
-        ☎️ {t["reception_help"]}
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
+st.divider()
+
+st.caption(
+    f"☎️ {t['reception_help']}"
+)
 
 # =========================================================
 # БРАНДИРАНЕ
 # =========================================================
-st.markdown(
-    """
-    <div style="
-        text-align:center;
-        color:#D4AF37;
-        margin-top:30px;
-        opacity:0.7;
-        font-size:12px;
-    ">
-        Powered by HMITSEVAPPS
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+
+st.caption("Powered by HMITSEVAPPS")
