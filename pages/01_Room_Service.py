@@ -372,39 +372,23 @@ main_section_grams = category_grams.get(
     ""
 )
 
-if main_section_grams:
+demo_items = {
+    "Breakfast": [
+        (1, "English Breakfast", 18, "Fresh breakfast")
+    ],
 
-    st.markdown(
-        f"""
-        <div style="
-            color:#CFCFCF;
-            font-size:16px;
-            font-weight:600;
-            margin-top:4px;
-            margin-bottom:10px;
-        ">
-            ⚖️ {main_section_grams}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-    demo_items = {
-        "Breakfast": [
-            (1, "English Breakfast", 18, "Fresh breakfast")
-        ],
-    
-        "Main Course": [
-            (2, "Club Sandwich", 24, "Served with fries")
-        ],
-    
-        "Desserts": [
-            (3, "Chocolate Soufflé", 12, "Homemade dessert")
-        ],
-    
-        "Drinks": [
-            (4, "Mineral Water", 4, "330ml")
-        ]
-    }
+    "Main Course": [
+        (2, "Club Sandwich", 24, "Served with fries")
+    ],
+
+    "Desserts": [
+        (3, "Chocolate Soufflé", 12, "Homemade dessert")
+    ],
+
+    "Drinks": [
+        (4, "Mineral Water", 4, "330ml")
+    ]
+}
 
 items = demo_items.get(
     selected_category,
