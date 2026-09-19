@@ -25,6 +25,9 @@ if "last_order_id" not in st.session_state:
 if "room_service_sent" not in st.session_state:
     st.session_state.room_service_sent = False
 
+if "room_service_error" not in st.session_state:
+    st.session_state.room_service_error = None
+
 # =====================================
 # НАВИГАЦИЯ
 # =====================================
