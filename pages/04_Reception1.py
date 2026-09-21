@@ -543,6 +543,36 @@ try:
 
 except Exception:
     new_room_service_count = 0
+    # =====================================
+# ОБЩА КАМБАНКА ЗА НОВИ ЗАЯВКИ
+# =====================================
+
+total_new_notifications = (
+    int(new_room_service_count or 0)
+    + int(new_activity_count or 0)
+)
+
+if total_new_notifications > 0:
+    notification_bell_placeholder.markdown(
+        f"""
+        <div class="notification-bell-wrapper">
+            <div
+                class="notification-bell"
+                title="Има нови хотелски заявки"
+            >
+                🔔
+
+                <div class="notification-count">
+                    {total_new_notifications}
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+else:
+    notification_bell_placeholder.empty()
 # =====================================
 # ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
 # =====================================
