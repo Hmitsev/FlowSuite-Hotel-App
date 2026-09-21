@@ -1435,77 +1435,7 @@ else:
                                     "\n\n"
                                     f"Причина: {error}"
                                 )
-            # =====================================
-            # ROOM SERVICE СТАТУС
-            # =====================================
-
-            if view_mode == ACTIVE_VIEW:
-
-                room_service_statuses = [
-                    "NEW",
-                    "PREPARING",
-                    "READY",
-                    "DELIVERING",
-                    "COMPLETED"
-                ]
-
-                with st.form(
-                    key=f"room_service_status_form_{order_id}",
-                    clear_on_submit=False
-                ):
-
-                    status_col, action_col = st.columns(
-                        [2, 3]
-                    )
-
-                    with status_col:
-
-                        selected_status = st.selectbox(
-                            "Статус",
-                            room_service_statuses,
-                            index=(
-                                room_service_statuses.index(
-                                    order_status
-                                )
-                                if order_status
-                                in room_service_statuses
-                                else 0
-                            ),
-                            key=(
-                                f"room_service_status_"
-                                f"{order_id}"
-                            )
-                        )
-
-                    with action_col:
-
-                        save_status = (
-                            st.form_submit_button(
-                                "💾 Запази статуса",
-                                type="primary",
-                                use_container_width=True
-                            )
-                        )
-
-                    if save_status:
-
-                        try:
-
-                            update_room_service_order_status(
-                                order_id=order_id,
-                                new_status=selected_status
-                            )
-
-                            st.rerun()
-
-                        except Exception as error:
-
-                            st.error(
-                                "Статусът не беше обновен."
-                                "\n\n"
-                                f"Причина: {error}"
-                            )
-
+        
 # =====================================
 # ОБНОВЯВАНЕ
 # =====================================
