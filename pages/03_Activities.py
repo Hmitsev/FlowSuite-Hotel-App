@@ -376,6 +376,7 @@ with language_col:
 # =====================================
 
 ACTIVITIES_BANNER_CANDIDATES = [
+    "ChatGPT Image 19.09.2026 г., 16_12_00.png",
     "activities_banner.png",
     "activities_banner.jpg",
     "activities_banner.jpeg",
