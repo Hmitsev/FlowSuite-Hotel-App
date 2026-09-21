@@ -38,90 +38,6 @@ if "activity_request_id" not in st.session_state:
 if "activity_request_error" not in st.session_state:
     st.session_state.activity_request_error = None
 
-# =====================================
-# ПРЕВОДИ
-# =====================================
-
-TRANSLATIONS = {
-    "bg": {
-        "back": "⬅ Назад",
-        "room": "Стая",
-        "activity_name": "Наем на ски оборудване",
-        "activity_description": (
-            "Резервирайте ски оборудване директно чрез хотела."
-        ),
-        "info_button": "ℹ️ Информация и резервация",
-        "reservation_title": "Заявка за резервация",
-        "reservation_instruction": (
-            "Моля, напишете за кой ден желаете резервация "
-            "и добавете необходимата информация."
-        ),
-        "example_label": "Примерен коментар:",
-        "example": (
-            "Желая за 22.09.2026 г. да резервирам "
-            "ски оборудване."
-        ),
-        "reception_message": (
-            "От рецепцията ще се свържат с Вас за "
-            "уточняване и потвърждение на резервацията."
-        ),
-        "message_label": "Вашето съобщение",
-        "message_placeholder": (
-            "Желая за 22.09.2026 г. да резервирам "
-            "ски оборудване."
-        ),
-        "send_button": "✅ Изпрати заявка",
-        "empty_message": (
-            "Моля, напишете съобщение преди изпращане."
-        ),
-        "success": (
-            "Заявката е изпратена успешно до рецепцията."
-        ),
-        "request_number": "Номер на заявката",
-        "error": "Заявката не беше изпратена.",
-        "footer": "Powered by HMITSEVAPPS",
-    },
-    "en": {
-        "back": "⬅ Back",
-        "room": "Room",
-        "activity_name": "Ski Equipment Rental",
-        "activity_description": (
-            "Reserve ski equipment directly through the hotel."
-        ),
-        "info_button": "ℹ️ Information & Reservation",
-        "reservation_title": "Reservation Request",
-        "reservation_instruction": (
-            "Please enter your preferred date and add the "
-            "necessary information for the reservation."
-        ),
-        "example_label": "Example message:",
-        "example": (
-            "I would like to reserve ski equipment for "
-            "22 September 2026."
-        ),
-        "reception_message": (
-            "Reception will contact you to confirm the details "
-            "of your reservation."
-        ),
-        "message_label": "Your message",
-        "message_placeholder": (
-            "I would like to reserve ski equipment for "
-            "22 September 2026."
-        ),
-        "send_button": "✅ Send request",
-        "empty_message": (
-            "Please enter a message before sending the request."
-        ),
-        "success": (
-            "Your request has been sent successfully to reception."
-        ),
-        "request_number": "Request number",
-        "error": "The request was not sent.",
-        "footer": "Powered by HMITSEVAPPS",
-    },
-}
-
-t = TRANSLATIONS[st.session_state.activities_lang]
 
 
 # =====================================
@@ -246,12 +162,10 @@ except (TypeError, ValueError):
     room_number = 204
 
 if room_number < 1 or room_number > 9999:
-    st.error(
-        "Невалиден номер на стая."
-        if st.session_state.activities_lang == "bg"
-        else "Invalid room number."
-    )
+    st.error(t["invalid_room"])
     st.stop()
+
+st.session_state.room_number = room_number
 
 
 # =====================================
