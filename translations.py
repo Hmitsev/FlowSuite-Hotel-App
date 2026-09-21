@@ -169,12 +169,48 @@ TRANSLATIONS = {
             "and confirm the reservation."
         ),
 
-        # Room Service
+                # Room Service
         "room_service_menu": "Room Service Menu",
         "breakfast": "Breakfast",
         "main_courses": "Main Courses",
         "desserts": "Desserts",
         "beverages": "Beverages",
+
+        # Demo items
+        "english_breakfast": "English Breakfast",
+        "english_breakfast_description": (
+            "Freshly prepared breakfast"
+        ),
+        "club_sandwich": "Club Sandwich",
+        "club_sandwich_description": (
+            "Served with fries"
+        ),
+        "chocolate_souffle": "Chocolate Soufflé",
+        "chocolate_souffle_description": (
+            "Homemade dessert"
+        ),
+        "mineral_water": "Mineral Water",
+        "mineral_water_description": "330 ml",
+
+        # Items and comments
+        "no_items": (
+            "There are no available items in this section yet."
+        ),
+        "image_unavailable": (
+            "The image is temporarily unavailable."
+        ),
+        "alcohol_price_note": (
+            "🥃 The listed price is for 50 ml."
+        ),
+        "no_description": "No description is available.",
+        "comment": "Comment",
+        "kitchen_comment": "Kitchen comment",
+        "comment_placeholder": "Write a comment",
+        "save_comment": "Save comment",
+        "comment_saved": "The comment has been saved.",
+        "added": "Added",
+
+        # Cart
         "add": "Add",
         "remove": "Remove",
         "cart": "Your order",
@@ -182,14 +218,24 @@ TRANSLATIONS = {
         "total": "Total",
         "notes": "Note",
         "order_notes": "Order notes",
+        "clear_cart": "🗑️ Clear cart",
         "send_order": "✅ Send order",
         "empty_cart": "Your order is empty.",
+        "no_selected_items": "No items have been selected.",
+
+        # Order result
         "order_success": (
             "Your order has been successfully sent to reception."
         ),
         "order_not_sent": "The order was not sent.",
-    },
-}
+        "order_number": "Order number",
+        "reception_sees_order": (
+            "Reception can now see your order."
+        ),
+        "room_service_banner_missing": (
+            "The Room Service banner was not found. "
+            "Please check the image name in the assets folder."
+        ),
 
 
 def get_language():
