@@ -292,7 +292,7 @@ with language_column:
     language_button_text = (
         "🇧🇬 BG"
         if st.session_state.lang == "bg"
-        else "🇬🇧 EN""
+        else "🇬🇧 EN"
     )
 
     if st.button(
@@ -306,6 +306,7 @@ with language_column:
             st.session_state.lang = "bg"
 
         st.rerun()
+        st.success(f"Текущ език: {st.session_state.lang}")
 
 
 # =========================================================
