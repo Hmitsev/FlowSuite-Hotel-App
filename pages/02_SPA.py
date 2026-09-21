@@ -86,15 +86,38 @@ with st.container(border=True):
             )
 
             if st.button(
-                "✅ Изпрати заявка",
-                key="massage_request",
-                type="primary",
-                use_container_width=True
-            ):
+    "✅ Изпрати заявка",
+    key="massage_request",
+    type="primary",
+    use_container_width=True
+):
 
-                st.success(
-                    "Заявката е изпратена успешно."
-                )
+    if not reservation_text.strip():
+
+        st.warning(
+            "Моля, въведете съобщение."
+        )
+
+    else:
+
+        try:
+
+            request_id = create_activity_request(
+                room_number=room_number,
+                activity_name="SPA Massage",
+                guest_message=reservation_text
+            )
+
+            st.session_state.activity_request_id = request_id
+            st.session_state.activity_request_error = None
+
+            st.rerun()
+
+        except Exception as error:
+
+            st.session_state.activity_request_error = str(error)
+
+            st.rerun()
 
 # =====================================
 # БРАНДИРАНЕ
