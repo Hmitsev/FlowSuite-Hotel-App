@@ -708,16 +708,6 @@ if total_new_notifications > 0:
 else:
 
     notification_bell_placeholder.empty()
-        """
-        <div class="notification-bell-wrapper">
-            <div class="notification-bell">
-                🔔
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
 
 # =====================================
 # ПОСТОЯННИ ИМЕНА НА ИЗГЛЕДИТЕ
