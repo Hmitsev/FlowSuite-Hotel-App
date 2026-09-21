@@ -447,8 +447,7 @@ if new_activity_count > 0:
         )
 
     ACTIVITIES_VIEW = (
-        "🔴 🎿 Activities заявки "
-        f"({activity_count_text} • {room_text})"
+        f"🔴 {new_activity_count} | 🎿 Activities заявки"
     )
 
 else:
