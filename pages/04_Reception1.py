@@ -1390,11 +1390,6 @@ if view_mode == SPA_VIEW:
                                     duration_minutes=duration_minutes
                                 )
                         
-                                # Запази къде се намираме
-                                st.session_state.reception_view_mode = SPA_VIEW
-                                st.session_state.spa_subview = "📋 Активни заявки"
-                        
-                                st.rerun()
                         
                             except Exception as error:
                                 st.error(
