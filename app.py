@@ -416,7 +416,8 @@ with activities_column:
 # =========================================================
 # ЕЗИК
 # =========================================================
-
+st.markdown("<div style='height:80px'></div>", unsafe_allow_html=True)
+`
 bottom_left, bottom_right = st.columns([1, 8])
 
 with bottom_left:
