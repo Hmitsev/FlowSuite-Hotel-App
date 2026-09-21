@@ -865,10 +865,17 @@ else:
 # ПОСТОЯННИ ИМЕНА НА ИЗГЛЕДИТЕ
 # =====================================
 
-ACTIVE_VIEW = "🔔 Room Service"
-ACTIVITIES_VIEW = "🎿 Activities"
-SPA_VIEW = "💆 SPA"
-COMPLETED_VIEW = "📜 Приключени"
+ACTIVE_VIEW = (
+    f"🍽️ Room Service ({new_room_service_count})"
+)
+
+ACTIVITIES_VIEW = (
+    f"🎿 Activities ({new_activity_count})"
+)
+
+SPA_VIEW = (
+    f"💆 SPA ({new_spa_count})"
+)
 
 
 # =====================================
