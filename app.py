@@ -332,7 +332,7 @@ with room_service_column:
     )
 
     if st.button(
-        f"🍽️ {t['room_service']}",
+        f"🛎️ {t['room_service']}",
         key="room_service_btn",
         type="primary",
         use_container_width=True
@@ -365,7 +365,7 @@ with spa_column:
     )
 
     if st.button(
-        f"💆 {t['spa']}",
+        f"✧ {t['spa']}",
         key="spa_btn",
         type="primary",
         use_container_width=True
@@ -398,7 +398,7 @@ with activities_column:
     )
 
     if st.button(
-        f"🎿 {t['activities']}",
+        f"✧ {t['activities']}",
         key="activities_btn",
         type="primary",
         use_container_width=True
