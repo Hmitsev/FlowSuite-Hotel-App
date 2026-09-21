@@ -648,7 +648,7 @@ if view_mode == ACTIVITIES_VIEW:
             font-weight:900;
             margin-bottom:15px;
         ">
-            🎿 ACTIVITIES ЗАЯВКИ
+            ACTIVITIES ЗАЯВКИ
         </div>
         """,
         unsafe_allow_html=True
