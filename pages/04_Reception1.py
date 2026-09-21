@@ -500,15 +500,17 @@ def update_activity_request_status(
 # =====================================
 
 def get_new_room_service_notifications():
+
     conn = get_connection()
     cur = conn.cursor()
 
     try:
+
         cur.execute(
             """
             SELECT COUNT(*)
             FROM room_service_orders
-            WHERE order_status = 'NEW'
+            WHERE order_status <> 'COMPLETED'
             """
         )
 
