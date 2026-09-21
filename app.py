@@ -223,7 +223,7 @@ footer {{
 ===================================================== */
 .block-container {{
     max-width: 1450px;
-    padding-top: 1.2rem;
+    padding-top: 0.4rem;
     padding-bottom: 4rem;
     padding-left: 2rem;
     padding-right: 2rem;
@@ -254,8 +254,8 @@ div[data-testid="stButton"] button {{
 /* =====================================================
    ОСНОВНИ БУТОНИ
 ===================================================== */
-div[data-testid="stButton"] button[kind="primary"] {{
-    min-height: 66px;
+div[data-testid="stButton"] button[kind="primary"] {
+    min-height: 48px;
     width: 100%;
     background:
         linear-gradient(
@@ -264,10 +264,18 @@ div[data-testid="stButton"] button[kind="primary"] {{
             #D4AF37 48%,
             #F5D77B 100%
         ) !important;
+
     border: 1px solid #F5D77B !important;
-    border-radius: 16px !important;
+    border-radius: 12px !important;
+
     color: #101010 !important;
-    font-size: 19px !important;
+
+    font-size: 15px !important;
+    font-weight: 800 !important;
+
+    box-shadow:
+        0 6px 16px rgba(212,175,55,0.18);
+}
     font-weight: 800 !important;
     letter-spacing: 0.4px !important;
     box-shadow:
@@ -293,7 +301,7 @@ div[data-testid="stButton"] button[kind="primary"] p {{
    ВТОРИЧНИ БУТОНИ
 ===================================================== */
 div[data-testid="stButton"] button[kind="secondary"] {{
-    min-height: 42px;
+    min-height: 43px;
     background: rgba(8, 12, 18, 0.86) !important;
     border: 1px solid rgba(212, 175, 55, 0.72) !important;
     color: #F5D77B !important;
@@ -313,7 +321,7 @@ div[data-testid="stButton"] button[kind="secondary"]:hover {{
 @media only screen and (max-width: 768px) {{
 
     .block-container {{
-        padding-top: 0.8rem;
+        padding-top: 0.2rem;
         padding-left: 0.8rem;
         padding-right: 0.8rem;
         padding-bottom: 4rem;
@@ -329,7 +337,7 @@ div[data-testid="stButton"] button[kind="secondary"]:hover {{
     }}
 
     .hotel-hero-title {{
-        font-size: 28px !important;
+        font-size: 12px !important;
     }}
 
     .hotel-hero-room {{
@@ -345,8 +353,8 @@ div[data-testid="stButton"] button[kind="secondary"]:hover {{
     }}
 
     div[data-testid="stButton"] button[kind="primary"] {{
-        min-height: 58px;
-        font-size: 17px !important;
+        min-height: 42px;
+        font-size: 14px !important;
     }}
 }}
 
@@ -404,14 +412,16 @@ st.markdown(
 
 st.markdown(
     f"""
-    <h2 style="
+    <h3 style="
         text-align:center;
         color:#F5E6C8;
-        margin-top:20px;
-        margin-bottom:30px;
+        margin-top:10px;
+        margin-bottom:15px;
+        font-size:24px;
+        font-weight:700;
     ">
         {t["hotel_services"]}
-    </h2>
+    </h3>
     """,
     unsafe_allow_html=True
 )
