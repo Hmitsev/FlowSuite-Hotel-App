@@ -402,7 +402,7 @@ if activities_banner_path:
 
 
 # =====================================
-# ЗАГЛАВИЕ И СТАЯ
+# ЗАГЛАВИЕ
 # =====================================
 
 st.markdown(
@@ -419,20 +419,6 @@ st.markdown(
             letter-spacing:1px;
         ">
             🎿 {t["title"]}
-        </div>
-
-        <div style="
-            display:inline-block;
-            margin-top:16px;
-            padding:9px 20px;
-            color:#F5D77B;
-            background:rgba(7,11,18,0.91);
-            border:1px solid rgba(212,175,55,0.68);
-            border-radius:999px;
-            font-size:19px;
-            font-weight:800;
-        ">
-            🛎️ {t["room"]} № {room_number}
         </div>
     </div>
     """,
