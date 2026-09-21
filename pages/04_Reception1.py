@@ -585,13 +585,12 @@ total_new_notifications = (
 
 if total_new_notifications > 0:
    notification_bell_placeholder.markdown(
-    """
-    <div style="
-        text-align:right;
-        font-size:52px;
-        animation: bellShake 0.85s ease-in-out infinite;
-    ">
+    f"""
+    <div class="notification-bell-box">
         🔔
+        <span class="notification-bell-count">
+            {total_new_notifications}
+        </span>
     </div>
     """,
     unsafe_allow_html=True
