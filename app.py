@@ -111,7 +111,6 @@ T = {
     "en": {
         "hotel_services": "Hotel Services",
         "welcome": "Welcome",
-        "room": "Room",
         "room_service": "Room Service",
         "room_service_description": (
             "Order food and drinks directly to your room."
