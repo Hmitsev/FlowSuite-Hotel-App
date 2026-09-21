@@ -473,17 +473,18 @@ view_mode = st.radio(
 # =====================================
 
 if view_mode == ACTIVITIES_VIEW:
-
     try:
         activity_rows = get_activity_requests()
 
     except Exception as error:
         st.error(
-            "Activities заявките не могат да бъдат "
-            "заредени.\n\n"
+            "Activities заявките не могат "
+            "да бъдат заредени.\n\n"
             f"Причина: {error}"
         )
         st.stop()
+
+    # Останалата Activities логика продължава тук
 
     st.markdown("## 🎿 Activities заявки")
 
