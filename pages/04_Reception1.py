@@ -428,6 +428,11 @@ try:
 except Exception:
     new_room_service_count = 0
 
+
+# =====================================
+# ROOM SERVICE НАДПИС
+# =====================================
+
 if new_room_service_count > 0:
     ACTIVE_VIEW = (
         f"🔴 {new_room_service_count} | 🍽️ Активни Room Service поръчки"
@@ -436,6 +441,11 @@ else:
     ACTIVE_VIEW = (
         "🍽️ Активни Room Service поръчки"
     )
+
+
+# =====================================
+# ПРИКЛЮЧЕНИ ПОРЪЧКИ
+# =====================================
 
 COMPLETED_VIEW = (
     "📜 Приключени поръчки"
