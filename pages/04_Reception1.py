@@ -186,6 +186,7 @@ with title_center_col:
     )
 
 with bell_col:
+
     notification_bell_placeholder = st.empty()
 
     if total_new_notifications > 0:
@@ -571,19 +572,6 @@ total_new_notifications = (
 total_new_notifications = (
     int(new_room_service_count or 0)
     + int(new_activity_count or 0)
-)
-
-if total_new_notifications > 0:
-   notification_bell_placeholder.markdown(
-    f"""
-    <div class="notification-bell-box">
-        🔔
-        <span class="notification-bell-count">
-            {total_new_notifications}
-        </span>
-    </div>
-    """,
-    unsafe_allow_html=True
 )
 
 
