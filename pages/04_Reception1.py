@@ -1108,24 +1108,7 @@ if view_mode == ACTIVITIES_VIEW:
                                 f"Причина: {error}"
                             )
 
-    # =====================================
-    # ОБНОВЯВАНЕ НА ACTIVITIES
-    # =====================================
 
-    st.divider()
-
-    if st.button(
-        "🔄 Обнови Activities заявките",
-        key="refresh_activity_requests",
-        use_container_width=True
-    ):
-        st.rerun()
-
-    st.caption(
-        "Powered by HMITSEVAPPS"
-    )
-
-    st.stop()
 # =====================================
 # SPA ИЗГЛЕД
 # =====================================
