@@ -640,41 +640,41 @@ if view_mode == ACTIVITIES_VIEW:
 
     # Останалата Activities логика продължава тук
 
-st.markdown(
-    """
-    <div style="
-        color:#D4AF37;
-        font-size:28px;
-        font-weight:900;
-        margin-bottom:15px;
-    ">
-        🎿 ACTIVITIES ЗАЯВКИ
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-activity_col1, activity_col2 = st.columns(2)
-
-with activity_col1:
-    st.metric(
-        "Активни заявки",
-        len(activity_rows)
+    st.markdown(
+        """
+        <div style="
+            color:#D4AF37;
+            font-size:28px;
+            font-weight:900;
+            margin-bottom:15px;
+        ">
+            🎿 ACTIVITIES ЗАЯВКИ
+        </div>
+        """,
+        unsafe_allow_html=True
     )
-
-with activity_col2:
-    new_activity_count = sum(
-        1
-        for row in activity_rows
-        if row[4] == "NEW"
-    )
-
-    st.metric(
-        "Нови заявки",
-        new_activity_count
-    )
-
-st.divider()
+    
+    activity_col1, activity_col2 = st.columns(2)
+    
+    with activity_col1:
+        st.metric(
+            "Активни заявки",
+            len(activity_rows)
+        )
+    
+    with activity_col2:
+        new_activity_count = sum(
+            1
+            for row in activity_rows
+            if row[4] == "NEW"
+        )
+    
+        st.metric(
+            "Нови заявки",
+            new_activity_count
+        )
+    
+    st.divider()
 
     if not activity_rows:
         st.success(
