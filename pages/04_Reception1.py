@@ -4,6 +4,7 @@ import streamlit as st
 from database.db import get_connection
 from streamlit_autorefresh import st_autorefresh
 
+
 # =====================================
 # НАСТРОЙКИ
 # =====================================
@@ -16,14 +17,6 @@ st.set_page_config(
 
 
 # =====================================
-# БАНЕР НА РЕЦЕПЦИЯТА
-# =====================================
-
-st.image(
-    "assets/Screenshot 2026-09-09 025744.png",
-    use_container_width=True
-)
-# =====================================
 # ДОСТЪП ДО РЕЦЕПЦИЯ
 # =====================================
 
@@ -34,6 +27,11 @@ if "reception_auth" not in st.session_state:
 
 
 if not st.session_state.reception_auth:
+    st.image(
+        "assets/Screenshot 2026-09-09 025744.png",
+        use_container_width=True
+    )
+
     st.title("🛎️ Reception")
 
     password = st.text_input(
@@ -54,14 +52,29 @@ if not st.session_state.reception_auth:
             st.error("Невалидна парола.")
 
     st.stop()
+
+
 # =====================================
-# AUTO REFRESH
+# AUTO REFRESH САМО СЛЕД ВХОД
 # =====================================
 
 st_autorefresh(
-    interval=2000,  # 2 секунди
-    key="reception_refresh"
+    interval=10000,
+    limit=None,
+    key="reception_auto_refresh"
 )
+
+
+# =====================================
+# БАНЕР НА РЕЦЕПЦИЯТА
+# =====================================
+
+st.image(
+    "assets/Screenshot 2026-09-09 025744.png",
+    use_container_width=True
+)
+
+
 # =====================================
 # ИЗХОД
 # =====================================
@@ -168,8 +181,12 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-title_left_col, title_center_col, bell_col = st.columns(
-    [1.3, 5, 1.3],
+# =====================================
+# МЯСТО ЗА КАМБАНКАТА
+# =====================================
+
+bell_space, bell_col = st.columns(
+    [7, 1],
     vertical_alignment="center"
 )
 
@@ -640,8 +657,8 @@ except Exception:
 
 
 try:
-    new_room_service_count = (
-        get_new_room_service_notifications()
+    new_room_service_count = int(
+        get_new_room_service_notifications() or 0
     )
 
 except Exception:
@@ -649,8 +666,8 @@ except Exception:
 
 
 try:
-    new_spa_count = (
-        get_new_spa_request_count()
+    new_spa_count = int(
+        get_new_spa_request_count() or 0
     )
 
 except Exception:
@@ -662,97 +679,108 @@ except Exception:
 # =====================================
 
 total_new_notifications = (
-    int(new_room_service_count or 0)
+    new_room_service_count
     + int(new_activity_count or 0)
-    + int(new_spa_count or 0)
+    + new_spa_count
 )
 
 
 # =====================================
-# ПОКАЗВАНЕ НА ОБЩАТА КАМБАНКА
+# АНИМИРАНА КАМБАНКА С БРОЙ
 # =====================================
 
 if total_new_notifications > 0:
     notification_bell_placeholder.markdown(
-        f'<div class="notification-bell-wrapper">'
-        f'<div class="notification-bell">'
-        f'🔔'
-        f'<span class="notification-count">'
-        f'{total_new_notifications}'
-        f'</span>'
-        f'</div>'
-        f'</div>',
+        f"""
+        <div class="notification-bell-wrapper">
+            <div class="notification-bell">
+                🔔
+                <span class="notification-count">
+                    {total_new_notifications}
+                </span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    notification_bell_placeholder.markdown(
+        """
+        <div class="notification-bell-wrapper">
+            <div style="
+                font-size:42px;
+                line-height:1;
+                opacity:0.45;
+            ">
+                🔔
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-else:
-    notification_bell_placeholder.empty()
 
 # =====================================
-# ROOM SERVICE НАДПИС
+# ПОСТОЯННИ ИМЕНА НА ИЗГЛЕДИТЕ
 # =====================================
 
-if new_room_service_count > 0:
-    ACTIVE_VIEW = (
-        f"🔔 Room Service ({new_room_service_count})"
-    )
-else:
-    ACTIVE_VIEW = (
-        "🔔 Room Service"
-    )
-# =====================================
-# ACTIVITIES НАДПИС
-# =====================================
-
-if new_activity_count > 0:
-    ACTIVITIES_VIEW = (
-        f"🔴 {new_activity_count} | "
-        "Activities заявки"
-    )
-
-else:
-    ACTIVITIES_VIEW = (
-        "Activities заявки"
-    )
+ACTIVE_VIEW = "🔔 Room Service"
+ACTIVITIES_VIEW = "🎿 Activities"
+SPA_VIEW = "🪷 SPA"
+COMPLETED_VIEW = "📜 Приключени"
 
 
 # =====================================
-# ПРИКЛЮЧЕНИ ПОРЪЧКИ
+# ЗАПАЗВАНЕ НА ИЗБРАНИЯ ИЗГЛЕД
 # =====================================
 
-COMPLETED_VIEW = (
-    "📜 Приключени поръчки"
-)
+view_options = [
+    ACTIVE_VIEW,
+    ACTIVITIES_VIEW,
+    SPA_VIEW,
+    COMPLETED_VIEW
+]
 
-# =====================================
-# SPA НАДПИС
-# =====================================
+if "reception_view_mode" not in st.session_state:
+    st.session_state.reception_view_mode = ACTIVE_VIEW
 
-if new_spa_count > 0:
-    SPA_VIEW = (
-        f"🔴 {new_spa_count} | 💆 SPA заявки"
-    )
-else:
-    SPA_VIEW = (
-        "💆 SPA заявки"
-    )
+if st.session_state.reception_view_mode not in view_options:
+    st.session_state.reception_view_mode = ACTIVE_VIEW
+
+
 # =====================================
 # ИЗБОР НА ИЗГЛЕД
 # =====================================
 
 view_mode = st.radio(
     "Изглед",
-    [
-        ACTIVE_VIEW,
-        ACTIVITIES_VIEW,
-        SPA_VIEW,
-        COMPLETED_VIEW
-    ],
+    view_options,
     horizontal=True,
     label_visibility="collapsed",
-    key="reception_view_mode",
-    
+    key="reception_view_mode"
 )
+
+
+# =====================================
+# БРОЙ НОВИ ЗАЯВКИ ПОД НАВИГАЦИЯТА
+# =====================================
+
+notice_col1, notice_col2, notice_col3 = st.columns(3)
+
+with notice_col1:
+    st.caption(
+        f"🔔 Нови Room Service: {new_room_service_count}"
+    )
+
+with notice_col2:
+    st.caption(
+        f"🎿 Нови Activities: {int(new_activity_count or 0)}"
+    )
+
+with notice_col3:
+    st.caption(
+        f"🪷 Нови SPA: {new_spa_count}"
+    )
 
 # =====================================
 # ACTIVITIES ИЗГЛЕД
