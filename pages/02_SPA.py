@@ -106,7 +106,7 @@ def create_spa_request(
 
 st.set_page_config(
     page_title="SPA",
-    page_icon" 🧘🏻‍♀️ ",
+    page_icon="🧘🏻‍♀️",
     layout="wide"
 )
 if "lang" not in st.session_state:
