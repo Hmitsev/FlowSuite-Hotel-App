@@ -91,7 +91,6 @@ T = {
         "room_service": "Room Service",
         "room_service_description": "Food and drinks",
         "spa": "SPA",
-        "spa_description": "Massages and treatments",
         "activities": "Activities",
         "activities_description": "Sports and activities",
         "invalid_room": "Invalid room number.",
