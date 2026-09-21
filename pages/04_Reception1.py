@@ -695,12 +695,11 @@ else:
 
 if new_room_service_count > 0:
     ACTIVE_VIEW = (
-        f"🔴 {new_room_service_count} | "
-       🔔 Активни Room Service поръчк
+        f"🔔 Room Service ({new_room_service_count})"
     )
 else:
     ACTIVE_VIEW = (
-        "🍽️ Активни Room Service поръчки"
+        "🔔 Room Service"
     )
 # =====================================
 # ACTIVITIES НАДПИС
