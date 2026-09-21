@@ -171,7 +171,6 @@ with st.container(border=True):
 
     with activity_col:
 
-        st.subheader(
            st.subheader(
                 f"💆 {t['relaxing_massage']}"
             )
