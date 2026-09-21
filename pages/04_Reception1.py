@@ -962,79 +962,7 @@ if view_mode == ACTIVITIES_VIEW:
     )
 
     st.stop()
-# =====================================
-# ПРОМЯНА НА ACTIVITY СТАТУС
-# =====================================
 
-activity_statuses = [
-    "NEW",
-    "CONTACTED",
-    "CONFIRMED",
-    "COMPLETED",
-    "CANCELLED"
-]
-
-with st.form(
-    key=f"activity_status_form_{request_id}",
-    clear_on_submit=False
-):
-    status_select_col, save_col = st.columns(
-        [2, 3],
-        vertical_alignment="bottom"
-    )
-
-    with status_select_col:
-        selected_activity_status = st.selectbox(
-            "Статус",
-            activity_statuses,
-            index=(
-                activity_statuses.index(request_status)
-                if request_status in activity_statuses
-                else 0
-            ),
-            key=f"activity_status_select_{request_id}"
-        )
-
-    with save_col:
-        save_activity_status = st.form_submit_button(
-            "💾 Запази статуса",
-            type="primary",
-            use_container_width=True
-        )
-
-    if save_activity_status:
-        try:
-            update_activity_request_status(
-                request_id=request_id,
-                new_status=selected_activity_status
-            )
-
-
-            st.rerun()
-
-        except Exception as error:
-            st.error(
-                "Статусът не беше обновен."
-                "\n\n"
-                f"Причина: {error}"
-            )
-
-
-    st.divider()
-
-    if st.button(
-        "🔄 Обнови Activities заявките",
-        key="refresh_activity_requests",
-        use_container_width=True
-    ):
-
-        st.rerun()
-
-    st.caption(
-        "Powered by HMITSEVAPPS"
-    )
-
-    st.stop()
 # =====================================
 # SPA ИЗГЛЕД
 # =====================================
