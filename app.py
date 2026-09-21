@@ -436,9 +436,6 @@ room_service_column, spa_column, activities_column = st.columns(
 # =========================================================
 
 with room_service_column:
-
-    
-    st.subheader("Room Service")
     st.caption(
         "Поръчайте храна и напитки директно до Вашата стая."
     )
@@ -461,7 +458,6 @@ with room_service_column:
 
 with spa_column:
 
-    st.subheader("SPA")
     st.caption(
         "Изпратете заявка за масаж или SPA процедура."
     )
@@ -484,8 +480,6 @@ with spa_column:
 
 with activities_column:
 
-    
-    st.subheader("Аctivities")
     st.caption(
         "Разгледайте и резервирайте хотелски активности."
     )
