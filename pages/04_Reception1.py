@@ -1638,19 +1638,6 @@ if view_mode == SPA_VIEW:
                             )
 
     st.divider()
-
-    if st.button(
-        "🔄 Обнови SPA",
-        key="refresh_spa_section",
-        use_container_width=True
-    ):
-        st.rerun()
-
-    st.caption(
-        "Powered by HMITSEVAPPS"
-    )
-
-    st.stop()
 # =====================================
 # ЗАРЕЖДАНЕ НА ROOM SERVICE ДАННИТЕ
 # =====================================
@@ -1917,18 +1904,6 @@ else:
                                     f"Причина: {error}"
                                 )
         
-# =====================================
-# ОБНОВЯВАНЕ
-# =====================================
-
-st.divider()
-
-if st.button(
-    "🔄 Обнови поръчките",
-    key="refresh_reception_orders",
-    use_container_width=True
-):
-    st.rerun()
 
 
 # =====================================
