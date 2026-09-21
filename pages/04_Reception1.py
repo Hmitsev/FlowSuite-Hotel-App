@@ -551,17 +551,14 @@ total_new_notifications = (
 
 if total_new_notifications > 0:
     notification_bell_placeholder.markdown(
-        f"""
-        <div class="notification-bell-wrapper">
-            <div class="notification-bell">
-                🔔
-
-                <div class="notification-count">
-                    {total_new_notifications}
-                </div>
-            </div>
-        </div>
-        """,
+        f'<div class="notification-bell-wrapper">'
+        f'<div class="notification-bell">'
+        f'🔔'
+        f'<span class="notification-count">'
+        f'{total_new_notifications}'
+        f'</span>'
+        f'</div>'
+        f'</div>',
         unsafe_allow_html=True
     )
 
