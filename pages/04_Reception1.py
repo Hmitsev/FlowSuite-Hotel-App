@@ -494,6 +494,7 @@ def get_new_room_service_notifications():
     finally:
         cur.close()
         conn.close()
+        
 # =====================================
 # ЗАРЕЖДАНЕ НА АКТИВНИ SPA ЗАЯВКИ
 # =====================================
@@ -641,6 +642,15 @@ except Exception:
     new_room_service_count = 0
 
 
+try:
+    new_spa_count = (
+        get_new_spa_request_count()
+    )
+
+except Exception:
+    new_spa_count = 0
+
+
 # =====================================
 # ОБЩ БРОЙ НОВИ ИЗВЕСТИЯ
 # =====================================
@@ -648,6 +658,7 @@ except Exception:
 total_new_notifications = (
     int(new_room_service_count or 0)
     + int(new_activity_count or 0)
+    + int(new_spa_count or 0)
 )
 
 
@@ -708,7 +719,18 @@ COMPLETED_VIEW = (
     "📜 Приключени поръчки"
 )
 
+# =====================================
+# SPA НАДПИС
+# =====================================
 
+if new_spa_count > 0:
+    SPA_VIEW = (
+        f"🔴 {new_spa_count} | 💆 SPA заявки"
+    )
+else:
+    SPA_VIEW = (
+        "💆 SPA заявки"
+    )
 # =====================================
 # ИЗБОР НА ИЗГЛЕД
 # =====================================
