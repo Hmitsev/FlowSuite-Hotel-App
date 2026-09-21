@@ -1386,18 +1386,24 @@ else:
                             )
                         )
 
-                    if save_status:
+                                        if save_status:
 
-                        try:
-
-                            update_room_service_order_status(
-                                order_id=order_id,
-                                new_status=selected_status
-                            )
-
-                            st.rerun()
-
-                        except 
+                                            try:
+                    
+                                                update_room_service_order_status(
+                                                    order_id=order_id,
+                                                    new_status=selected_status
+                                                )
+                    
+                                                st.rerun()
+                    
+                                            except Exception as error:
+                    
+                                                st.error(
+                                                    "Статусът не беше обновен."
+                                                    "\n\n"
+                                                    f"Причина: {error}"
+                                                )
             # =====================================
             # ROOM SERVICE СТАТУС
             # =====================================
