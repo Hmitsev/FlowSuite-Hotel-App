@@ -241,20 +241,12 @@ if not st.session_state.kitchen_auth:
 
 
 # =====================================
-# ГОРНА НАВИГАЦИЯ
+# ГОРНА ЛЕНТА
 # =====================================
 
-back_col, title_col, logout_col = st.columns(
-    [1.2, 5, 1.2]
+title_col, logout_col = st.columns(
+    [6, 1]
 )
-
-with back_col:
-    if st.button(
-        "⬅ Back",
-        key="kitchen_back",
-        use_container_width=True
-    ):
-        st.switch_page("app.py")
 
 with title_col:
     st.markdown(
