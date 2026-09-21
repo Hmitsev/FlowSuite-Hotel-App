@@ -11,7 +11,7 @@ st.set_page_config(
     page_title="FlowSuite Hotel",
     page_icon="🏨",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
 
 
@@ -20,8 +20,6 @@ st.set_page_config(
 # =========================================================
 ASSETS_DIR = Path("assets")
 
-# Приложението ще потърси първата намерена снимка.
-# Ако в GitHub името е различно, добави го най-отгоре в списъка.
 HOTEL_BANNER_CANDIDATES = [
     "Screenshot 2026-09-09 025734.png",
     "hotel_banner.png",
@@ -42,38 +40,28 @@ def get_base64_image(file_path):
 
 
 def find_asset(file_names):
-    """
-    Връща първия намерен файл от assets.
-    """
     for file_name in file_names:
         file_path = ASSETS_DIR / file_name
-
         if file_path.exists():
             return file_path
-
     return None
 
 
 def open_hotel_page(page_path, service_name_bg, service_name_en):
-    """
-    Отваря съответната Streamlit страница, ако вече съществува.
-    Ако още не е създадена, показва информационно съобщение.
-    """
     target_page = Path(page_path)
 
     if target_page.exists():
         st.switch_page(page_path)
+    elif st.session_state.lang == "bg":
+        st.info(
+            f"Секция „{service_name_bg}“ ще бъде добавена "
+            "в следващата стъпка."
+        )
     else:
-        if st.session_state.lang == "bg":
-            st.info(
-                f"Секция „{service_name_bg}“ ще бъде добавена "
-                "в следващата стъпка."
-            )
-        else:
-            st.info(
-                f"The “{service_name_en}” section will be added "
-                "in the next step."
-            )
+        st.info(
+            f"The “{service_name_en}” section will be added "
+            "in the next step."
+        )
 
 
 # =========================================================
@@ -91,43 +79,23 @@ T = {
         "hotel_services": "Хотелски услуги",
         "welcome": "Добре дошли",
         "room_service": "Room Service",
-        "room_service_description": (
-            "Поръчайте храна и напитки директно до Вашата стая."
-        ),
+        "room_service_description": "Храна и напитки",
         "spa": "SPA",
-        "spa_description": (
-            "Изпратете заявка за масаж или SPA процедура."
-        ),
+        "spa_description": "Масажи и терапии",
         "activities": "Дейности",
-        "activities_description": (
-            "Разгледайте и резервирайте хотелски активности."
-        ),
-        "reception_help": (
-            "За допълнителна информация се свържете с рецепцията."
-        ),
+        "activities_description": "Спорт и активности",
         "invalid_room": "Невалиден номер на стая.",
-        "language": "BG",
     },
     "en": {
         "hotel_services": "Hotel Services",
         "welcome": "Welcome",
         "room_service": "Room Service",
-        "room_service_description": (
-            "Order food and drinks directly to your room."
-        ),
+        "room_service_description": "Food and drinks",
         "spa": "SPA",
-        "spa_description": (
-            "Send a request for a massage or SPA treatment."
-        ),
+        "spa_description": "Massages and treatments",
         "activities": "Activities",
-        "activities_description": (
-            "Explore and book hotel activities."
-        ),
-        "reception_help": (
-            "For additional information, please contact reception."
-        ),
+        "activities_description": "Sports and activities",
         "invalid_room": "Invalid room number.",
-        "language": "ENG",
     },
 }
 
@@ -149,28 +117,23 @@ if room_number < 1 or room_number > 9999:
     st.error(t["invalid_room"])
     st.stop()
 
+# Запазваме стаята и в session_state за останалите страници.
+st.session_state.room_number = room_number
+
 
 # =========================================================
 # ЗАРЕЖДАНЕ НА ХОТЕЛСКАТА СНИМКА
 # =========================================================
 hotel_banner_path = find_asset(HOTEL_BANNER_CANDIDATES)
 
-hotel_banner_base64 = ""
-
-if hotel_banner_path:
-    hotel_banner_base64 = get_base64_image(hotel_banner_path)
-
 
 # =========================================================
 # ОСНОВЕН CSS
+# ВАЖНО: няма f пред тройните кавички, затова CSS скобите са единични.
 # =========================================================
-page_style = f"""
+page_style = """
 <style>
-
-/* =====================================================
-   ОСНОВЕН ФОН
-===================================================== */
-.stApp {{
+.stApp {
     background:
         radial-gradient(
             circle at top,
@@ -179,225 +142,195 @@ page_style = f"""
             rgba(3, 5, 8, 1) 100%
         );
     color: #F5E6C8;
-}}
+}
 
-
-/* =====================================================
-   СКРИВАНЕ НА STREAMLIT ЕЛЕМЕНТИ
-===================================================== */
-[data-testid="stSidebar"] {{
+[data-testid="stSidebar"],
+[data-testid="collapsedControl"],
+[data-testid="stStatusWidget"],
+[data-testid="stSpinner"],
+.stSpinner {
     display: none !important;
-}}
+}
 
-[data-testid="collapsedControl"] {{
-    display: none !important;
-}}
-
-[data-testid="stHeader"] {{
+[data-testid="stHeader"] {
     background: transparent !important;
-}}
+}
 
-[data-testid="stToolbar"] {{
+[data-testid="stToolbar"] {
     right: 1rem;
-}}
+}
 
-[data-testid="stStatusWidget"] {{
-    display: none !important;
-}}
-
-[data-testid="stSpinner"] {{
-    display: none !important;
-}}
-
-.stSpinner {{
-    display: none !important;
-}}
-
-footer {{
+footer {
     visibility: hidden;
-}}
+}
 
+.block-container {
+    max-width: 1180px;
+    padding-top: 0.45rem;
+    padding-bottom: 2rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
 
-/* =====================================================
-   ОСНОВЕН КОНТЕЙНЕР
-===================================================== */
-.block-container {{
-    max-width: 1450px;
-    padding-top: 0.4rem;
-    padding-bottom: 4rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
-}}
-
-
-/* =====================================================
-   ТЕКСТОВЕ
-===================================================== */
-h1, h2, h3 {{
-    color: #F5E6C8 !important;
-
-{{
-p, label, span {{
+h1, h2, h3, p, label, span {
     color: #F5E6C8;
-}}
+}
 
-
-/* =====================================================
-   ЕЗИКОВ БУТОН
-===================================================== */
-div[data-testid="stButton"] button {{
-    border-radius: 14px;
-    transition: all 0.25s ease;
-}}
-
-
-/* =====================================================
-   ОСНОВНИ БУТОНИ
-===================================================== */
-
-div[data-testid="stButton"] button[kind="primary"] {{
-
-    height: 42px !important;
-    min-height: 42px !important;
-
-    padding: 0 !important;
-
-    font-size: 14px !important;
+/* Всички Streamlit бутони */
+div[data-testid="stButton"] button {
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 0 0.65rem !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
     font-weight: 700 !important;
+    line-height: 1 !important;
+    transition: all 0.2s ease;
+}
 
-    border-radius: 12px !important;
+div[data-testid="stButton"] button p {
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
 
-    background:
-        linear-gradient(
-            135deg,
-            #B98528 0%,
-            #D4AF37 48%,
-            #F5D77B 100%
-        ) !important;
-
+/* Основни златни бутони */
+div[data-testid="stButton"] button[kind="primary"],
+div[data-testid="stButton"] button[data-testid="stBaseButton-primary"] {
+    width: 100%;
+    background: linear-gradient(
+        135deg,
+        #B98528 0%,
+        #D4AF37 48%,
+        #F5D77B 100%
+    ) !important;
+    border: 1px solid #F5D77B !important;
     color: #101010 !important;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.18) !important;
+}
 
-    box-shadow:
-        0 4px 12px rgba(
-            212,
-            175,
-            55,
-            0.18
-        ) !important;
-}}
+div[data-testid="stButton"] button[kind="primary"] p,
+div[data-testid="stButton"] button[data-testid="stBaseButton-primary"] p {
+    color: #101010 !important;
+}
 
-div[data-testid="stButton"] button:hover {{
-
+div[data-testid="stButton"] button:hover {
     transform: translateY(-1px);
+    border-color: #FFD96A !important;
+}
 
-    box-shadow:
-        0 6px 14px rgba(
-            212,
-            175,
-            55,
-            0.28
-        ) !important;
-}}
-
-
-div[data-testid="stButton"] button p {{
-
-    color: #101010 !important;
-
-    font-size: 14px !important;
-
-    font-weight: 700 !important;
-}}
-/* =====================================================
-   ВТОРИЧНИ БУТОНИ
-===================================================== */
-div[data-testid="stButton"] button[kind="secondary"] {{
-    min-height: 43px;
+/* Вторичен бутон, включително езиковия */
+div[data-testid="stButton"] button[kind="secondary"],
+div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] {
     background: rgba(8, 12, 18, 0.86) !important;
     border: 1px solid rgba(212, 175, 55, 0.72) !important;
     color: #F5D77B !important;
-    font-weight: 700 !important;
-}}
+}
 
-div[data-testid="stButton"] button[kind="secondary"]:hover {{
-    border-color: #FFD96A !important;
-    color: #FFD96A !important;
-    background: rgba(20, 23, 28, 0.95) !important;
-}}
+div[data-testid="stButton"] button[kind="secondary"] p,
+div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] p {
+    color: #F5D77B !important;
+}
 
+/* Компактен банер */
+[data-testid="stImage"] img {
+    width: 100% !important;
+    max-height: 260px !important;
+    object-fit: cover !important;
+    border-radius: 14px !important;
+}
 
-/* =====================================================
-   МОБИЛЕН ИЗГЛЕД
-===================================================== */
-@media only screen and (max-width: 768px) {{
+.compact-welcome {
+    margin: 8px 0 2px 0;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 750;
+}
 
-    .block-container {{
+.hotel-services-title {
+    margin: 2px 0 10px 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #F5E6C8;
+}
+
+/* Намалява вертикалните празнини между Streamlit елементите */
+[data-testid="stVerticalBlock"] {
+    gap: 0.55rem;
+}
+
+[data-testid="stCaptionContainer"] p {
+    margin: 0 !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+}
+
+@media only screen and (max-width: 768px) {
+    .block-container {
         padding-top: 0.2rem;
-        padding-left: 0.8rem;
-        padding-right: 0.8rem;
-        padding-bottom: 4rem;
-    }}
+        padding-left: 0.7rem;
+        padding-right: 0.7rem;
+        padding-bottom: 1.5rem;
+    }
 
-    .hotel-hero {{
-        min-height: 210px !important;
-        border-radius: 16px !important;
-    }}
+    [data-testid="stImage"] img {
+        max-height: 180px !important;
+        border-radius: 12px !important;
+    }
 
-    .hotel-hero-content {{
-        padding: 22px 18px !important;
-    }}
+    .compact-welcome {
+        margin: 5px 0 0 0;
+        font-size: 18px;
+    }
 
-    .hotel-hero-title {{
+    .hotel-services-title {
+        margin: 0 0 7px 0;
+        font-size: 16px;
+    }
+
+    div[data-testid="stButton"] button {
+        min-height: 34px !important;
+        height: 34px !important;
+        padding: 0 0.5rem !important;
         font-size: 12px !important;
-    }}
+        border-radius: 9px !important;
+    }
 
-    .hotel-hero-room {{
-        font-size: 17px !important;
-    }}
-
-    .hotel-services-title {{
-        font-size: 25px !important;
-    }}
-
-    .hotel-card {{
-        min-height: 122px !important;
-    }}
-
-   div[data-testid="stButton"] button {{
-        min-height: 34px;
+    div[data-testid="stButton"] button p {
         font-size: 12px !important;
-    }}
+    }
 
+    [data-testid="stCaptionContainer"] p {
+        font-size: 11px !important;
+    }
+}
 </style>
 """
 
-st.markdown(
-    page_style,
-    unsafe_allow_html=True
-)
+st.markdown(page_style, unsafe_allow_html=True)
 
 
 # =========================================================
 # ЕЗИКОВ БУТОН
 # =========================================================
-language_space, language_column = st.columns([8.6, 1.4])
+language_space, language_column = st.columns([8.8, 1.2])
 
 with language_column:
     language_button_text = (
         "🇧🇬 BG"
         if st.session_state.lang == "bg"
-        else "🇬🇧 ENG"
+        else "🇬🇧 EN"
     )
 
     if st.button(
         language_button_text,
         key="language_toggle",
-        use_container_width=True
+        use_container_width=True,
     ):
         st.session_state.lang = (
-            "en"
-            if st.session_state.lang == "bg"
-            else "bg"
+            "en" if st.session_state.lang == "bg" else "bg"
         )
         st.rerun()
 
@@ -405,137 +338,90 @@ with language_column:
 # =========================================================
 # ХОТЕЛСКИ БАНЕР
 # =========================================================
-
 if hotel_banner_path:
     st.image(
         str(hotel_banner_path),
-        use_container_width=True
+        use_container_width=True,
     )
 
 st.markdown(
-    f"# {t['welcome']}"
+    f'<div class="compact-welcome">{t["welcome"]}</div>',
+    unsafe_allow_html=True,
 )
-
-# =========================================================
-# ЗАГЛАВИЕ НА УСЛУГИТЕ
-# =========================================================
 
 st.markdown(
-    f"""
-    <h3 style="
-        text-align:center;
-        color:#F5E6C8;
-        margin-top:10px;
-        margin-bottom:15px;
-        font-size:24px;
-        font-weight:700;
-    ">
-        {t["hotel_services"]}
-    </h3>
-    """,
-    unsafe_allow_html=True
+    f'<div class="hotel-services-title">{t["hotel_services"]}</div>',
+    unsafe_allow_html=True,
 )
+
 
 # =========================================================
 # КАРТИ НА УСЛУГИТЕ
 # =========================================================
-
 room_service_column, spa_column, activities_column = st.columns(
     3,
-    gap="large"
+    gap="medium",
 )
+
 
 # =========================================================
 # ROOM SERVICE
 # =========================================================
-
 with room_service_column:
-        st.caption("Храна и напитки")
-    )
+    st.caption(t["room_service_description"])
 
     if st.button(
-        " Room Service",
+        "🍽️ Room Service",
         key="room_service_btn",
         type="primary",
-        use_container_width=True
+        use_container_width=True,
     ):
         open_hotel_page(
             "pages/01_Room_Service.py",
             "Room Service",
-            "Room Service"
+            "Room Service",
         )
+
 
 # =========================================================
 # SPA
 # =========================================================
-
 with spa_column:
-
-    st.caption("Масажи")
-        
-    )
+    st.caption(t["spa_description"])
 
     if st.button(
-        " SPA",
+        "💆 SPA",
         key="spa_btn",
         type="primary",
-        use_container_width=True
+        use_container_width=True,
     ):
         open_hotel_page(
             "pages/02_SPA.py",
             "SPA",
-            "SPA"
+            "SPA",
         )
+
 
 # =========================================================
 # ACTIVITIES
 # =========================================================
-
 with activities_column:
-
-    st.caption(
-        "Разгледайте и резервирайте хотелски активности."
-    )
+    st.caption(t["activities_description"])
 
     if st.button(
-        " Аctivities",
+        "🎿 Activities",
         key="activities_btn",
         type="primary",
-        use_container_width=True
+        use_container_width=True,
     ):
         open_hotel_page(
             "pages/03_Activities.py",
-            "Аctivitie",
-            "Activities"
+            "Дейности",
+            "Activities",
         )
-
 
 
 # =========================================================
 # БРАНДИРАНЕ
 # =========================================================
-
 st.caption("Powered by HMITSEVAPPS")
-
-try:
-    room_number = int(raw_room_number)
-except (TypeError, ValueError):
-    room_number = 204
-
-if room_number < 1 or room_number > 9999:
-    st.error(
-        "Невалиден QR код за стая."
-    )
-    st.stop()
-
-st.success(
-    f"🛎️ Стая № {room_number}"
-)
-
-st.caption(
-    "Room Service Menu"
-)
-
-st.success(
-    "Заявката е изпратена до рецепция."
-)
