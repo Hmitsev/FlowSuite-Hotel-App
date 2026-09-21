@@ -740,6 +740,7 @@ view_mode = st.radio(
     [
         ACTIVE_VIEW,
         ACTIVITIES_VIEW,
+        SPA_VIEW,
         COMPLETED_VIEW
     ],
     horizontal=True,
