@@ -586,12 +586,12 @@ else:
 if new_activity_count > 0:
     ACTIVITIES_VIEW = (
         f"🔴 {new_activity_count} | "
-        "🎿 Activities заявки"
+        "Activities заявки"
     )
 
 else:
     ACTIVITIES_VIEW = (
-        "🎿 Activities заявки"
+        "Activities заявки"
     )
 
 
