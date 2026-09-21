@@ -534,16 +534,9 @@ try:
 except Exception:
     new_room_service_count = 0
 
-# =====================================
-# ОБЩ БРОЙ ИЗВЕСТИЯ
-# =====================================
 
-total_new_notifications = (
-    int(new_activity_count)
-    + int(new_room_service_count)
-)
 # =====================================
-# ОБЩА КАМБАНКА ЗА НОВИ ЗАЯВКИ
+# ОБЩ БРОЙ НОВИ ИЗВЕСТИЯ
 # =====================================
 
 total_new_notifications = (
@@ -551,6 +544,29 @@ total_new_notifications = (
     + int(new_activity_count or 0)
 )
 
+
+# =====================================
+# ПОКАЗВАНЕ НА ОБЩАТА КАМБАНКА
+# =====================================
+
+if total_new_notifications > 0:
+    notification_bell_placeholder.markdown(
+        f"""
+        <div class="notification-bell-wrapper">
+            <div class="notification-bell">
+                🔔
+
+                <div class="notification-count">
+                    {total_new_notifications}
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+else:
+    notification_bell_placeholder.empty()
 
 # =====================================
 # ROOM SERVICE НАДПИС
