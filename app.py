@@ -485,20 +485,20 @@ with spa_column:
 with activities_column:
 
     
-    st.subheader("Дейности")
+    st.subheader("Аctivitie")
     st.caption(
         "Разгледайте и резервирайте хотелски активности."
     )
 
     if st.button(
-        " Дейности",
+        " Аctivitie",
         key="activities_btn",
         type="primary",
         use_container_width=True
     ):
         open_hotel_page(
             "pages/03_Activities.py",
-            "Дейности",
+            "Аctivitie",
             "Activities"
         )
 
