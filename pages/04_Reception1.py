@@ -720,9 +720,9 @@ else:
 # ПОСТОЯННИ ИМЕНА НА ИЗГЛЕДИТЕ
 # =====================================
 
-ACTIVE_VIEW = "🔔 Room Service"
+ACTIVE_VIEW = f"🔴 {new_room_service_count} | 🔔 Room Service"
 ACTIVITIES_VIEW = "🎿 Activities"
-SPA_VIEW = "🪷 SPA"
+SPA_VIEW = "SPA"
 COMPLETED_VIEW = "📜 Приключени"
 
 
