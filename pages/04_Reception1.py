@@ -584,23 +584,18 @@ total_new_notifications = (
 )
 
 if total_new_notifications > 0:
-    notification_bell_placeholder.markdown(
-        f"""
-        <div class="notification-bell-wrapper">
-            <div
-                class="notification-bell"
-                title="Има нови хотелски заявки"
-            >
-                🔔
-
-                <div class="notification-count">
-                    {total_new_notifications}
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+   notification_bell_placeholder.markdown(
+    """
+    <div style="
+        text-align:right;
+        font-size:52px;
+        animation: bellShake 0.85s ease-in-out infinite;
+    ">
+        🔔
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 else:
     notification_bell_placeholder.empty()
