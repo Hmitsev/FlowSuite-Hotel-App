@@ -690,6 +690,7 @@ total_new_notifications = (
 # =====================================
 
 if total_new_notifications > 0:
+
     notification_bell_placeholder.markdown(
         f"""
         <div class="notification-bell-wrapper">
@@ -703,8 +704,10 @@ if total_new_notifications > 0:
         """,
         unsafe_allow_html=True
     )
+
 else:
-    notification_bell_placeholder.markdown(
+
+    notification_bell_placeholder.empty()
         """
         <div class="notification-bell-wrapper">
             <div class="notification-bell">
