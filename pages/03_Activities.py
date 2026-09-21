@@ -300,36 +300,15 @@ if activities_banner_path:
     )
 
 
-# =====================================
-# ЗАГЛАВИЕ
-# =====================================
-
-st.markdown(
-    f"""
-    <div style="
-        text-align:center;
-        margin-top:18px;
-        margin-bottom:22px;
-    ">
-        <div style="
-            color:#D4AF37;
-            font-size:36px;
-            font-weight:900;
-            letter-spacing:1px;
-        ">
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
 
 # =====================================
 # СЪОБЩЕНИЕ ЗА УСПЕХ ИЛИ ГРЕШКА
 # =====================================
 
 if st.session_state.activity_request_error:
+
     st.error(
-        f"{t['error']}\n\n"
+        f"{t['request_not_sent']}\n\n"
         f"{st.session_state.activity_request_error}"
     )
 
@@ -337,11 +316,12 @@ if st.session_state.activity_request_error:
 
 
 if st.session_state.activity_request_id is not None:
+
     st.success(
-        f"✅ {t['success']}\n\n"
+        f"✅ {t['request_success']}\n\n"
         f"🧾 {t['request_number']}: "
         f"{st.session_state.activity_request_id}\n\n"
-        f"🛎️ {t['room']} № {room_number}"
+        f"🛎️ {t['room']} {room_number}"
     )
 
     st.session_state.activity_request_id = None
@@ -358,69 +338,81 @@ with st.container(border=True):
     )
 
     with activity_col:
-        st.subheader("🎿 Наем на ски оборудване")
+        st.subheader(
+            f"🎿 {t['ski_rental']}"
+        )
 
         st.write(
-            "Резервирайте ски оборудване директно чрез хотела."
+            t["ski_description"]
         )
 
     with info_col:
         with st.popover(
-            "ℹ️ Информация и резервация",
+            t["information_booking"],
             use_container_width=True
         ):
 
-            st.markdown("### Заявка за резервация")
+            st.markdown(
+                f"### {t['reservation_request']}"
+            )
 
             st.write(
-                "Моля, посочете дата и необходимата информация."
+                t["activity_instruction"]
+            )
+
+            st.caption(
+                f"{t['example_message']} "
+                f"{t['ski_example']}"
             )
 
             reservation_text = st.text_area(
-                "Вашето съобщение",
-                placeholder="Желая за 22.09.2026 г. да резервирам ски оборудване.",
+                t["your_message"],
+                placeholder=t["ski_example"],
                 key="ski_reservation_message",
                 height=130
             )
 
             st.caption(
-                t["reception_message"]
+                t["activity_reception_message"]
             )
 
             if st.button(
-                "✅ Изпрати заявка",
+                t["send_request"],
                 key="send_ski_request",
                 type="primary",
                 use_container_width=True
             ):
 
                 if not reservation_text.strip():
-
                     st.warning(
                         t["empty_message"]
                     )
 
                 else:
-
                     try:
-
                         request_id = create_activity_request(
                             room_number=room_number,
-                            activity_name="Ski Equipment Rental",
+                            activity_name="SKI_EQUIPMENT_RENTAL",
                             guest_message=reservation_text
                         )
 
-                        st.session_state.activity_request_id = request_id
-                        st.session_state.activity_request_error = None
+                        st.session_state.activity_request_id = (
+                            request_id
+                        )
+
+                        st.session_state.activity_request_error = (
+                            None
+                        )
 
                         st.rerun()
 
                     except Exception as error:
-
-                        st.session_state.activity_request_error = str(error)
+                        st.session_state.activity_request_error = (
+                            str(error)
+                        )
 
                         st.rerun()
-                        # =====================================
+# =====================================
 # ВЕЛОСИПЕДИ
 # =====================================
 
@@ -432,66 +424,73 @@ with st.container(border=True):
     )
 
     with activity_col:
-        st.subheader("🚴 Наем на велосипед")
+        st.subheader(
+            f"🚴 {t['bike_rental']}"
+        )
 
         st.write(
-            "Резервирайте велосипед директно чрез хотела."
+            t["bike_description"]
         )
 
     with info_col:
         with st.popover(
-            "ℹ️ Информация и резервация",
+            t["information_booking"],
             use_container_width=True
         ):
 
-            st.markdown("### Заявка за резервация")
+            st.markdown(
+                f"### {t['reservation_request']}"
+            )
 
             st.write(
-                "Моля, посочете дата, час и брой велосипеди."
+                t["bike_instruction"]
             )
 
             bike_reservation_text = st.text_area(
-                "Вашето съобщение",
-                placeholder="Желая да наема 2 велосипеда за 22.09.2026 г. от 10:00 ч.",
+                t["your_message"],
+                placeholder=t["bike_placeholder"],
                 key="bike_reservation_message",
                 height=130
             )
 
             st.caption(
-                t["reception_message"]
+                t["activity_reception_message"]
             )
 
             if st.button(
-                "✅ Изпрати заявка",
+                t["send_request"],
                 key="send_bike_request",
                 type="primary",
                 use_container_width=True
             ):
 
                 if not bike_reservation_text.strip():
-
                     st.warning(
                         t["empty_message"]
                     )
 
                 else:
-
                     try:
-
                         request_id = create_activity_request(
                             room_number=room_number,
-                            activity_name="Bike Rental",
+                            activity_name="BIKE_RENTAL",
                             guest_message=bike_reservation_text
                         )
 
-                        st.session_state.activity_request_id = request_id
-                        st.session_state.activity_request_error = None
+                        st.session_state.activity_request_id = (
+                            request_id
+                        )
+
+                        st.session_state.activity_request_error = (
+                            None
+                        )
 
                         st.rerun()
 
                     except Exception as error:
-
-                        st.session_state.activity_request_error = str(error)
+                        st.session_state.activity_request_error = (
+                            str(error)
+                        )
 
                         st.rerun()
 # =====================================
