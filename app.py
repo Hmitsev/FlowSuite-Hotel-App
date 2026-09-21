@@ -306,7 +306,6 @@ with language_column:
             st.session_state.lang = "bg"
 
         st.rerun()
-        st.success(f"Текущ език: {st.session_state.lang}")
 
 
 # =========================================================
