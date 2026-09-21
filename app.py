@@ -522,6 +522,7 @@ st.success(
 st.caption(
     "Room Service Menu"
 )
-    st.success(
-        "Заявката е изпратена до рецепция."
-    )
+
+st.success(
+    "Заявката е изпратена до рецепция."
+)
