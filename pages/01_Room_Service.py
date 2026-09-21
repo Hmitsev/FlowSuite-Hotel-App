@@ -732,40 +732,42 @@ else:
     )
 
     # =====================================
-    # ФИНАЛНИ БУТОНИ
-    # =====================================
+# ФИНАЛНИ БУТОНИ
+# =====================================
 
-    with clear_col:
-        if st.button(
-            t["clear_cart"],
-            key="clear_room_service_cart",
-            use_container_width=True
-        ):
+clear_col, send_col = st.columns(2)
+
+with clear_col:
+    if st.button(
+        t["clear_cart"],
+        key="clear_room_service_cart",
+        use_container_width=True
+    ):
+        st.session_state.cart = []
+        st.rerun()
+
+with send_col:
+    if st.button(
+        t["send_order"],
+        key="send_room_service_order",
+        type="primary",
+        use_container_width=True
+    ):
+        try:
+            order_id = create_room_service_order(
+                room_number=room_number,
+                cart=st.session_state.cart
+            )
+
             st.session_state.cart = []
+            st.session_state.last_order_id = order_id
+            st.session_state.room_service_error = None
+
             st.rerun()
-    
-    with send_col:
-        if st.button(
-            t["send_order"],
-            key="send_room_service_order",
-            type="primary",
-            use_container_width=True
-        ):
-            try:
-                order_id = create_room_service_order(
-                    room_number=room_number,
-                    cart=st.session_state.cart
-                )
-    
-                st.session_state.cart = []
-                st.session_state.last_order_id = order_id
-                st.session_state.room_service_error = None
-    
-                st.rerun()
-    
-            except Exception as error:
-                st.session_state.room_service_error = str(error)
-                st.rerun()
+
+        except Exception as error:
+            st.session_state.room_service_error = str(error)
+            st.rerun()
 
 
 
