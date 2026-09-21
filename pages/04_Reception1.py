@@ -449,7 +449,6 @@ try:
 
 except Exception:
     new_room_service_count = 0
-``
     
 
 
