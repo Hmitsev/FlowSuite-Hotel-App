@@ -232,10 +232,12 @@ TRANSLATIONS = {
         "reception_sees_order": (
             "Reception can now see your order."
         ),
-        "room_service_banner_missing": (
+                "room_service_banner_missing": (
             "The Room Service banner was not found. "
             "Please check the image name in the assets folder."
         ),
+    },
+}
 
 
 def get_language():
