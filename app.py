@@ -2,7 +2,7 @@ import base64
 from pathlib import Path
 
 import streamlit as st
-
+from translations import get_translations
 
 # =========================================================
 # НАСТРОЙКИ НА СТРАНИЦАТА
@@ -69,38 +69,7 @@ def open_hotel_page(page_path, service_name_bg, service_name_en):
 # =========================================================
 if "lang" not in st.session_state:
     st.session_state.lang = "bg"
-
-
-# =========================================================
-# ПРЕВОДИ
-# =========================================================
-T = {
-    "bg": {
-        "hotel_services": "Хотелски услуги",
-        "welcome": "Добре дошли",
-        "room_service": "Room Service",
-        "room_service_description": "Храна и напитки",
-        "spa": "SPA",
-        "spa_description": "Масажи и терапии",
-        "activities": "Дейности",
-        "activities_description": "Спорт и активности",
-        "invalid_room": "Невалиден номер на стая.",
-    },
-    "en": {
-        "hotel_services": "Hotel Services",
-        "welcome": "Welcome",
-        "room_service": "Room Service",
-        "room_service_description": "Food and drinks",
-        "spa": "SPA",
-        "spa_description": "Масажи и терапии",
-        "activities": "Activities",
-        "activities_description": "Sports and activities",
-        "invalid_room": "Invalid room number.",
-    },
-}
-
-t = T[st.session_state.lang]
-
+t = get_translations()
 
 # =========================================================
 # НОМЕР НА СТАЯТА ОТ QR КОДА
