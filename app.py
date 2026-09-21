@@ -281,20 +281,16 @@ div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] p {
 
 st.markdown(page_style, unsafe_allow_html=True)
 
-if st.button("CLICK ME"):
-    st.success("БУТОНЪТ РАБОТИ!")
-
-st.write("LANG =", st.session_state.lang)
 # =========================================================
 # ЕЗИК
 # =========================================================
 
-col_left, col_right = st.columns([5, 1])
+col_left, col_right = st.columns([6, 1])
 
 with col_right:
 
     if st.button(
-        "🌐 LANGUAGE",
+        "🇬🇧 EN" if st.session_state.lang == "bg" else "🇧🇬 BG",
         key="lang_btn",
         use_container_width=True
     ):
@@ -306,8 +302,6 @@ with col_right:
         )
 
         st.rerun()
-
-st.success(f"LANG = {st.session_state.lang}")
 # =========================================================
 # ХОТЕЛСКИ БАНЕР
 # =========================================================
