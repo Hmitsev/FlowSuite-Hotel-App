@@ -121,7 +121,7 @@ nav_col1, nav_col2 = st.columns([1, 5])
 
 with nav_col1:
     if st.button(
-        "⬅ Back",
+        t["back"],
         use_container_width=True
     ):
         st.switch_page("app.py")
@@ -147,13 +147,15 @@ if st.session_state.spa_request_success:
 
     st.success(
         """
-✅ Заявката е изпратена успешно до рецепция.
+st.success(
+    f"""
+✅ {t["request_success"]}
 
-💆 Услуга: Relaxing Massage
+{t["spa_success_service"]}
 
-🛎️ От рецепция ще се свържат с Вас за потвърждение.
-        """
-    )
+{t["spa_success_contact"]}
+    """
+)
 
     st.session_state.spa_request_success = False
 # =====================================
@@ -170,12 +172,14 @@ with st.container(border=True):
     with activity_col:
 
         st.subheader(
-            "💆 Relaxing Massage"
-        )
+           st.subheader(
+                f"💆 {t['relaxing_massage']}"
+            )
+            
+            st.write(
+                t["relaxing_massage_description"]
+            )
 
-        st.write(
-            "Professional full body massage."
-        )
 
     with info_col:
 
@@ -185,21 +189,18 @@ with st.container(border=True):
         ):
 
             st.markdown(
-                """
-                ### Резервация
-
-                Моля напишете за кой ден и час желаете резервация.
-
-                От рецепция ще се свържат с Вас.
-                """
+                f"""
+            ### {t["reservation"]}
+            
+            {t["spa_instruction"]}
+            
+            {t["reception_contact"]}
+            """
             )
 
             reservation_text = st.text_area(
                 t["your_message"],
-                placeholder=(
-                    "Пример: Желая масаж на "
-                    "22.09.2026 от 16:00 часа."
-                ),
+                placeholder=t["spa_placeholder"],
                 key="massage_request_text",
                 height=130
             )
@@ -214,7 +215,7 @@ with st.container(border=True):
                 if not reservation_text.strip():
 
                     st.warning(
-                        "Моля, въведете съобщение."
+                        t["empty_message"]
                     )
 
                 else:
@@ -243,5 +244,5 @@ with st.container(border=True):
 st.divider()
 
 st.caption(
-    "Powered by HMITSEVAPPS"
+    t["footer"]
 )
