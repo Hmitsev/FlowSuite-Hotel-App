@@ -283,15 +283,15 @@ st.markdown(page_style, unsafe_allow_html=True)
 
 
 # =========================================================
-# ЕЗИКОВ БУТОН
+# ЕЗИК
 # =========================================================
 
-col1, col2 = st.columns([6, 1])
+col_left, col_right = st.columns([5, 1])
 
-with col2:
+with col_right:
 
     if st.button(
-        "🇬🇧 EN" if st.session_state.lang == "bg" else "🇧🇬 BG",
+        "🌐 LANGUAGE",
         key="lang_btn",
         use_container_width=True
     ):
