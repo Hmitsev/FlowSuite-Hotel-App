@@ -281,16 +281,13 @@ div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] p {
 st.markdown(page_style, unsafe_allow_html=True)
 
 
-# =========================================================
-# ЕЗИКОВ БУТОН
-# =========================================================
 language_space, language_column = st.columns([8.8, 1.2])
 
 with language_column:
     language_button_text = (
-        "🇧🇬 BG"
+        "🇬🇧 EN"
         if st.session_state.lang == "bg"
-        else "🇬🇧 EN"
+        else "🇧🇬 BG"
     )
 
     if st.button(
@@ -299,8 +296,11 @@ with language_column:
         use_container_width=True,
     ):
         st.session_state.lang = (
-            "en" if st.session_state.lang == "bg" else "bg"
+            "en"
+            if st.session_state.lang == "bg"
+            else "bg"
         )
+
         st.rerun()
 
 
@@ -342,14 +342,14 @@ with room_service_column:
         font-weight:600;
         margin-bottom:8px;
     ">
-        {t["room_service_description"]}
+        st.caption(t["room_service_description"])
     </div>
     """,
     unsafe_allow_html=True
 )
 
     if st.button(
-        "🍽️ Room Service",
+        f"🍽️ {t['room_service']}"
         key="room_service_btn",
         type="primary",
         use_container_width=True,
@@ -374,14 +374,14 @@ with spa_column:
         font-weight:600;
         margin-bottom:8px;
     ">
-        {t["spa_description"]}
+        st.caption(t["spa_description"])
     </div>
     """,
     unsafe_allow_html=True
 )
 
     if st.button(
-        "💆 SPA",
+        f"💆 {t['spa']}"
         key="spa_btn",
         type="primary",
         use_container_width=True,
@@ -406,14 +406,14 @@ with activities_column:
         font-weight:600;
         margin-bottom:8px;
     ">
-        {t["activities_description"]}
+        st.caption(t["activities_description"])
     </div>
     """,
     unsafe_allow_html=True
 )
 
     if st.button(
-        "🎿 Activities",
+        f"🎿 {t['activities']}"
         key="activities_btn",
         type="primary",
         use_container_width=True,
