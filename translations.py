@@ -108,9 +108,9 @@ TRANSLATIONS = {
         # Home page
         "welcome": "Welcome",
         "hotel_services": "Hotel Services",
-        "room_service": "Room Service",
+        "room_service": "Рум Сървиз",
         "room_service_description": "Food and drinks",
-        "spa": "SPA",
+        "spa": "СПА",
         "spa_description": "Massages and treatments",
         "activities": "Activities",
         "activities_description": "Sports and activities",
