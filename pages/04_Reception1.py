@@ -256,7 +256,7 @@ def update_room_service_order_status(
     finally:
         cur.close()
         conn.close()
-        # =====================================
+# =====================================
 # ЗАРЕЖДАНЕ НА ACTIVITIES ЗАЯВКИТЕ
 # =====================================
 
@@ -288,6 +288,50 @@ def get_activity_requests():
         )
 
         return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
+        # =====================================
+# БРОЙ НОВИ ACTIVITIES ЗАЯВКИ
+# =====================================
+
+def get_new_activity_notifications():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                COUNT(*) AS new_request_count,
+                ARRAY_AGG(
+                    DISTINCT hr.room_number
+                    ORDER BY hr.room_number
+                ) AS room_numbers
+            FROM activity_requests ar
+            JOIN hotel_rooms hr
+                ON hr.id = ar.room_id
+            WHERE ar.request_status = 'NEW'
+            """
+        )
+
+        result = cur.fetchone()
+
+        new_request_count = int(
+            result[0] or 0
+        )
+
+        room_numbers = (
+            list(result[1])
+            if result[1]
+            else []
+        )
+
+        return (
+            new_request_count,
+            room_numbers
+        )
 
     finally:
         cur.close()
