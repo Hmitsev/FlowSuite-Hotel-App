@@ -1086,7 +1086,7 @@ if view_mode == SPA_VIEW:
 # =====================================
 
 try:
-    if view_mode == ACTIVE_VIEW:
+    if view_mode == ROOM_SERVICE_VIEW:
         rows = get_room_service_orders()
 
     elif view_mode == COMPLETED_VIEW:
@@ -1265,133 +1265,76 @@ else:
                     st.write(
                         f"€ {item_total:.2f}"
                     )
+            # =====================================
+            # ROOM SERVICE СТАТУС
+            # =====================================
 
-# =====================================
-# ПРОМЯНА НА ROOM SERVICE СТАТУС
-# =====================================
+            if view_mode == ROOM_SERVICE_VIEW:
 
-if view_mode == ACTIVE_VIEW:
+                room_service_statuses = [
+                    "NEW",
+                    "PREPARING",
+                    "READY",
+                    "DELIVERING",
+                    "COMPLETED"
+                ]
 
-    room_service_statuses = [
-        "NEW",
-        "PREPARING",
-        "READY",
-        "DELIVERING",
-        "COMPLETED"
-    ]
+                with st.form(
+                    key=f"room_service_status_form_{order_id}",
+                    clear_on_submit=False
+                ):
 
-    normalized_order_status = str(
-        order_status or "NEW"
-    ).strip().upper()
-
-    with st.form(
-        key=f"room_service_status_form_{order_id}",
-        clear_on_submit=False
-    ):
-
-        status_col, action_col = st.columns(
-            [2, 3],
-            vertical_alignment="bottom"
-        )
-
-        with status_col:
-            selected_status = st.selectbox(
-                "Статус",
-                room_service_statuses,
-                index=(
-                    room_service_statuses.index(
-                        normalized_order_status
-                    )
-                    if normalized_order_status
-                    in room_service_statuses
-                    else 0
-                ),
-                key=f"room_service_status_select_{order_id}"
-            )
-
-        with action_col:
-            save_room_service_status = (
-                st.form_submit_button(
-                    "💾 Запази статуса",
-                    type="primary",
-                    use_container_width=True
-                )
-            )
-
-        if save_room_service_status:
-            try:
-                update_room_service_order_status(
-                    order_id=order_id,
-                    new_status=selected_status
-                )
-
-
-                st.rerun()
-
-
-            except Exception as error:
-                st.error(
-                    "Статусът не беше обновен."
-                    "\n\n"
-                    f"Причина: {error}"
-                )
-
-                with status_col:
-                    selected_status = st.selectbox(
-                        "Статус",
-                        [
-                            "NEW",
-                            "PREPARING",
-                            "READY",
-                            "DELIVERING",
-                            "COMPLETED"
-                        ],
-                        index=(
-                            [
-                                "NEW",
-                                "PREPARING",
-                                "READY",
-                                "DELIVERING",
-                                "COMPLETED"
-                            ].index(order_status)
-                            if order_status in [
-                                "NEW",
-                                "PREPARING",
-                                "READY",
-                                "DELIVERING",
-                                "COMPLETED"
-                            ]
-                            else 0
-                        ),
-                        key=f"status_{order_id}"
+                    status_col, action_col = st.columns(
+                        [2, 3]
                     )
 
-                with action_col:
-                    if st.button(
-                        "✅ Запази статуса",
-                        key=f"save_status_{order_id}",
-                        type="primary",
-                        use_container_width=True
-                    ):
+                    with status_col:
+
+                        selected_status = st.selectbox(
+                            "Статус",
+                            room_service_statuses,
+                            index=(
+                                room_service_statuses.index(
+                                    order_status
+                                )
+                                if order_status
+                                in room_service_statuses
+                                else 0
+                            ),
+                            key=(
+                                f"room_service_status_"
+                                f"{order_id}"
+                            )
+                        )
+
+                    with action_col:
+
+                        save_status = (
+                            st.form_submit_button(
+                                "💾 Запази статуса",
+                                type="primary",
+                                use_container_width=True
+                            )
+                        )
+
+                    if save_status:
+
                         try:
+
                             update_room_service_order_status(
                                 order_id=order_id,
                                 new_status=selected_status
                             )
 
-                            update_activity_request_status(
-                                request_id=request_id,
-                                new_status=selected_activity_status
-                            )
-                            
                             st.rerun()
 
                         except Exception as error:
+
                             st.error(
-                                "Статусът не беше обновен.\n\n"
+                                "Статусът не беше обновен."
+                                "\n\n"
                                 f"Причина: {error}"
                             )
-
 
 # =====================================
 # ОБНОВЯВАНЕ
