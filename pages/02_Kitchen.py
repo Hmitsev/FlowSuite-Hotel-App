@@ -288,7 +288,7 @@ with logout_col:
 # =====================================
 
 st_autorefresh(
-    interval=15000,
+    interval=30000,
     key="hotel_kitchen_refresh"
 )
 
