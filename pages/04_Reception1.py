@@ -205,6 +205,22 @@ title_left_col, title_center_col, bell_col = st.columns(
 )
 
 with title_center_col:
+    st.markdown(
+        """
+        <div style="
+            text-align:center;
+            color:#D4AF37;
+            font-size:34px;
+            font-weight:800;
+            letter-spacing:1px;
+            margin-top:15px;
+            margin-bottom:20px;
+        ">
+            ROOM SERVICE
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 with bell_col:
     notification_bell_placeholder = st.empty()
@@ -534,6 +550,19 @@ def get_new_room_service_notifications():
     finally:
         cur.close()
         conn.close()
+        # =====================================
+# ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
+# =====================================
+
+try:
+    (
+        new_activity_count,
+        new_activity_rooms
+    ) = get_new_activity_notifications()
+
+except Exception:
+    new_activity_count = 0
+    new_activity_rooms = []
 
 
 try:
@@ -543,7 +572,9 @@ try:
 
 except Exception:
     new_room_service_count = 0
-    # =====================================
+
+
+# =====================================
 # ОБЩА КАМБАНКА ЗА НОВИ ЗАЯВКИ
 # =====================================
 
@@ -573,29 +604,64 @@ if total_new_notifications > 0:
 
 else:
     notification_bell_placeholder.empty()
+
+
 # =====================================
-# ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
+# ROOM SERVICE НАДПИС
 # =====================================
 
-try:
-    (
-        new_activity_count,
-        new_activity_rooms
-    ) = get_new_activity_notifications()
-
-except Exception:
-    new_activity_count = 0
-    new_activity_rooms = []
-
-
-try:
-    new_room_service_count = (
-        get_new_room_service_notifications()
+if new_room_service_count > 0:
+    ACTIVE_VIEW = (
+        f"🔴 {new_room_service_count} | "
+        "🍽️ Активни Room Service поръчки"
     )
 
-except Exception:
-    new_room_service_count = 0
-    
+else:
+    ACTIVE_VIEW = (
+        "🍽️ Активни Room Service поръчки"
+    )
+
+
+# =====================================
+# ACTIVITIES НАДПИС
+# =====================================
+
+if new_activity_count > 0:
+    ACTIVITIES_VIEW = (
+        f"🔴 {new_activity_count} | "
+        "🎿 Activities заявки"
+    )
+
+else:
+    ACTIVITIES_VIEW = (
+        "🎿 Activities заявки"
+    )
+
+
+# =====================================
+# ПРИКЛЮЧЕНИ ПОРЪЧКИ
+# =====================================
+
+COMPLETED_VIEW = (
+    "📜 Приключени поръчки"
+)
+
+
+# =====================================
+# ИЗБОР НА ИЗГЛЕД
+# =====================================
+
+view_mode = st.radio(
+    "Изглед",
+    [
+        ACTIVE_VIEW,
+        ACTIVITIES_VIEW,
+        COMPLETED_VIEW
+    ],
+    horizontal=True,
+    label_visibility="collapsed",
+    key="reception_view_mode"
+)
 
 
 # =====================================
@@ -655,18 +721,6 @@ else:
         " Activities заявки"
     )
 
-
-view_mode = st.radio(
-    "Изглед",
-    [
-        ACTIVE_VIEW,
-        ACTIVITIES_VIEW,
-        COMPLETED_VIEW
-    ],
-    horizontal=True,
-    label_visibility="collapsed",
-    key="reception_view_mode"
-)
 # =====================================
 # ACTIVITIES ИЗГЛЕД
 # =====================================
