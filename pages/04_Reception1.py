@@ -746,7 +746,18 @@ view_mode = st.radio(
     label_visibility="collapsed",
     key="reception_view_mode"
 )
-
+view_mode = st.radio(
+    "Изглед",
+    [
+        ACTIVE_VIEW,
+        ACTIVITIES_VIEW,
+        SPA_VIEW,
+        COMPLETED_VIEW
+    ],
+    horizontal=True,
+    label_visibility="collapsed",
+    key="reception_view_mode"
+)
 
 
 # =====================================
