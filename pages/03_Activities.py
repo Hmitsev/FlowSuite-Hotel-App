@@ -8,13 +8,6 @@ from database.db import get_connection
 # =====================================
 # НАСТРОЙКИ НА СТРАНИЦАТА
 # =====================================
-
-st.set_page_config(
-    page_title="Hotel Activities",
-    page_icon="🎿",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
 with st.container(border=True):
 
     activity_col, info_col = st.columns(
@@ -88,6 +81,13 @@ with st.container(border=True):
 
                         st.session_state.activity_request_error = str(error)
                         st.rerun()
+st.set_page_config(
+    page_title="Hotel Activities",
+    page_icon="🎿",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
 
 # =====================================
 # SESSION STATE
