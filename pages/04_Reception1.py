@@ -863,7 +863,7 @@ metric_col1, metric_col2 = st.columns(2)
 
 with metric_col1:
     st.metric(
-        "Room Service поръчки",
+        "ROOM SEVICE поръчки",
         active_order_count
     )
 
