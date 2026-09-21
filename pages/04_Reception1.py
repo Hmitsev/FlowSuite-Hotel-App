@@ -79,125 +79,88 @@ with logout_col2:
 st.markdown(
     """
     <style>
+
     @keyframes bellShake {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        15% {
-            transform: rotate(18deg);
-        }
-
-        30% {
-            transform: rotate(-16deg);
-        }
-
-        45% {
-            transform: rotate(12deg);
-        }
-
-        60% {
-            transform: rotate(-10deg);
-        }
-
-        75% {
-            transform: rotate(6deg);
-        }
-
-        100% {
-            transform: rotate(0deg);
-        }
+        0% { transform: rotate(0deg); }
+        15% { transform: rotate(18deg); }
+        30% { transform: rotate(-16deg); }
+        45% { transform: rotate(12deg); }
+        60% { transform: rotate(-10deg); }
+        75% { transform: rotate(6deg); }
+        100% { transform: rotate(0deg); }
     }
 
     @keyframes notificationPulse {
         0% {
-            box-shadow:
-                0 0 0 0 rgba(255, 70, 70, 0.75);
+            box-shadow: 0 0 0 0 rgba(255,70,70,.75);
         }
 
         70% {
-            box-shadow:
-                0 0 0 10px rgba(255, 70, 70, 0);
+            box-shadow: 0 0 0 10px rgba(255,70,70,0);
         }
 
         100% {
-            box-shadow:
-                0 0 0 0 rgba(255, 70, 70, 0);
+            box-shadow: 0 0 0 0 rgba(255,70,70,0);
         }
     }
 
     .notification-bell-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 8px;
-        width: 100%;
-        min-height: 72px;
+        display:flex;
+        justify-content:flex-end;
+        align-items:center;
+        width:100%;
+        min-height:80px;
     }
 
     .notification-bell {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 54px;
-        height: 54px;
-        background:
-            linear-gradient(
-                135deg,
-                #D4AF37,
-                #FFD76A
-            );
-        border: 1px solid #FFE49A;
-        border-radius: 50%;
-        font-size: 29px;
-        cursor: default;
-        animation:
-            bellShake 0.85s ease-in-out infinite;
-        transform-origin: 50% 10%;
-        box-shadow:
-            0 0 18px rgba(212, 175, 55, 0.40);
+        position:relative;
+        font-size:56px;
+        animation: bellShake 0.85s ease-in-out infinite;
+        transform-origin:75% 10%;
+        line-height:1;
     }
 
     .notification-count {
-        position: absolute;
-        top: -7px;
-        right: -7px;
-        min-width: 25px;
-        height: 25px;
-        padding: 0 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #FF3B3B;
-        border: 2px solid #FFFFFF;
-        border-radius: 999px;
-        color: #FFFFFF;
-        font-size: 13px;
-        font-weight: 900;
-        line-height: 1;
-        animation:
-            notificationPulse 1.4s infinite;
+        position:absolute;
+        top:-10px;
+        right:-14px;
+
+        min-width:26px;
+        height:26px;
+
+        display:flex;
+        align-items:center;
+        justify-content:center;
+
+        background:#ff3b3b;
+        color:white;
+
+        border-radius:999px;
+        border:2px solid white;
+
+        font-size:13px;
+        font-weight:900;
+
+        animation: notificationPulse 1.4s infinite;
     }
 
-    @media only screen and (max-width: 768px) {
-        .notification-bell {
-            width: 46px;
-            height: 46px;
-            font-size: 24px;
+    @media only screen and (max-width:768px){
+
+        .notification-bell{
+            font-size:46px;
         }
 
-        .notification-count {
-            min-width: 22px;
-            height: 22px;
-            font-size: 12px;
+        .notification-count{
+            min-width:22px;
+            height:22px;
+            font-size:11px;
         }
     }
+
     </style>
     """,
     unsafe_allow_html=True
 )
-
 
 title_left_col, title_center_col, bell_col = st.columns(
     [1.3, 5, 1.3],
@@ -225,6 +188,26 @@ with title_center_col:
 with bell_col:
     notification_bell_placeholder = st.empty()
 
+    if total_new_notifications > 0:
+
+        notification_bell_placeholder.markdown(
+            f"""
+            <div class="notification-bell-wrapper">
+
+                <div class="notification-bell">
+
+                    🔔
+
+                    <div class="notification-count">
+                        {total_new_notifications}
+                    </div>
+
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 # =====================================
 # ЗАРЕЖДАНЕ НА ROOM SERVICE ПОРЪЧКИТЕ
