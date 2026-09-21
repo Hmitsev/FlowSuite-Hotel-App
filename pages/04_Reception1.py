@@ -675,18 +675,81 @@ def get_new_spa_request_count():
 
 
 # =====================================
-# ПРОМЯНА НА СТАТУС НА SPA ЗАЯВКА
+# ПРОМЯНА НА SPA СТАТУС И РЕЗЕРВАЦИЯ
 # =====================================
 
 def update_spa_request_status(
     request_id,
-    new_status
+    new_status,
+    reservation_date=None,
+    reservation_time=None,
+    duration_minutes=60
 ):
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-        if new_status in (
+        normalized_status = str(
+            new_status
+        ).strip().upper()
+
+        if normalized_status == "CONFIRMED":
+            if reservation_date is None:
+                raise ValueError(
+                    "Изберете дата за резервацията."
+                )
+
+            if reservation_time is None:
+                raise ValueError(
+                    "Изберете час за резервацията."
+                )
+
+            # Проверяваме дали часът вече е зает.
+            cur.execute(
+                """
+                SELECT id
+                FROM spa_requests
+                WHERE reservation_date = %s
+                  AND reservation_time = %s
+                  AND UPPER(TRIM(request_status)) = 'CONFIRMED'
+                  AND id <> %s
+                LIMIT 1
+                """,
+                (
+                    reservation_date,
+                    reservation_time,
+                    request_id
+                )
+            )
+
+            conflicting_request = cur.fetchone()
+
+            if conflicting_request is not None:
+                raise ValueError(
+                    "Избраният SPA час вече е резервиран."
+                )
+
+            cur.execute(
+                """
+                UPDATE spa_requests
+                SET
+                    request_status = 'CONFIRMED',
+                    reservation_date = %s,
+                    reservation_time = %s,
+                    duration_minutes = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = NULL
+                WHERE id = %s
+                """,
+                (
+                    reservation_date,
+                    reservation_time,
+                    int(duration_minutes),
+                    request_id
+                )
+            )
+
+        elif normalized_status in (
             "COMPLETED",
             "CANCELLED"
         ):
@@ -700,7 +763,7 @@ def update_spa_request_status(
                 WHERE id = %s
                 """,
                 (
-                    new_status,
+                    normalized_status,
                     request_id
                 )
             )
@@ -716,7 +779,7 @@ def update_spa_request_status(
                 WHERE id = %s
                 """,
                 (
-                    new_status,
+                    normalized_status,
                     request_id
                 )
             )
@@ -729,7 +792,7 @@ def update_spa_request_status(
 
     finally:
         cur.close()
-        conn.close()       
+        conn.close()  
 # =====================================
 # ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
 # =====================================
@@ -1063,10 +1126,33 @@ if view_mode == ACTIVITIES_VIEW:
     )
 
     st.stop()
-    # =====================================
+# =====================================
 # SPA ИЗГЛЕД
 # =====================================
+# =====================================
+# SPA ПОДНАВИГАЦИЯ
+# =====================================
 
+spa_view_options = [
+    "📋 Активни заявки",
+    "📅 SPA календар",
+    "🗄️ Архив"
+]
+
+if "spa_subview" not in st.session_state:
+    st.session_state.spa_subview = (
+        "📋 Активни заявки"
+    )
+
+spa_subview = st.radio(
+    "SPA изглед",
+    spa_view_options,
+    horizontal=True,
+    label_visibility="collapsed",
+    key="spa_subview"
+)
+
+st.divider()
 if view_mode == SPA_VIEW:
 
     try:
@@ -1202,9 +1288,132 @@ if view_mode == SPA_VIEW:
                 # =====================================
 
                 with st.form(
-                    key=f"spa_status_form_{request_id}",
-                    clear_on_submit=False
-                ):
+    key=f"spa_status_form_{request_id}",
+    clear_on_submit=False
+):
+
+    spa_statuses = [
+        "NEW",
+        "CONTACTED",
+        "CONFIRMED",
+        "COMPLETED",
+        "CANCELLED"
+    ]
+
+    selected_spa_status = st.selectbox(
+        "Статус",
+        spa_statuses,
+        index=(
+            spa_statuses.index(request_status)
+            if request_status in spa_statuses
+            else 0
+        ),
+        key=f"spa_status_select_{request_id}"
+    )
+
+    reservation_col1, reservation_col2 = (
+        st.columns(2)
+    )
+
+    with reservation_col1:
+        selected_reservation_date = st.date_input(
+            "Дата на резервацията",
+            value=(
+                spa_row[6]
+                if spa_row[6] is not None
+                else "today"
+            ),
+            key=f"spa_date_{request_id}"
+        )
+
+    spa_time_options = [
+        "09:00",
+        "10:00",
+        "11:00",
+        "12:00",
+        "13:00",
+        "14:00",
+        "15:00",
+        "16:00",
+        "17:00",
+        "18:00",
+        "19:00"
+    ]
+
+    current_time = (
+        spa_row[7].strftime("%H:%M")
+        if spa_row[7] is not None
+        else "09:00"
+    )
+
+    with reservation_col2:
+        selected_time_text = st.selectbox(
+            "Час",
+            spa_time_options,
+            index=(
+                spa_time_options.index(current_time)
+                if current_time in spa_time_options
+                else 0
+            ),
+            key=f"spa_time_{request_id}"
+        )
+
+    duration_minutes = st.selectbox(
+        "Продължителност",
+        [30, 60, 90, 120],
+        index=1,
+        format_func=lambda value: (
+            f"{value} минути"
+        ),
+        key=f"spa_duration_{request_id}"
+    )
+
+    save_spa_status = st.form_submit_button(
+        "💾 Запази статуса и резервацията",
+        type="primary",
+        use_container_width=True
+    )
+
+    if save_spa_status:
+        try:
+            from datetime import time
+
+            selected_hour, selected_minute = (
+                map(
+                    int,
+                    selected_time_text.split(":")
+                )
+            )
+
+            selected_reservation_time = time(
+                selected_hour,
+                selected_minute
+            )
+
+            update_spa_request_status(
+                request_id=request_id,
+                new_status=selected_spa_status,
+                reservation_date=(
+                    selected_reservation_date
+                ),
+                reservation_time=(
+                    selected_reservation_time
+                ),
+                duration_minutes=duration_minutes
+            )
+
+            st.session_state.spa_subview = (
+                "📋 Активни заявки"
+            )
+
+            st.rerun()
+
+        except Exception as error:
+            st.error(
+                "SPA заявката не беше обновена."
+                "\n\n"
+                f"Причина: {error}"
+            )
 
                     status_select_col, save_col = st.columns(
                         [2, 3],
@@ -1253,7 +1462,261 @@ if view_mode == SPA_VIEW:
                                 "\n\n"
                                 f"Причина: {error}"
                             )
+     # =====================================
+# SPA КАЛЕНДАР
+# =====================================
 
+if spa_subview == "📅 SPA календар":
+
+    from datetime import date
+
+    st.markdown(
+        """
+        <div style="
+            color:#D4AF37;
+            font-size:28px;
+            font-weight:900;
+            margin-bottom:15px;
+        ">
+            📅 SPA КАЛЕНДАР
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    calendar_date = st.date_input(
+        "Изберете дата",
+        value=date.today(),
+        key="spa_calendar_date"
+    )
+
+    try:
+        calendar_reservations = (
+            get_confirmed_spa_reservations(
+                calendar_date
+            )
+        )
+
+    except Exception as error:
+        st.error(
+            "SPA календарът не може да бъде зареден."
+            "\n\n"
+            f"Причина: {error}"
+        )
+        st.stop()
+
+    reserved_by_time = {
+        row[4].strftime("%H:%M"): row
+        for row in calendar_reservations
+        if row[4] is not None
+    }
+
+    spa_time_options = [
+        "09:00",
+        "10:00",
+        "11:00",
+        "12:00",
+        "13:00",
+        "14:00",
+        "15:00",
+        "16:00",
+        "17:00",
+        "18:00",
+        "19:00"
+    ]
+
+    st.caption(
+        f"График за {calendar_date.strftime('%d.%m.%Y')}"
+    )
+
+    for row_start in range(
+        0,
+        len(spa_time_options),
+        4
+    ):
+        time_columns = st.columns(4)
+
+        row_times = spa_time_options[
+            row_start:row_start + 4
+        ]
+
+        for column, time_text in zip(
+            time_columns,
+            row_times
+        ):
+            with column:
+                reservation = reserved_by_time.get(
+                    time_text
+                )
+
+                if reservation is None:
+                    st.success(
+                        f"🟢 {time_text}\n\nСвободно"
+                    )
+
+                else:
+                    reservation_id = reservation[0]
+                    room_number = reservation[1]
+                    service_name = reservation[2]
+
+                    st.error(
+                        f"🔴 {time_text}\n\n"
+                        f"Стая {room_number}\n\n"
+                        f"{service_name}\n\n"
+                        f"Заявка #{reservation_id}"
+                    )
+
+    st.divider()
+
+    st.subheader(
+        "Потвърдени резервации за деня"
+    )
+
+    if not calendar_reservations:
+        st.info(
+            "Няма потвърдени SPA резервации "
+            "за избраната дата."
+        )
+
+    else:
+        for reservation in calendar_reservations:
+            reservation_id = reservation[0]
+            room_number = reservation[1]
+            service_name = reservation[2]
+            reservation_time = reservation[4]
+            duration_minutes = reservation[5]
+
+            with st.container(border=True):
+                st.markdown(
+                    f"### 🕐 "
+                    f"{reservation_time.strftime('%H:%M')}"
+                )
+
+                st.write(
+                    f"**Заявка:** #{reservation_id}"
+                )
+
+                st.write(
+                    f"**Стая:** {room_number}"
+                )
+
+                st.write(
+                    f"**Услуга:** {service_name}"
+                )
+
+                st.write(
+                    f"**Продължителност:** "
+                    f"{duration_minutes or 60} минути"
+                )
+                # =====================================
+# SPA АРХИВ
+# =====================================
+
+if spa_subview == "🗄️ Архив":
+
+    st.markdown(
+        """
+        <div style="
+            color:#D4AF37;
+            font-size:28px;
+            font-weight:900;
+            margin-bottom:15px;
+        ">
+            🗄️ SPA АРХИВ
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    try:
+        archived_spa_rows = (
+            get_archived_spa_requests()
+        )
+
+    except Exception as error:
+        st.error(
+            "SPA архивът не може да бъде зареден."
+            "\n\n"
+            f"Причина: {error}"
+        )
+        st.stop()
+
+    if not archived_spa_rows:
+        st.info(
+            "Все още няма архивирани SPA заявки."
+        )
+
+    else:
+        for archive_row in archived_spa_rows:
+            request_id = archive_row[0]
+            room_number = archive_row[1]
+            service_name = archive_row[2]
+            guest_message = archive_row[3]
+            request_status = str(
+                archive_row[4] or ""
+            ).strip().upper()
+
+            created_at = archive_row[5]
+            reservation_date = archive_row[6]
+            reservation_time = archive_row[7]
+            duration_minutes = archive_row[8]
+            completed_at = archive_row[9]
+
+            status_label = (
+                "✅ Приключена"
+                if request_status == "COMPLETED"
+                else "❌ Отказана"
+            )
+
+            with st.container(border=True):
+                archive_col1, archive_col2 = (
+                    st.columns([5, 2])
+                )
+
+                with archive_col1:
+                    st.subheader(
+                        f"SPA заявка #{request_id}"
+                    )
+
+                    st.markdown(
+                        f"### 🛎️ Стая №{room_number}"
+                    )
+
+                    st.write(
+                        f"**Услуга:** {service_name}"
+                    )
+
+                    if guest_message:
+                        st.info(guest_message)
+
+                with archive_col2:
+                    st.write(
+                        f"**Статус:** {status_label}"
+                    )
+
+                    if reservation_date:
+                        st.write(
+                            "**Дата:** "
+                            f"{reservation_date.strftime('%d.%m.%Y')}"
+                        )
+
+                    if reservation_time:
+                        st.write(
+                            "**Час:** "
+                            f"{reservation_time.strftime('%H:%M')}"
+                        )
+
+                    if duration_minutes:
+                        st.write(
+                            "**Продължителност:** "
+                            f"{duration_minutes} минути"
+                        )
+
+                    if completed_at:
+                        st.caption(
+                            "Архивирана: "
+                            f"{completed_at.strftime('%d.%m.%Y %H:%M')}"
+                        )
     # =====================================
     # ОБНОВЯВАНЕ НА SPA
     # =====================================
