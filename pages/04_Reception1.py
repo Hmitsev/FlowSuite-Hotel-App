@@ -862,8 +862,22 @@ active_order_count = len(orders)
 metric_col1, metric_col2 = st.columns(2)
 
 with metric_col1:
+
+    st.markdown(
+        """
+        <h3 style="
+            color:#D4AF37;
+            font-weight:900;
+            text-align:center;
+        ">
+            ROOM SERVICE ПОРЪЧКИ
+        </h3>
+        """,
+        unsafe_allow_html=True
+    )
+
     st.metric(
-        "ROOM SEVICE поръчки",
+        "",
         active_order_count
     )
 
