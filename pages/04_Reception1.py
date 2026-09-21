@@ -530,9 +530,7 @@ if view_mode == ACTIVITIES_VIEW:
 
                 with title_col:
                     st.subheader(
-                        f"
-                        Activities заявка "
-                        f"#{request_id}"
+                        f"Activities заявка #{request_id}"
                     )
 
                     st.markdown(
