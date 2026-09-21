@@ -400,9 +400,62 @@ def update_activity_request_status(
 # ИЗБОР НА ИЗГЛЕД
 # =====================================
 
-ACTIVE_VIEW = "🍽️ Активни Room Service поръчки"
-COMPLETED_VIEW = "📜 Приключени поръчки"
-ACTIVITIES_VIEW = "🎿 Activities заявки"
+try:
+    (
+        new_activity_count,
+        new_activity_rooms
+    ) = get_new_activity_notifications()
+
+except Exception:
+    new_activity_count = 0
+    new_activity_rooms = []
+
+
+ACTIVE_VIEW = (
+    "🍽️ Активни Room Service поръчки"
+)
+
+COMPLETED_VIEW = (
+    "📜 Приключени поръчки"
+)
+
+
+# =====================================
+# ДИНАМИЧЕН НАДПИС ЗА ACTIVITIES
+# =====================================
+
+if new_activity_count > 0:
+    rooms_text = ", ".join(
+        str(room_number)
+        for room_number in new_activity_rooms
+    )
+
+    if new_activity_count == 1:
+        activity_count_text = "1 нова"
+    else:
+        activity_count_text = (
+            f"{new_activity_count} нови"
+        )
+
+    if len(new_activity_rooms) == 1:
+        room_text = (
+            f"стая {rooms_text}"
+        )
+    else:
+        room_text = (
+            f"стаи {rooms_text}"
+        )
+
+    ACTIVITIES_VIEW = (
+        "🔴 🎿 Activities заявки "
+        f"({activity_count_text} • {room_text})"
+    )
+
+else:
+    ACTIVITIES_VIEW = (
+        "🎿 Activities заявки"
+    )
+
 
 view_mode = st.radio(
     "Изглед",
