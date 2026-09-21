@@ -255,7 +255,7 @@ div[data-testid="stButton"] button {{
    ОСНОВНИ БУТОНИ
 ===================================================== */
 
-div[data-testid="stButton"] button[kind="primary"] {
+div[data-testid="stButton"] button[kind="primary"] {{
 
     height: 42px !important;
     min-height: 42px !important;
@@ -286,7 +286,7 @@ div[data-testid="stButton"] button[kind="primary"] {
         ) !important;
 }
 
-div[data-testid="stButton"] button[kind="primary"]:hover {
+div[data-testid="stButton"] button[kind="primary"]:hover {{
 
     transform: translateY(-1px);
 
@@ -299,7 +299,7 @@ div[data-testid="stButton"] button[kind="primary"]:hover {
         ) !important;
 }
 
-div[data-testid="stButton"] button[kind="primary"] p {
+div[data-testid="stButton"] button[kind="primary"] p {{
 
     color: #101010 !important;
 
