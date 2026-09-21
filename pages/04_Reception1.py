@@ -397,23 +397,45 @@ def update_activity_request_status(
 
 
 # =====================================
-# ИЗБОР НА ИЗГЛЕД
+# БРОЙ НОВИ ROOM SERVICE ПОРЪЧКИ
 # =====================================
 
+def get_new_room_service_notifications():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT COUNT(*)
+            FROM room_service_orders
+            WHERE order_status = 'NEW'
+            """
+        )
+
+        return cur.fetchone()[0]
+
+    finally:
+        cur.close()
+        conn.close()
+
+
 try:
-    (
-        new_activity_count,
-        new_activity_rooms
-    ) = get_new_activity_notifications()
+    new_room_service_count = (
+        get_new_room_service_notifications()
+    )
 
 except Exception:
-    new_activity_count = 0
-    new_activity_rooms = []
+    new_room_service_count = 0
 
-
-ACTIVE_VIEW = (
-    "🍽️ Активни Room Service поръчки"
-)
+if new_room_service_count > 0:
+    ACTIVE_VIEW = (
+        f"🔴 {new_room_service_count} | 🍽️ Активни Room Service поръчки"
+    )
+else:
+    ACTIVE_VIEW = (
+        "🍽️ Активни Room Service поръчки"
+    )
 
 COMPLETED_VIEW = (
     "📜 Приключени поръчки"
