@@ -285,16 +285,15 @@ st.markdown(page_style, unsafe_allow_html=True)
 # ЕЗИК
 # =========================================================
 
-if st.button(
-    "🇬🇧 EN" if st.session_state.lang == "bg" else "🇧🇬 BG",
-    key="lang_btn"
-):
-    st.session_state.lang = (
-        "en"
-        if st.session_state.lang == "bg"
-        else "bg"
-    )
+lang_toggle = st.toggle(
+    "🇬🇧 English",
+    value=(st.session_state.lang == "en")
+)
 
+new_lang = "en" if lang_toggle else "bg"
+
+if new_lang != st.session_state.lang:
+    st.session_state.lang = new_lang
     st.rerun()
 # =========================================================
 # ХОТЕЛСКИ БАНЕР
