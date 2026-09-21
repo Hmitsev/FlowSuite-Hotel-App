@@ -3,6 +3,7 @@ from pathlib import Path
 import streamlit as st
 
 from database.db import get_connection
+from translations import get_translations
 
 
 # =====================================
@@ -16,19 +17,26 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+
+# =====================================
+# ОБЩ ЕЗИК
+# =====================================
+
+if "lang" not in st.session_state:
+    st.session_state.lang = "bg"
+
+t = get_translations()
+
+
 # =====================================
 # SESSION STATE
 # =====================================
-
-if "activities_lang" not in st.session_state:
-    st.session_state.activities_lang = "bg"
 
 if "activity_request_id" not in st.session_state:
     st.session_state.activity_request_id = None
 
 if "activity_request_error" not in st.session_state:
     st.session_state.activity_request_error = None
-
 
 # =====================================
 # ПРЕВОДИ
@@ -335,8 +343,8 @@ def create_activity_request(
 # ГОРНА НАВИГАЦИЯ
 # =====================================
 
-back_col, space_col, language_col = st.columns(
-    [1.3, 5.7, 1.3]
+back_col, space_col = st.columns(
+    [1.3, 7]
 )
 
 with back_col:
@@ -346,27 +354,6 @@ with back_col:
         use_container_width=True
     ):
         st.switch_page("app.py")
-
-with language_col:
-    language_button_text = (
-        "🇬🇧 ENG"
-        if st.session_state.activities_lang == "bg"
-        else "🇧🇬 BG"
-    )
-
-    if st.button(
-        language_button_text,
-        key="activities_language",
-        use_container_width=True
-    ):
-        st.session_state.activities_lang = (
-            "en"
-            if st.session_state.activities_lang == "bg"
-            else "bg"
-        )
-
-        st.rerun()
-
 
 # =====================================
 # БАНЕР
