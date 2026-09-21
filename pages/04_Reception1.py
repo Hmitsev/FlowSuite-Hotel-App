@@ -870,7 +870,7 @@ with metric_col1:
             font-weight:900;
             text-align:center;
         ">
-            ROOM SERVICE ПОРЪЧКИ
+            ПОРЪЧКИ
         </h3>
         """,
         unsafe_allow_html=True
