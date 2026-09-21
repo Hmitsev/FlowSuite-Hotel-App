@@ -284,8 +284,7 @@ div[data-testid="stButton"] button[kind="primary"] {{
             55,
             0.18
         ) !important;
-}
-}
+}}
 
 div[data-testid="stButton"] button[kind="primary"]:hover {{
 
@@ -298,8 +297,8 @@ div[data-testid="stButton"] button[kind="primary"]:hover {{
             55,
             0.28
         ) !important;
-}
-}
+}}
+
 
 div[data-testid="stButton"] button[kind="primary"] p {{
 
