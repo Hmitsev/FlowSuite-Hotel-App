@@ -286,7 +286,7 @@ div[data-testid="stButton"] button[kind="primary"] {{
         ) !important;
 }}
 
-div[data-testid="stButton"] button[kind="primary"]:hover {{
+div[data-testid="stButton"] button:hover {{
 
     transform: translateY(-1px);
 
@@ -300,7 +300,7 @@ div[data-testid="stButton"] button[kind="primary"]:hover {{
 }}
 
 
-div[data-testid="stButton"] button[kind="primary"] p {{
+div[data-testid="stButton"] button p {{
 
     color: #101010 !important;
 
@@ -363,9 +363,9 @@ div[data-testid="stButton"] button[kind="secondary"]:hover {{
         min-height: 122px !important;
     }}
 
-    div[data-testid="stButton"] button[kind="primary"] {{
-        min-height: 42px;
-        font-size: 14px !important;
+   div[data-testid="stButton"] button {{
+        min-height: 34px;
+        font-size: 12px !important;
     }}
 
 </style>
@@ -450,8 +450,7 @@ room_service_column, spa_column, activities_column = st.columns(
 # =========================================================
 
 with room_service_column:
-    st.caption(
-        "Поръчайте храна и напитки директно до Вашата стая."
+        st.caption("Храна и напитки")
     )
 
     if st.button(
@@ -472,8 +471,8 @@ with room_service_column:
 
 with spa_column:
 
-    st.caption(
-        "Изпратете заявка за масаж или SPA процедура."
+    st.caption("Масажи")
+        
     )
 
     if st.button(
