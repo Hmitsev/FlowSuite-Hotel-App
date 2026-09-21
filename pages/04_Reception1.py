@@ -537,7 +537,10 @@ def get_spa_requests():
                 sr.service_name,
                 sr.guest_message,
                 sr.request_status,
-                sr.created_at
+                sr.created_at,
+                sr.reservation_date,
+                sr.reservation_time,
+                sr.duration_minutes
             FROM spa_requests sr
             JOIN hotel_rooms hr
                 ON hr.id = sr.room_id
@@ -547,6 +550,8 @@ def get_spa_requests():
                 'CONFIRMED'
             )
             ORDER BY
+                sr.reservation_date ASC NULLS LAST,
+                sr.reservation_time ASC NULLS LAST,
                 sr.created_at ASC,
                 sr.id ASC
             """
@@ -557,7 +562,89 @@ def get_spa_requests():
     finally:
         cur.close()
         conn.close()
+# =====================================
+# SPA АРХИВ
+# =====================================
 
+def get_archived_spa_requests():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                sr.id,
+                hr.room_number,
+                sr.service_name,
+                sr.guest_message,
+                sr.request_status,
+                sr.created_at,
+                sr.reservation_date,
+                sr.reservation_time,
+                sr.duration_minutes,
+                sr.completed_at
+            FROM spa_requests sr
+            JOIN hotel_rooms hr
+                ON hr.id = sr.room_id
+            WHERE UPPER(TRIM(sr.request_status)) IN (
+                'COMPLETED',
+                'CANCELLED'
+            )
+            ORDER BY
+                COALESCE(
+                    sr.completed_at,
+                    sr.updated_at,
+                    sr.created_at
+                ) DESC,
+                sr.id DESC
+            LIMIT 200
+            """
+        )
+
+        return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
+        # =====================================
+# ПОТВЪРДЕНИ SPA РЕЗЕРВАЦИИ ЗА ДАТА
+# =====================================
+
+def get_confirmed_spa_reservations(
+    selected_date
+):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                sr.id,
+                hr.room_number,
+                sr.service_name,
+                sr.reservation_date,
+                sr.reservation_time,
+                sr.duration_minutes,
+                sr.request_status
+            FROM spa_requests sr
+            JOIN hotel_rooms hr
+                ON hr.id = sr.room_id
+            WHERE sr.reservation_date = %s
+              AND UPPER(TRIM(sr.request_status)) = 'CONFIRMED'
+            ORDER BY
+                sr.reservation_time ASC,
+                sr.id ASC
+            """,
+            (selected_date,)
+        )
+
+        return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
 
 # =====================================
 # БРОЙ НОВИ SPA ЗАЯВКИ
