@@ -349,11 +349,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown(
-    f'<div class="hotel-services-title">{t["hotel_services"]}</div>',
-    unsafe_allow_html=True,
-)
-
 
 # =========================================================
 # КАРТИ НА УСЛУГИТЕ
