@@ -1,17 +1,33 @@
 
-import base64
 from pathlib import Path
 
 import streamlit as st
+
 from database.queries import create_room_service_order
+from translations import get_translations
+
 
 # =====================================
 # НАСТРОЙКИ НА СТРАНИЦАТА
 # =====================================
+
 st.set_page_config(
-   page_icon="🍽️",
+    page_title="Room Service",
+    page_icon="🍽️",
     layout="wide"
 )
+
+
+# =====================================
+# ОБЩ ЕЗИК
+# =====================================
+
+if "lang" not in st.session_state:
+    st.session_state.lang = "bg"
+
+t = get_translations()
+
+
 # =====================================
 # SESSION STATE
 # =====================================
@@ -27,6 +43,7 @@ if "room_service_sent" not in st.session_state:
 
 if "room_service_error" not in st.session_state:
     st.session_state.room_service_error = None
+``
 
 
 # =====================================
@@ -84,10 +101,12 @@ nav_col1, nav_col2 = st.columns([1, 5])
 
 with nav_col1:
     if st.button(
-        "⬅ Back",
+        t["back"],
+        key="room_service_back",
         use_container_width=True
     ):
         st.switch_page("app.py")
+
 
 
 
