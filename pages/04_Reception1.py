@@ -256,6 +256,100 @@ def update_room_service_order_status(
     finally:
         cur.close()
         conn.close()
+        # =====================================
+# ЗАРЕЖДАНЕ НА ACTIVITIES ЗАЯВКИТЕ
+# =====================================
+
+def get_activity_requests():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                ar.id,
+                hr.room_number,
+                ar.activity_name,
+                ar.guest_message,
+                ar.request_status,
+                ar.created_at
+            FROM activity_requests ar
+            JOIN hotel_rooms hr
+                ON hr.id = ar.room_id
+            WHERE ar.request_status NOT IN (
+                'COMPLETED',
+                'CANCELLED'
+            )
+            ORDER BY
+                ar.created_at ASC,
+                ar.id ASC
+            """
+        )
+
+        return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+# =====================================
+# ПРОМЯНА НА СТАТУС НА ACTIVITY ЗАЯВКА
+# =====================================
+
+def update_activity_request_status(
+    request_id,
+    new_status
+):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        if new_status in (
+            "COMPLETED",
+            "CANCELLED"
+        ):
+            cur.execute(
+                """
+                UPDATE activity_requests
+                SET
+                    request_status = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (
+                    new_status,
+                    request_id
+                )
+            )
+
+        else:
+            cur.execute(
+                """
+                UPDATE activity_requests
+                SET
+                    request_status = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = NULL
+                WHERE id = %s
+                """,
+                (
+                    new_status,
+                    request_id
+                )
+            )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
 
 
 # =====================================
