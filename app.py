@@ -437,14 +437,14 @@ room_service_column, spa_column, activities_column = st.columns(
 
 with room_service_column:
 
-    st.markdown("## 🍽️")
+    
     st.subheader("Room Service")
     st.caption(
         "Поръчайте храна и напитки директно до Вашата стая."
     )
 
     if st.button(
-        "🍽️ Room Service",
+        " Room Service",
         key="room_service_btn",
         type="primary",
         use_container_width=True
@@ -461,14 +461,13 @@ with room_service_column:
 
 with spa_column:
 
-    st.markdown("## 💆")
     st.subheader("SPA")
     st.caption(
         "Изпратете заявка за масаж или SPA процедура."
     )
 
     if st.button(
-        "💆 SPA",
+        " SPA",
         key="spa_btn",
         type="primary",
         use_container_width=True
@@ -485,14 +484,14 @@ with spa_column:
 
 with activities_column:
 
-    st.markdown("## 🎿")
+    
     st.subheader("Дейности")
     st.caption(
         "Разгледайте и резервирайте хотелски активности."
     )
 
     if st.button(
-        "🎿 Дейности",
+        " Дейности",
         key="activities_btn",
         type="primary",
         use_container_width=True
