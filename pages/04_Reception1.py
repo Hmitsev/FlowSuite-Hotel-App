@@ -883,7 +883,9 @@ if view_mode == ACTIVITIES_VIEW:
                 st.info(
                     guest_message
                 )
-                                # =====================================
+                
+                
+                # =====================================
                 # ФОРМА ЗА SPA СТАТУС
                 # =====================================
 
@@ -1244,21 +1246,25 @@ if not orders:
 
 else:
     for order_id, order_data in orders.items():
+
         room_number = order_data["room_number"]
         created_at = order_data["created_at"]
         order_status = order_data["order_status"]
+
         total_amount = float(
             order_data["total_amount"] or 0
         )
 
         with st.container(border=True):
+
             title_col, time_col, total_col = st.columns(
                 [4, 2, 2]
             )
 
             with title_col:
+
                 st.subheader(
-                    f" Room Service Order #{order_id}"
+                    f"🍽️ Room Service Order #{order_id}"
                 )
 
                 st.markdown(
@@ -1266,75 +1272,12 @@ else:
                 )
 
             with time_col:
+
                 if created_at:
                     st.caption(
                         "Получена: "
                         f"{created_at.strftime('%d.%m.%Y %H:%M')}"
                     )
-                                    st.markdown(
-                    "#### Съобщение от госта"
-                )
-
-                st.info(
-                    guest_message
-                )
-
-                # =====================================
-                # ФОРМА ЗА SPA СТАТУС
-                # =====================================
-
-                with st.form(
-                    key=f"spa_status_form_{request_id}",
-                    clear_on_submit=False
-                ):
-
-                    status_select_col, save_col = st.columns(
-                        [2, 3]
-                    )
-
-                    with status_select_col:
-
-                        selected_spa_status = st.selectbox(
-                            "Статус",
-                            spa_statuses,
-                            index=(
-                                spa_statuses.index(
-                                    request_status
-                                )
-                                if request_status in spa_statuses
-                                else 0
-                            ),
-                            key=f"spa_status_{request_id}"
-                        )
-
-                    with save_col:
-
-                        save_spa_status = (
-                            st.form_submit_button(
-                                "💾 Запази статуса",
-                                type="primary",
-                                use_container_width=True
-                            )
-                        )
-
-                    if save_spa_status:
-
-                        try:
-
-                            update_spa_request_status(
-                                request_id=request_id,
-                                new_status=selected_spa_status
-                            )
-
-                            st.rerun()
-
-                        except Exception as error:
-
-                            st.error(
-                                "Статусът не беше обновен."
-                                "\n\n"
-                                f"Причина: {error}"
-                            )
 
                 status_colors = {
                     "NEW": "🔴 NEW",
@@ -1343,25 +1286,31 @@ else:
                     "DELIVERING": "🚚 DELIVERING",
                     "COMPLETED": "✅ COMPLETED"
                 }
-                
+
                 st.write(
-                    f"Статус: {status_colors.get(order_status, order_status)}"
+                    f"Статус: "
+                    f"{status_colors.get(order_status, order_status)}"
                 )
 
             with total_col:
+
                 st.metric(
                     "Общо",
                     f"€ {total_amount:.2f}"
                 )
 
-            st.markdown("#### Артикули")
+            st.markdown(
+                "#### Артикули"
+            )
 
             for item in order_data["items"]:
+
                 item_col, qty_col, price_col = st.columns(
                     [6, 1, 2]
                 )
 
                 with item_col:
+
                     st.write(
                         f"**{item['item_name']}**"
                     )
@@ -1372,11 +1321,13 @@ else:
                         )
 
                 with qty_col:
+
                     st.write(
                         f"x{item['quantity']}"
                     )
 
                 with price_col:
+
                     item_total = (
                         float(item["unit_price"])
                         * int(item["quantity"])
@@ -1385,6 +1336,68 @@ else:
                     st.write(
                         f"€ {item_total:.2f}"
                     )
+
+            # =====================================
+            # ROOM SERVICE СТАТУС
+            # =====================================
+
+            if view_mode == ACTIVE_VIEW:
+
+                room_service_statuses = [
+                    "NEW",
+                    "PREPARING",
+                    "READY",
+                    "DELIVERING",
+                    "COMPLETED"
+                ]
+
+                with st.form(
+                    key=f"room_service_status_form_{order_id}",
+                    clear_on_submit=False
+                ):
+
+                    status_col, action_col = st.columns(
+                        [2, 3]
+                    )
+
+                    with status_col:
+
+                        selected_status = st.selectbox(
+                            "Статус",
+                            room_service_statuses,
+                            index=(
+                                room_service_statuses.index(
+                                    order_status
+                                )
+                                if order_status
+                                in room_service_statuses
+                                else 0
+                            ),
+                            key=f"room_service_status_{order_id}"
+                        )
+
+                    with action_col:
+
+                        save_status = (
+                            st.form_submit_button(
+                                "💾 Запази статуса",
+                                type="primary",
+                                use_container_width=True
+                            )
+                        )
+
+                    if save_status:
+
+                        try:
+
+                            update_room_service_order_status(
+                                order_id=order_id,
+                                new_status=selected_status
+                            )
+
+                            st.rerun()
+
+                        except 
             # =====================================
             # ROOM SERVICE СТАТУС
             # =====================================
