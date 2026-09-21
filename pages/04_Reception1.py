@@ -746,17 +746,7 @@ view_mode = st.radio(
     horizontal=True,
     label_visibility="collapsed",
     key="reception_view_mode",
-    index=[
-        ACTIVE_VIEW,
-        ACTIVITIES_VIEW,
-        SPA_VIEW,
-        COMPLETED_VIEW
-    ].index(
-        st.session_state.get(
-            "current_view",
-            ACTIVE_VIEW
-        )
-    )
+    
 )
 
 # =====================================
