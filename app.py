@@ -81,7 +81,6 @@ T = {
         "room_service": "Room Service",
         "room_service_description": "Храна и напитки",
         "spa": "SPA",
-        "spa_description": "Масажи и терапии",
         "activities": "Дейности",
         "activities_description": "Спорт и активности",
         "invalid_room": "Невалиден номер на стая.",
