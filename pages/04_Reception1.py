@@ -885,62 +885,6 @@ if view_mode == ACTIVITIES_VIEW:
                 )
                 
                 
-                # =====================================
-                # ФОРМА ЗА SPA СТАТУС
-                # =====================================
-
-                with st.form(
-                    key=f"spa_status_form_{request_id}",
-                    clear_on_submit=False
-                ):
-
-                    status_select_col, save_col = st.columns(
-                        [2, 3]
-                    )
-
-                    with status_select_col:
-
-                        selected_spa_status = st.selectbox(
-                            "Статус",
-                            spa_statuses,
-                            index=(
-                                spa_statuses.index(
-                                    request_status
-                                )
-                                if request_status in spa_statuses
-                                else 0
-                            ),
-                            key=f"spa_status_{request_id}"
-                        )
-
-                    with save_col:
-
-                        save_spa_status = (
-                            st.form_submit_button(
-                                "💾 Запази статуса",
-                                type="primary",
-                                use_container_width=True
-                            )
-                        )
-
-                    if save_spa_status:
-
-                        try:
-
-                            update_spa_request_status(
-                                request_id=request_id,
-                                new_status=selected_spa_status
-                            )
-
-                            st.rerun()
-
-                        except Exception as error:
-
-                            st.error(
-                                "Статусът не беше обновен."
-                                "\n\n"
-                                f"Причина: {error}"
-                            )
 
                 # =====================================
                 # ФОРМА ЗА ACTIVITY СТАТУС
@@ -1020,8 +964,7 @@ if view_mode == ACTIVITIES_VIEW:
     )
 
     st.stop()
-
-# =====================================
+    # =====================================
 # SPA ИЗГЛЕД
 # =====================================
 
@@ -1138,6 +1081,94 @@ if view_mode == SPA_VIEW:
                             request_status
                         )}"
                     )
+
+                    if created_at:
+                        st.caption(
+                            "Получена: "
+                            f"{created_at.strftime(
+                                '%d.%m.%Y %H:%M'
+                            )}"
+                        )
+
+                st.markdown(
+                    "#### Съобщение от госта"
+                )
+
+                st.info(
+                    guest_message
+                )
+
+                # =====================================
+                # ФОРМА ЗА SPA СТАТУС
+                # =====================================
+
+                with st.form(
+                    key=f"spa_status_form_{request_id}",
+                    clear_on_submit=False
+                ):
+
+                    status_select_col, save_col = st.columns(
+                        [2, 3],
+                        vertical_alignment="bottom"
+                    )
+
+                    with status_select_col:
+                        selected_spa_status = st.selectbox(
+                            "Статус",
+                            spa_statuses,
+                            index=(
+                                spa_statuses.index(
+                                    request_status
+                                )
+                                if request_status in spa_statuses
+                                else 0
+                            ),
+                            key=f"spa_status_select_{request_id}"
+                        )
+
+                    with save_col:
+                        save_spa_status = (
+                            st.form_submit_button(
+                                "💾 Запази статуса",
+                                type="primary",
+                                use_container_width=True
+                            )
+                        )
+
+                    if save_spa_status:
+                        try:
+                            update_spa_request_status(
+                                request_id=request_id,
+                                new_status=selected_spa_status
+                            )
+
+                            st.rerun()
+
+                        except Exception as error:
+                            st.error(
+                                "Статусът не беше обновен."
+                                "\n\n"
+                                f"Причина: {error}"
+                            )
+
+    # =====================================
+    # ОБНОВЯВАНЕ НА SPA
+    # =====================================
+
+    st.divider()
+
+    if st.button(
+        "🔄 Обнови SPA заявките",
+        key="refresh_spa_requests",
+        use_container_width=True
+    ):
+        st.rerun()
+
+    st.caption(
+        "Powered by HMITSEVAPPS"
+    )
+
+    st.stop()
 
 # =====================================
 # ЗАРЕЖДАНЕ НА ROOM SERVICE ДАННИТЕ
