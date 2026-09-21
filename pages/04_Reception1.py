@@ -816,6 +816,9 @@ if view_mode == ACTIVITIES_VIEW:
             guest_message = activity_row[3]
             request_status = activity_row[4]
             created_at = activity_row[5]
+            normalized_activity_status = str(
+                request_status or "NEW"
+            ).strip().upper()
 
             with st.container(border=True):
                 title_col, status_col = st.columns(
