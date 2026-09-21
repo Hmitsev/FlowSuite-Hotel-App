@@ -286,28 +286,25 @@ st.markdown(page_style, unsafe_allow_html=True)
 # ЕЗИКОВ БУТОН
 # =========================================================
 
-language_space, language_column = st.columns([8.8, 1.2])
+col1, col2 = st.columns([6, 1])
 
-with language_column:
-    language_button_text = (
-        "🇧🇬 BG"
-        if st.session_state.lang == "bg"
-        else "🇬🇧 EN"
-    )
+with col2:
 
     if st.button(
-        language_button_text,
-        key="language_toggle",
+        "🇬🇧 EN" if st.session_state.lang == "bg" else "🇧🇬 BG",
+        key="lang_btn",
         use_container_width=True
     ):
-        if st.session_state.lang == "bg":
-            st.session_state.lang = "en"
-        else:
-            st.session_state.lang = "bg"
+
+        st.session_state.lang = (
+            "en"
+            if st.session_state.lang == "bg"
+            else "bg"
+        )
 
         st.rerun()
 
-st.write("LANG:", st.session_state.lang)
+st.success(f"LANG = {st.session_state.lang}")
 # =========================================================
 # ХОТЕЛСКИ БАНЕР
 # =========================================================
