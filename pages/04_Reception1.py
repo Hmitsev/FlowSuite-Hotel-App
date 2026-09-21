@@ -876,7 +876,7 @@ ACTIVITIES_VIEW = (
 SPA_VIEW = (
     f"💆 SPA ({new_spa_count})"
 )
-
+COMPLETED_VIEW = "📜 Приключени"
 
 # =====================================
 # ЗАПАЗВАНЕ НА ИЗБРАНИЯ ИЗГЛЕД
