@@ -866,67 +866,70 @@ if view_mode == ACTIVITIES_VIEW:
                     guest_message
                 )
 
-                status_select_col, save_col = st.columns(
-                    [2, 3]
+# =====================================
+# ПРОМЯНА НА ACTIVITY СТАТУС
+# =====================================
+
+activity_statuses = [
+    "NEW",
+    "CONTACTED",
+    "CONFIRMED",
+    "COMPLETED",
+    "CANCELLED"
+]
+
+normalized_activity_status = str(
+    request_status or "NEW"
+).strip().upper()
+
+with st.form(
+    key=f"activity_status_form_{request_id}",
+    clear_on_submit=False
+):
+
+    status_select_col, save_col = st.columns(
+        [2, 3],
+        vertical_alignment="bottom"
+    )
+
+    with status_select_col:
+        selected_activity_status = st.selectbox(
+            "Статус",
+            activity_statuses,
+            index=(
+                activity_statuses.index(
+                    normalized_activity_status
                 )
+                if normalized_activity_status
+                in activity_statuses
+                else 0
+            ),
+            key=f"activity_status_select_{request_id}"
+        )
 
-                activity_statuses = [
-                    "NEW",
-                    "CONTACTED",
-                    "CONFIRMED",
-                    "COMPLETED",
-                    "CANCELLED"
-                ]
+    with save_col:
+        save_activity_status = st.form_submit_button(
+            "💾 Запази статуса",
+            type="primary",
+            use_container_width=True
+        )
 
-                with status_select_col:
-                    selected_activity_status = st.selectbox(
-                        "Статус",
-                        activity_statuses,
-                        index=(
-                            activity_statuses.index(
-                                request_status
-                            )
-                            if request_status
-                            in activity_statuses
-                            else 0
-                        ),
-                        key=(
-                            f"activity_status_"
-                            f"{request_id}"
-                        )
-                    )
+    if save_activity_status:
+        try:
+            update_activity_request_status(
+                request_id=request_id,
+                new_status=selected_activity_status
+            )
 
-                with save_col:
-                    if st.button(
-                        "✅ Запази статуса",
-                        key=(
-                            f"save_activity_status_"
-                            f"{request_id}"
-                        ),
-                        type="primary",
-                        use_container_width=True
-                    ):
-                        try:
-                            update_activity_request_status(
-                                request_id=request_id,
-                                new_status=(
-                                    selected_activity_status
-                                )
-                            )
+            st.rerun()
 
-                            st.success(
-                                "Статусът на заявката "
-                                "е обновен."
-                            )
+        except Exception as error:
+            st.error(
+                "Статусът не беше обновен."
+                "\n\n"
+                f"Причина: {error}"
+            )
 
-                            st.rerun()
-
-                        except Exception as error:
-                            st.error(
-                                "Статусът не беше обновен."
-                                "\n\n"
-                                f"Причина: {error}"
-                            )
 
     st.divider()
 
@@ -1074,50 +1077,56 @@ if view_mode == SPA_VIEW:
                     guest_message
                 )
 
-                status_select_col, save_col = st.columns(
-                    [2, 3]
+# =====================================
+# ПРОМЯНА НА SPA СТАТУС
+# =====================================
+
+with st.form(
+    key=f"spa_status_form_{request_id}",
+    clear_on_submit=False
+):
+
+    status_select_col, save_col = st.columns(
+        [2, 3],
+        vertical_alignment="bottom"
+    )
+
+    with status_select_col:
+        selected_spa_status = st.selectbox(
+            "Статус",
+            spa_statuses,
+            index=(
+                spa_statuses.index(
+                    request_status
                 )
+                if request_status in spa_statuses
+                else 0
+            ),
+            key=f"spa_status_select_{request_id}"
+        )
 
-                with status_select_col:
-                    selected_spa_status = st.selectbox(
-                        "Статус",
-                        spa_statuses,
-                        index=(
-                            spa_statuses.index(
-                                request_status
-                            )
-                            if request_status in spa_statuses
-                            else 0
-                        ),
-                        key=f"spa_status_{request_id}"
-                    )
+    with save_col:
+        save_spa_status = st.form_submit_button(
+            "💾 Запази статуса",
+            type="primary",
+            use_container_width=True
+        )
 
-                with save_col:
-                    if st.button(
-                        "✅ Запази статуса",
-                        key=f"save_spa_status_{request_id}",
-                        type="primary",
-                        use_container_width=True
-                    ):
-                        try:
-                            update_spa_request_status(
-                                request_id=request_id,
-                                new_status=selected_spa_status
-                            )
+    if save_spa_status:
+        try:
+            update_spa_request_status(
+                request_id=request_id,
+                new_status=selected_spa_status
+            )
 
-                            st.success(
-                                "Статусът на SPA заявката "
-                                "е обновен."
-                            )
+            st.rerun()
 
-                            st.rerun()
-
-                        except Exception as error:
-                            st.error(
-                                "Статусът не беше обновен."
-                                "\n\n"
-                                f"Причина: {error}"
-                            )
+        except Exception as error:
+            st.error(
+                "Статусът не беше обновен."
+                "\n\n"
+                f"Причина: {error}"
+            )
 
     st.divider()
 
@@ -1318,9 +1327,72 @@ else:
                         f"€ {item_total:.2f}"
                     )
 
-            if view_mode == ACTIVE_VIEW:
-                status_col, action_col = st.columns(
-                    [2, 3]
+            # =====================================
+# ПРОМЯНА НА ROOM SERVICE СТАТУС
+# =====================================
+
+if view_mode == ACTIVE_VIEW:
+
+    room_service_statuses = [
+        "NEW",
+        "PREPARING",
+        "READY",
+        "DELIVERING",
+        "COMPLETED"
+    ]
+
+    normalized_order_status = str(
+        order_status or "NEW"
+    ).strip().upper()
+
+    with st.form(
+        key=f"room_service_status_form_{order_id}",
+        clear_on_submit=False
+    ):
+
+        status_col, action_col = st.columns(
+            [2, 3],
+            vertical_alignment="bottom"
+        )
+
+        with status_col:
+            selected_status = st.selectbox(
+                "Статус",
+                room_service_statuses,
+                index=(
+                    room_service_statuses.index(
+                        normalized_order_status
+                    )
+                    if normalized_order_status
+                    in room_service_statuses
+                    else 0
+                ),
+                key=f"room_service_status_select_{order_id}"
+            )
+
+        with action_col:
+            save_room_service_status = (
+                st.form_submit_button(
+                    "💾 Запази статуса",
+                    type="primary",
+                    use_container_width=True
+                )
+            )
+
+        if save_room_service_status:
+            try:
+                update_room_service_order_status(
+                    order_id=order_id,
+                    new_status=selected_status
+                )
+
+                st.rerun()
+
+            except Exception as error:
+                st.error(
+                    "Статусът не беше обновен."
+                    "\n\n"
+                    f"Причина: {error}"
                 )
 
                 with status_col:
