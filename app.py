@@ -69,6 +69,7 @@ def open_hotel_page(page_path, service_name_bg, service_name_en):
 # =========================================================
 if "lang" not in st.session_state:
     st.session_state.lang = "bg"
+
 t = get_translations()
 
 # =========================================================
@@ -281,6 +282,10 @@ div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] p {
 st.markdown(page_style, unsafe_allow_html=True)
 
 
+# =========================================================
+# ЕЗИКОВ БУТОН
+# =========================================================
+
 language_space, language_column = st.columns([8.8, 1.2])
 
 with language_column:
@@ -293,13 +298,12 @@ with language_column:
     if st.button(
         language_button_text,
         key="language_toggle",
-        use_container_width=True,
+        use_container_width=True
     ):
-        st.session_state.lang = (
-            "en"
-            if st.session_state.lang == "bg"
-            else "bg"
-        )
+        if st.session_state.lang == "bg":
+            st.session_state.lang = "en"
+        else:
+            st.session_state.lang = "bg"
 
         st.rerun()
 
@@ -322,110 +326,118 @@ st.markdown(
 # =========================================================
 # КАРТИ НА УСЛУГИТЕ
 # =========================================================
-st.markdown("<div style='height:120px;'></div>", unsafe_allow_html=True)
+
+st.markdown(
+    "<div style='height:120px;'></div>",
+    unsafe_allow_html=True
+)
+
 room_service_column, spa_column, activities_column = st.columns(
     3,
-    gap="medium",
+    gap="medium"
 )
 
 
 # =========================================================
 # ROOM SERVICE
 # =========================================================
+
 with room_service_column:
     st.markdown(
-    f"""
-    <div style="
-        text-align:center;
-        color:#F5D77B;
-        font-size:15px;
-        font-weight:600;
-        margin-bottom:8px;
-    ">
-        st.caption(t["room_service_description"]),
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        f"""
+        <div style="
+            text-align:center;
+            color:#F5D77B;
+            font-size:15px;
+            font-weight:600;
+            margin-bottom:8px;
+        ">
+            {t["room_service_description"]}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if st.button(
         f"🍽️ {t['room_service']}",
         key="room_service_btn",
         type="primary",
-        use_container_width=True,
+        use_container_width=True
     ):
         open_hotel_page(
             "pages/01_Room_Service.py",
             "Room Service",
-            "Room Service",
+            "Room Service"
         )
 
 
 # =========================================================
 # SPA
 # =========================================================
+
 with spa_column:
     st.markdown(
-    f"""
-    <div style="
-        text-align:center;
-        color:#F5D77B;
-        font-size:15px;
-        font-weight:600;
-        margin-bottom:8px;
-    ">
-        st.caption(t["spa_description"]),
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        f"""
+        <div style="
+            text-align:center;
+            color:#F5D77B;
+            font-size:15px;
+            font-weight:600;
+            margin-bottom:8px;
+        ">
+            {t["spa_description"]}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if st.button(
         f"💆 {t['spa']}",
         key="spa_btn",
         type="primary",
-        use_container_width=True,
+        use_container_width=True
     ):
         open_hotel_page(
             "pages/02_SPA.py",
             "SPA",
-            "SPA",
+            "SPA"
         )
 
 
 # =========================================================
 # ACTIVITIES
 # =========================================================
+
 with activities_column:
     st.markdown(
-    f"""
-    <div style="
-        text-align:center;
-        color:#F5D77B;
-        font-size:15px;
-        font-weight:600;
-        margin-bottom:8px;
-    ">
-        st.caption(t["activities_description"]),
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        f"""
+        <div style="
+            text-align:center;
+            color:#F5D77B;
+            font-size:15px;
+            font-weight:600;
+            margin-bottom:8px;
+        ">
+            {t["activities_description"]}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     if st.button(
         f"🎿 {t['activities']}",
         key="activities_btn",
         type="primary",
-        use_container_width=True,
+        use_container_width=True
     ):
         open_hotel_page(
             "pages/03_Activities.py",
             "Дейности",
-            "Activities",
+            "Activities"
         )
 
 
 # =========================================================
 # БРАНДИРАНЕ
 # =========================================================
-st.caption("Powered by HMITSEVAPPS")
+st.caption(t["footer"])
