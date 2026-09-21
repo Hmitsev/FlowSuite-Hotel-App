@@ -50,6 +50,22 @@ TRANSLATIONS = {
         "example_message": "Примерно съобщение:",
         "ski_example": "Желая да резервирам ски оборудване за 22.09.2026 г.",
         "activity_reception_message": "Рецепцията ще се свърже с Вас за уточняване и потвърждение на резервацията.",
+        # Велосипеди
+        "bike_rental": "Наем на велосипед",
+        "bike_description": (
+            "Резервирайте велосипед директно чрез хотела."
+        ),
+        "bike_instruction": (
+            "Моля, посочете дата, час и брой велосипеди."
+        ),
+        "bike_placeholder": (
+            "Желая да наема 2 велосипеда за "
+            "22.09.2026 г. от 10:00 ч."
+        ),
+        "room_not_found": (
+            "Стая №{room_number} не е намерена "
+            "или не е активна."
+        ),
 
         # Room Service
         "room_service_menu": "Меню Рум Сървиз",
@@ -141,6 +157,22 @@ TRANSLATIONS = {
         "example_message": "Example message:",
         "ski_example": "I would like to reserve ski equipment for September 22, 2026.",
         "activity_reception_message": "Reception will contact you to finalize and confirm the reservation.",
+        # Bicycles
+        "bike_rental": "Bike rental",
+        "bike_description": (
+            "Reserve a bicycle directly through the hotel."
+        ),
+        "bike_instruction": (
+            "Please specify the date, time and number of bicycles."
+        ),
+        "bike_placeholder": (
+            "I would like to rent 2 bicycles on "
+            "September 22, 2026 at 10:00 AM."
+        ),
+        "room_not_found": (
+            "Room {room_number} was not found "
+            "or is not active."
+        ),
 
         # Room Service
         "room_service_menu": "Room Service Menu",
@@ -185,30 +217,7 @@ TRANSLATIONS = {
     },
 }
 
-# Велосипеди
-"bike_rental": "Наем на велосипед",
-"bike_description": (
-    "Резервирайте велосипед директно чрез хотела."
-),
-"bike_instruction": (
-    "Моля, посочете дата, час и брой велосипеди."
-),
-"bike_placeholder": (
-    "Желая да наема 2 велосипеда за "
-    "22.09.2026 г. от 10:00 ч."
-),
-# Bicycles
-"bike_rental": "Bike rental",
-"bike_description": (
-    "Reserve a bicycle directly through the hotel."
-),
-"bike_instruction": (
-    "Please specify the date, time and number of bicycles."
-),
-"bike_placeholder": (
-    "I would like to rent 2 bicycles on "
-    "September 22, 2026 at 10:00 AM."
-),
+
 def get_language():
     return st.session_state.get("lang", "bg")
 
