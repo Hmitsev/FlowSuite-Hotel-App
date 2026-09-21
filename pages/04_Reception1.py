@@ -881,15 +881,10 @@ activity_statuses = [
     "CANCELLED"
 ]
 
-normalized_activity_status = str(
-    request_status or "NEW"
-).strip().upper()
-
 with st.form(
     key=f"activity_status_form_{request_id}",
     clear_on_submit=False
 ):
-
     status_select_col, save_col = st.columns(
         [2, 3],
         vertical_alignment="bottom"
@@ -900,11 +895,8 @@ with st.form(
             "Статус",
             activity_statuses,
             index=(
-                activity_statuses.index(
-                    normalized_activity_status
-                )
-                if normalized_activity_status
-                in activity_statuses
+                activity_statuses.index(request_status)
+                if request_status in activity_statuses
                 else 0
             ),
             key=f"activity_status_select_{request_id}"
