@@ -81,6 +81,7 @@ T = {
         "room_service": "Room Service",
         "room_service_description": "Храна и напитки",
         "spa": "SPA",
+        "spa_description": "Масажи и терапии",
         "activities": "Дейности",
         "activities_description": "Спорт и активности",
         "invalid_room": "Невалиден номер на стая.",
@@ -91,6 +92,7 @@ T = {
         "room_service": "Room Service",
         "room_service_description": "Food and drinks",
         "spa": "SPA",
+        "spa_description": "Масажи и терапии",
         "activities": "Activities",
         "activities_description": "Sports and activities",
         "invalid_room": "Invalid room number.",
@@ -366,7 +368,20 @@ room_service_column, spa_column, activities_column = st.columns(
 # ROOM SERVICE
 # =========================================================
 with room_service_column:
-    st.caption(t["room_service_description"])
+    st.markdown(
+    f"""
+    <div style="
+        text-align:center;
+        color:#F5D77B;
+        font-size:15px;
+        font-weight:600;
+        margin-bottom:8px;
+    ">
+        {t["room_service_description"]}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
     if st.button(
         "🍽️ Room Service",
@@ -385,7 +400,20 @@ with room_service_column:
 # SPA
 # =========================================================
 with spa_column:
-    st.caption(t["spa_description"])
+    st.markdown(
+    f"""
+    <div style="
+        text-align:center;
+        color:#F5D77B;
+        font-size:15px;
+        font-weight:600;
+        margin-bottom:8px;
+    ">
+        {t["spa_description"]}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
     if st.button(
         "💆 SPA",
@@ -404,7 +432,20 @@ with spa_column:
 # ACTIVITIES
 # =========================================================
 with activities_column:
-    st.caption(t["activities_description"])
+    st.markdown(
+    f"""
+    <div style="
+        text-align:center;
+        color:#F5D77B;
+        font-size:15px;
+        font-weight:600;
+        margin-bottom:8px;
+    ">
+        {t["activities_description"]}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
     if st.button(
         "🎿 Activities",
