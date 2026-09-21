@@ -757,26 +757,7 @@ view_mode = st.radio(
 )
 
 
-# =====================================
-# БРОЙ НОВИ ЗАЯВКИ ПОД НАВИГАЦИЯТА
-# =====================================
 
-notice_col1, notice_col2, notice_col3 = st.columns(3)
-
-with notice_col1:
-    st.caption(
-        f"🔔 Нови Room Service: {new_room_service_count}"
-    )
-
-with notice_col2:
-    st.caption(
-        f"🎿 Нови Activities: {int(new_activity_count or 0)}"
-    )
-
-with notice_col3:
-    st.caption(
-        f"🪷 Нови SPA: {new_spa_count}"
-    )
 
 # =====================================
 # ACTIVITIES ИЗГЛЕД
