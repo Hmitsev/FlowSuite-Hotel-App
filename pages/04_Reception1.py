@@ -59,7 +59,7 @@ if not st.session_state.reception_auth:
 # =====================================
 
 st_autorefresh(
-    interval=20000,
+    interval=30000,
     limit=None,
     key="reception_auto_refresh"
 )
