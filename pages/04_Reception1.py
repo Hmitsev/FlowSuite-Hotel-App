@@ -707,11 +707,7 @@ else:
     notification_bell_placeholder.markdown(
         """
         <div class="notification-bell-wrapper">
-            <div style="
-                font-size:42px;
-                line-height:1;
-                opacity:0.45;
-            ">
+            <div class="notification-bell">
                 🔔
             </div>
         </div>
