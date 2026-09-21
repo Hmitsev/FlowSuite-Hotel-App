@@ -281,7 +281,10 @@ div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] p {
 
 st.markdown(page_style, unsafe_allow_html=True)
 
+if st.button("CLICK ME"):
+    st.success("БУТОНЪТ РАБОТИ!")
 
+st.write("LANG =", st.session_state.lang)
 # =========================================================
 # ЕЗИК
 # =========================================================
