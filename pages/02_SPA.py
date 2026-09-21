@@ -146,16 +146,14 @@ except Exception:
 if st.session_state.spa_request_success:
 
     st.success(
-        """
-st.success(
-    f"""
+        f"""
 ✅ {t["request_success"]}
 
 {t["spa_success_service"]}
 
 {t["spa_success_contact"]}
-    """
-)
+"""
+    )
 
     st.session_state.spa_request_success = False
 # =====================================
@@ -171,13 +169,15 @@ with st.container(border=True):
 
     with activity_col:
 
-           st.subheader(
-                f"💆 {t['relaxing_massage']}"
-            )
+           with activity_col:
+
+                st.subheader(
+                    f"💆 {t['relaxing_massage']}"
+                )
             
-            st.write(
-                t["relaxing_massage_description"]
-            )
+                st.write(
+                    t["relaxing_massage_description"]
+                )
 
 
     with info_col:
