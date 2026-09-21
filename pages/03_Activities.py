@@ -77,7 +77,6 @@ TRANSLATIONS = {
     "en": {
         "back": "⬅ Back",
         "room": "Room",
-        "title": "Hotel Activities",
         "activity_name": "Ski Equipment Rental",
         "activity_description": (
             "Reserve ski equipment directly through the hotel."
