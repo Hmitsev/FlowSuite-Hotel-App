@@ -292,7 +292,7 @@ def get_activity_requests():
     finally:
         cur.close()
         conn.close()
-        # =====================================
+# =====================================
 # БРОЙ НОВИ ACTIVITIES ЗАЯВКИ
 # =====================================
 
@@ -427,6 +427,30 @@ try:
 
 except Exception:
     new_room_service_count = 0
+# =====================================
+# ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
+# =====================================
+
+try:
+    (
+        new_activity_count,
+        new_activity_rooms
+    ) = get_new_activity_notifications()
+
+except Exception:
+    new_activity_count = 0
+    new_activity_rooms = []
+
+
+try:
+    new_room_service_count = (
+        get_new_room_service_notifications()
+    )
+
+except Exception:
+    new_room_service_count = 0
+``
+    
 
 
 # =====================================
