@@ -417,8 +417,6 @@ st.markdown(
             font-weight:900;
             letter-spacing:1px;
         ">
-            🎿 {t["title"]}
-        </div>
     </div>
     """,
     unsafe_allow_html=True
