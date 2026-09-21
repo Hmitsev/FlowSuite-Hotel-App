@@ -1,5 +1,7 @@
 import streamlit as st
 from database.db import get_connection
+if "spa_request_success" not in st.session_state:
+    st.session_state.spa_request_success = False
 
 # =====================================
 # НОМЕР НА СТАЯТА ОТ QR КОДА
@@ -125,7 +127,23 @@ try:
 
 except Exception:
     pass
+# =====================================
+# УСПЕШНО ИЗПРАТЕНА ЗАЯВКА
+# =====================================
 
+if st.session_state.spa_request_success:
+
+    st.success(
+        """
+✅ Заявката е изпратена успешно до рецепция.
+
+💆 Услуга: Relaxing Massage
+
+🛎️ От рецепция ще се свържат с Вас за потвърждение.
+        """
+    )
+
+    st.session_state.spa_request_success = False
 # =====================================
 # SPA КАРТА
 # =====================================
@@ -197,9 +215,7 @@ with st.container(border=True):
                             guest_message=reservation_text
                         )
 
-                        st.session_state.activity_request_id = request_id
-                        st.session_state.activity_request_error = None
-
+                        st.session_state.spa_request_success = True
                         st.rerun()
 
                     except Exception as error:
