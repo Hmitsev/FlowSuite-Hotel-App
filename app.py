@@ -290,9 +290,9 @@ language_space, language_column = st.columns([8.8, 1.2])
 
 with language_column:
     language_button_text = (
-        "🇬🇧 EN"
+        "🇧🇬 BG"
         if st.session_state.lang == "bg"
-        else "🇧🇬 BG"
+        else "🇬🇧 EN""
     )
 
     if st.button(
