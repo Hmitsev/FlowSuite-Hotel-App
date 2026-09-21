@@ -447,12 +447,12 @@ if new_activity_count > 0:
         )
 
     ACTIVITIES_VIEW = (
-        f"🔴 {new_activity_count} | 🎿 Activities заявки"
+        f"🔴 {new_activity_count} |  Activities заявки"
     )
 
 else:
     ACTIVITIES_VIEW = (
-        "🎿 Activities заявки"
+        " Activities заявки"
     )
 
 
@@ -485,7 +485,7 @@ if view_mode == ACTIVITIES_VIEW:
 
     # Останалата Activities логика продължава тук
 
-    st.markdown("## 🎿 Activities заявки")
+    st.markdown("##  Activities заявки")
 
     activity_col1, activity_col2 = st.columns(2)
 
@@ -530,7 +530,8 @@ if view_mode == ACTIVITIES_VIEW:
 
                 with title_col:
                     st.subheader(
-                        f"🎿 Activities заявка "
+                        f"
+                        Activities заявка "
                         f"#{request_id}"
                     )
 
