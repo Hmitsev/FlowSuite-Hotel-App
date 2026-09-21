@@ -85,12 +85,12 @@ with st.container(border=True):
                 height=130
             )
 
-            if st.button(
-                "✅ Изпрати заявка",
-                key="massage_request",
-                type="primary",
-                use_container_width=True
-            ):
+    if st.button(
+        "✅ Изпрати заявка",
+        key="massage_request",
+        type="primary",
+        use_container_width=True
+    ):
 
     if not reservation_text.strip():
 
