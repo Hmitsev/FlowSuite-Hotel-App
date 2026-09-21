@@ -90,7 +90,6 @@ T = {
     "bg": {
         "hotel_services": "Хотелски услуги",
         "welcome": "Добре дошли",
-        "room": "Стая",
         "room_service": "Room Service",
         "room_service_description": (
             "Поръчайте храна и напитки директно до Вашата стая."
