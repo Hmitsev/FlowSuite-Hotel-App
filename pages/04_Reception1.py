@@ -356,24 +356,205 @@ def update_activity_request_status(
 # ИЗБОР НА ИЗГЛЕД
 # =====================================
 
-ACTIVE_VIEW = " Активни Room Service поръчки"
+ACTIVE_VIEW = "🍽️ Активни Room Service поръчки"
 COMPLETED_VIEW = "📜 Приключени поръчки"
+ACTIVITIES_VIEW = "🎿 Activities заявки"
 
 view_mode = st.radio(
     "Изглед",
     [
         ACTIVE_VIEW,
+        ACTIVITIES_VIEW,
         COMPLETED_VIEW
     ],
     horizontal=True,
     label_visibility="collapsed",
     key="reception_view_mode"
 )
+# =====================================
+# ACTIVITIES ИЗГЛЕД
+# =====================================
 
+if view_mode == ACTIVITIES_VIEW:
 
+    try:
+        activity_rows = get_activity_requests()
+
+    except Exception as error:
+        st.error(
+            "Activities заявките не могат да бъдат "
+            "заредени.\n\n"
+            f"Причина: {error}"
+        )
+        st.stop()
+
+    st.markdown("## 🎿 Activities заявки")
+
+    activity_col1, activity_col2 = st.columns(2)
+
+    with activity_col1:
+        st.metric(
+            "Активни заявки",
+            len(activity_rows)
+        )
+
+    with activity_col2:
+        new_activity_count = sum(
+            1
+            for row in activity_rows
+            if row[4] == "NEW"
+        )
+
+        st.metric(
+            "Нови заявки",
+            new_activity_count
+        )
+
+    st.divider()
+
+    if not activity_rows:
+        st.success(
+            "Няма активни Activities заявки."
+        )
+
+    else:
+        for activity_row in activity_rows:
+            request_id = activity_row[0]
+            room_number = activity_row[1]
+            activity_name = activity_row[2]
+            guest_message = activity_row[3]
+            request_status = activity_row[4]
+            created_at = activity_row[5]
+
+            with st.container(border=True):
+                title_col, status_col = st.columns(
+                    [5, 2]
+                )
+
+                with title_col:
+                    st.subheader(
+                        f"🎿 Activities заявка "
+                        f"#{request_id}"
+                    )
+
+                    st.markdown(
+                        f"### 🛎️ Стая №{room_number}"
+                    )
+
+                    st.write(
+                        f"**Дейност:** {activity_name}"
+                    )
+
+                with status_col:
+                    status_labels = {
+                        "NEW": "🔴 NEW",
+                        "CONTACTED": "🟡 CONTACTED",
+                        "CONFIRMED": "🟢 CONFIRMED",
+                        "COMPLETED": "✅ COMPLETED",
+                        "CANCELLED": "❌ CANCELLED"
+                    }
+
+                    st.write(
+                        "Статус: "
+                        f"{status_labels.get(
+                            request_status,
+                            request_status
+                        )}"
+                    )
+
+                    if created_at:
+                        st.caption(
+                            "Получена: "
+                            f"{created_at.strftime(
+                                '%d.%m.%Y %H:%M'
+                            )}"
+                        )
+
+                st.markdown("#### Съобщение от госта")
+
+                st.info(
+                    guest_message
+                )
+
+                status_select_col, save_col = st.columns(
+                    [2, 3]
+                )
+
+                activity_statuses = [
+                    "NEW",
+                    "CONTACTED",
+                    "CONFIRMED",
+                    "COMPLETED",
+                    "CANCELLED"
+                ]
+
+                with status_select_col:
+                    selected_activity_status = st.selectbox(
+                        "Статус",
+                        activity_statuses,
+                        index=(
+                            activity_statuses.index(
+                                request_status
+                            )
+                            if request_status
+                            in activity_statuses
+                            else 0
+                        ),
+                        key=(
+                            f"activity_status_"
+                            f"{request_id}"
+                        )
+                    )
+
+                with save_col:
+                    if st.button(
+                        "✅ Запази статуса",
+                        key=(
+                            f"save_activity_status_"
+                            f"{request_id}"
+                        ),
+                        type="primary",
+                        use_container_width=True
+                    ):
+                        try:
+                            update_activity_request_status(
+                                request_id=request_id,
+                                new_status=(
+                                    selected_activity_status
+                                )
+                            )
+
+                            st.success(
+                                "Статусът на заявката "
+                                "е обновен."
+                            )
+
+                            st.rerun()
+
+                        except Exception as error:
+                            st.error(
+                                "Статусът не беше обновен."
+                                "\n\n"
+                                f"Причина: {error}"
+                            )
+
+    st.divider()
+
+    if st.button(
+        "🔄 Обнови Activities заявките",
+        key="refresh_activity_requests",
+        use_container_width=True
+    ):
+        st.rerun()
+
+    st.caption(
+        "Powered by HMITSEVAPPS"
+    )
+
+    st.stop()
 
 # =====================================
-# ЗАРЕЖДАНЕ НА ДАННИТЕ
+# ЗАРЕЖДАНЕ НА ROOM SERVICE ДАННИТЕ
 # =====================================
 
 try:
