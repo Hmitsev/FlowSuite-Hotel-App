@@ -1,523 +1,287 @@
-import streamlit as st
+import base64
+from pathlib import Path
 
+import streamlit as st
 from streamlit_autorefresh import st_autorefresh
+
 from database.db import get_connection
 
 
 # =====================================
-# НАСТРОЙКИ
+# НАСТРОЙКИ НА СТРАНИЦАТА
 # =====================================
 
 st.set_page_config(
-    page_title="Кухня",
-    page_icon="🔪",
-    layout="wide"
+    page_title="Room Service Kitchen",
+    page_icon="👨‍🍳",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
-import base64
+
 
 # =====================================
 # BACKGROUND
 # =====================================
 
-def set_kitchen_background():
-    with open("assets/Designer (10).png", "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
+BACKGROUND_CANDIDATES = [
+    "Designer (10).png",
+    "kitchen_background.png",
+    "kitchen_banner.png",
+    "Screenshot 2026-09-09 025744.png",
+]
 
-    st.markdown(
-        f"""
-        <style>
 
-        .stApp {{
-            background:
-                linear-gradient(
-                    rgba(0,0,0,0.55),
-                    rgba(0,0,0,0.80)
-                ),
-                url("data:image/png;base64,{encoded}");
+def find_asset(file_names):
+    for file_name in file_names:
+        file_path = Path("assets") / file_name
 
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-        }}
+        if file_path.exists():
+            return file_path
 
-        </style>
-        """,
-        unsafe_allow_html=True
+    return None
+
+
+@st.cache_data
+def get_base64_image(file_path):
+    with open(file_path, "rb") as image_file:
+        return base64.b64encode(
+            image_file.read()
+        ).decode()
+
+
+background_path = find_asset(
+    BACKGROUND_CANDIDATES
+)
+
+background_css = ""
+
+if background_path:
+    background_base64 = get_base64_image(
+        background_path
     )
 
-set_kitchen_background()
-st.markdown("""
-<style>
+    background_css = f"""
+        background-image:
+            linear-gradient(
+                rgba(3, 5, 8, 0.76),
+                rgba(3, 5, 8, 0.92)
+            ),
+            url(
+                "data:image/png;base64,{background_base64}"
+            );
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    """
 
-/* Заглавие Кухня */
-h1 {
-    color: #D4AF37 !important;
-    text-shadow: 0 0 12px rgba(212,175,55,0.4);
-}
 
-/* Подзаглавия */
-h2, h3, h4 {
-    color: #D4AF37 !important;
-}
-
-/* Общ текст */
-p, label, span {
-    color: #F5E6A8 !important;
-}
-
-/* Успех */
-[data-testid="stAlert"] {
-    background: rgba(0,0,0,0.55) !important;
-    border: 1px solid rgba(212,175,55,0.35) !important;
-}
-
-/* Колони и контейнери */
-[data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(0,0,0,0.45);
-    border: 1px solid rgba(212,175,55,0.20);
-    border-radius: 12px;
-}
-
-/* Popover */
-[data-testid="stPopover"] {
-    background: rgba(20,20,20,0.95);
-}
-
-/* Табове */
-.stTabs [data-baseweb="tab"] {
-    color: #D4AF37 !important;
-}
-
-.stTabs [aria-selected="true"] {
-    color: #FFD700 !important;
-    border-bottom: 2px solid #D4AF37 !important;
-}
-
-/* Инфо лентата "Активни поръчки" */
-.stAlert p {
-    color: #D4AF37 !important;
-    font-weight: 700 !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
 # =====================================
-# ДОСТЪП ДО КУХНЯ
+# CSS
 # =====================================
 
-KITCHEN_PASSWORD = "kitchen2026"
+st.markdown(
+    f"""
+    <style>
+
+    .stApp {{
+        {background_css}
+        background-color: #080B12;
+        color: #F5E6C8;
+    }}
+
+    [data-testid="stHeader"] {{
+        background: transparent;
+    }}
+
+    [data-testid="stStatusWidget"] {{
+        display: none !important;
+    }}
+
+    [data-testid="stSpinner"] {{
+        display: none !important;
+    }}
+
+    .stSpinner {{
+        display: none !important;
+    }}
+
+    footer {{
+        visibility: hidden;
+    }}
+
+    .block-container {{
+        max-width: 1500px;
+        padding-top: 1.2rem;
+        padding-bottom: 4rem;
+    }}
+
+    h1, h2, h3, h4 {{
+        color: #F5E6C8 !important;
+    }}
+
+    p, label, span {{
+        color: #F5E6C8;
+    }}
+
+    [data-testid="stVerticalBlockBorderWrapper"] {{
+        background: rgba(7, 11, 18, 0.90);
+        border: 1px solid rgba(212, 175, 55, 0.34);
+        border-radius: 18px;
+        box-shadow:
+            0 14px 35px rgba(0, 0, 0, 0.30);
+    }}
+
+    [data-testid="stMetric"] {{
+        background: rgba(7, 11, 18, 0.78);
+        border: 1px solid rgba(212, 175, 55, 0.28);
+        border-radius: 16px;
+        padding: 16px;
+    }}
+
+    [data-testid="stAlert"] {{
+        background: rgba(7, 11, 18, 0.90);
+        border: 1px solid rgba(212, 175, 55, 0.30);
+        border-radius: 14px;
+    }}
+
+    div[data-testid="stButton"] button {{
+        border-radius: 12px;
+        font-weight: 700;
+        min-height: 44px;
+    }}
+
+    div[data-testid="stButton"]
+    button[kind="primary"] {{
+        background: linear-gradient(
+            135deg,
+            #B98528,
+            #D4AF37,
+            #F5D77B
+        ) !important;
+        border: 1px solid #F5D77B !important;
+        color: #111111 !important;
+        font-weight: 800 !important;
+    }}
+
+    div[data-testid="stButton"]
+    button[kind="primary"] p {{
+        color: #111111 !important;
+        font-weight: 800 !important;
+    }}
+
+    @media only screen and (max-width: 768px) {{
+
+        .block-container {{
+            padding-left: 0.8rem;
+            padding-right: 0.8rem;
+        }}
+
+        h1 {{
+            font-size: 30px !important;
+        }}
+    }}
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+# =====================================
+# SESSION STATE
+# =====================================
 
 if "kitchen_auth" not in st.session_state:
     st.session_state.kitchen_auth = False
 
+if "kitchen_message" not in st.session_state:
+    st.session_state.kitchen_message = None
+
+if "kitchen_error" not in st.session_state:
+    st.session_state.kitchen_error = None
+
+
+# =====================================
+# ДОСТЪП ДО КУХНЯТА
+# =====================================
+
+KITCHEN_PASSWORD = "kitchen2026"
+
+
 if not st.session_state.kitchen_auth:
+    st.title("👨‍🍳 Room Service Kitchen")
+
+    st.caption(
+        "Достъп до активните хотелски поръчки"
+    )
 
     password = st.text_input(
         "Парола",
-        type="password"
+        type="password",
+        key="kitchen_password"
     )
 
-    if st.button("Вход"):
-
+    if st.button(
+        "Вход",
+        key="kitchen_login",
+        type="primary",
+        use_container_width=True
+    ):
         if password == KITCHEN_PASSWORD:
-
             st.session_state.kitchen_auth = True
             st.rerun()
 
+        else:
+            st.error(
+                "Невалидна парола."
+            )
+
     st.stop()
 
-# =====================================
-# КАТАЛОГ НА ДНЕВНОТО МЕНЮ
-# =====================================
-
-def get_daily_menu_catalog():
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-
-        cur.execute(
-            """
-            SELECT
-                id,
-                item_name,
-                price,
-                COALESCE(daily_group, ''),
-                COALESCE(available_today, FALSE)
-            FROM menu_items
-            WHERE is_daily_item = TRUE
-              AND is_active = TRUE
-            ORDER BY
-                daily_group,
-                item_name
-            """
-        )
-
-        return cur.fetchall()
-
-    finally:
-
-        cur.close()
-        conn.close()
-
 
 # =====================================
-# ЗАПИС НА ИЗБРАНОТО ДНЕВНО МЕНЮ
+# ГОРНА НАВИГАЦИЯ
 # =====================================
 
-def save_daily_menu(selected_item_ids):
+back_col, title_col, logout_col = st.columns(
+    [1.2, 5, 1.2]
+)
 
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-
-        cur.execute(
-            """
-            UPDATE menu_items
-            SET available_today = FALSE
-            WHERE is_daily_item = TRUE
-            """
-        )
-
-        if selected_item_ids:
-
-            cur.execute(
-                """
-                UPDATE menu_items
-                SET available_today = TRUE
-                WHERE id = ANY(%s)
-                  AND is_daily_item = TRUE
-                """,
-                (list(selected_item_ids),)
-            )
-
-        conn.commit()
-        st.cache_data.clear()
-
-    except Exception:
-
-        conn.rollback()
-        raise
-
-    finally:
-
-        cur.close()
-        conn.close()
-
-
-# =====================================
-# РЪЧНО ДОБАВЯНЕ КЪМ ДНЕВНОТО МЕНЮ
-# =====================================
-
-def add_custom_daily_item(
-    item_name,
-    price,
-    daily_group
-):
-
-    clean_name = str(item_name).strip()
-
-    if not clean_name:
-
-        raise ValueError(
-            "Въведете име на артикула."
-        )
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-
-        cur.execute(
-            """
-            SELECT id
-            FROM menu_categories
-            WHERE category_name = 'Дневно меню'
-            LIMIT 1
-            """
-        )
-
-        category_result = cur.fetchone()
-
-        if category_result is None:
-
-            raise ValueError(
-                "Категорията „Дневно меню“ не е намерена."
-            )
-
-        category_id = category_result[0]
-
-        cur.execute(
-            """
-            SELECT id
-            FROM menu_items
-            WHERE category_id = %s
-              AND LOWER(TRIM(item_name))
-                  = LOWER(TRIM(%s))
-            LIMIT 1
-            """,
-            (
-                category_id,
-                clean_name
-            )
-        )
-
-        existing_item = cur.fetchone()
-
-        if existing_item:
-
-            cur.execute(
-                """
-                UPDATE menu_items
-                SET
-                    price = %s,
-                    daily_group = %s,
-                    department = 'kitchen',
-                    is_daily_item = TRUE,
-                    available_today = TRUE,
-                    is_active = TRUE
-                WHERE id = %s
-                """,
-                (
-                    float(price),
-                    daily_group,
-                    existing_item[0]
-                )
-            )
-
-        else:
-
-            cur.execute(
-                """
-                INSERT INTO menu_items
-                (
-                    category_id,
-                    item_name,
-                    price,
-                    description,
-                    department,
-                    daily_group,
-                    is_daily_item,
-                    available_today,
-                    is_active
-                )
-                VALUES
-                (
-                    %s,
-                    %s,
-                    %s,
-                    '',
-                    'kitchen',
-                    %s,
-                    TRUE,
-                    TRUE,
-                    TRUE
-                )
-                """,
-                (
-                    category_id,
-                    clean_name,
-                    float(price),
-                    daily_group
-                )
-            )
-
-        conn.commit()
-        st.cache_data.clear()
-
-    except Exception:
-
-        conn.rollback()
-        raise
-
-    finally:
-
-        cur.close()
-        conn.close()
-
-# =====================================
-# ЗАГЛАВИЕ И ДНЕВНО МЕНЮ
-# =====================================
-
-title_col, daily_menu_col = st.columns([5, 2])
-
-with title_col:
-
-    st.title("🔪 Кухня")
-
-with daily_menu_col:
-
-    with st.popover(
-        "📅 Дневно меню",
+with back_col:
+    if st.button(
+        "⬅ Back",
+        key="kitchen_back",
         use_container_width=True
     ):
+        st.switch_page("app.py")
 
-        st.markdown(
-            "### 📅 Управление на дневното меню"
-        )
+with title_col:
+    st.markdown(
+        """
+        <div style="
+            text-align:center;
+            color:#D4AF37;
+            font-size:34px;
+            font-weight:900;
+            letter-spacing:1px;
+            padding-top:4px;
+        ">
+            👨‍🍳 ROOM SERVICE KITCHEN
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-        daily_catalog = get_daily_menu_catalog()
+with logout_col:
+    if st.button(
+        "🚪 Изход",
+        key="kitchen_logout",
+        use_container_width=True
+    ):
+        st.session_state.kitchen_auth = False
+        st.rerun()
 
-        daily_labels = {
-            row[0]: (
-                f"{row[3]} | "
-                f"{row[1]} | "
-                f"€ {float(row[2]):.2f}"
-            )
-            for row in daily_catalog
-        }
-
-        daily_ids = [
-            row[0]
-            for row in daily_catalog
-        ]
-
-        active_daily_ids = [
-            row[0]
-            for row in daily_catalog
-            if row[4]
-        ]
-
-        selected_daily_ids = st.multiselect(
-            "Избери предложенията за деня",
-            options=daily_ids,
-            default=active_daily_ids,
-            format_func=lambda item_id:
-                daily_labels.get(
-                    item_id,
-                    str(item_id)
-                ),
-            key="selected_daily_menu_items"
-        )
-
-        if st.button(
-            "💾 Запази дневното меню",
-            use_container_width=True,
-            type="primary",
-            key="save_daily_menu"
-        ):
-
-            save_daily_menu(
-                selected_daily_ids
-            )
-
-            st.success(
-                "Дневното меню е обновено."
-            )
-
-            st.rerun()
-
-        st.divider()
-
-        st.markdown(
-            "### 🗑️ Изтрий артикул"
-        )
-
-        delete_item_id = st.selectbox(
-            "Избери артикул за изтриване",
-            options=daily_ids,
-            format_func=lambda item_id:
-                daily_labels.get(
-                    item_id,
-                    str(item_id)
-                ),
-            key="delete_daily_item"
-        )
-        if st.button(
-            "🗑️ Изтрий избрания артикул",
-            use_container_width=True,
-            key="delete_daily_menu_item"
-        ):
-        
-            try:
-        
-                conn = get_connection()
-                cur = conn.cursor()
-        
-                cur.execute(
-                    """
-                    DELETE FROM menu_items
-                    WHERE id = %s
-                      AND is_daily_item = TRUE
-                    """,
-                    (delete_item_id,)
-                )
-        
-                conn.commit()
-        
-                cur.close()
-                conn.close()
-        
-                st.success(
-                    "Артикулът е изтрит."
-                )
-        
-                st.rerun()
-        
-            except Exception as error:
-        
-                st.error(
-                    f"Грешка при изтриване: {error}"
-                )
-
-        st.divider()
-
-        st.markdown(
-            "### ➕ Нов артикул"
-        )
-
-        custom_daily_group = st.selectbox(
-            "Секция",
-            [
-                "🍲 Супи",
-                "🍽️ Готови ястия",
-                "🍰 Десерт"
-            ],
-            key="custom_daily_group"
-        )
-
-        custom_daily_name = st.text_input(
-            "Име на артикула",
-            placeholder="Например: Крем супа от броколи",
-            key="custom_daily_name"
-        )
-
-        custom_daily_price = st.number_input(
-            "Цена в евро",
-            min_value=0.00,
-            step=0.10,
-            format="%.2f",
-            key="custom_daily_price"
-        )
-
-        if st.button(
-            "➕ Добави и активирай",
-            use_container_width=True,
-            key="add_custom_daily_item"
-        ):
-
-            try:
-
-                add_custom_daily_item(
-                    item_name=custom_daily_name,
-                    price=custom_daily_price,
-                    daily_group=custom_daily_group
-                )
-
-                st.success(
-                    "Артикулът е добавен към дневното меню."
-                )
-
-                st.rerun()
-
-            except Exception as error:
-
-                st.error(
-                    f"Грешка при добавяне: {error}"
-                )
 
 # =====================================
 # АВТОМАТИЧНО ОБНОВЯВАНЕ
@@ -525,50 +289,47 @@ with daily_menu_col:
 
 st_autorefresh(
     interval=15000,
-    key="kitchen_refresh"
+    key="hotel_kitchen_refresh"
 )
 
+
 # =====================================
-# ЗАРЕЖДАНЕ НА АКТИВНИТЕ ПОРЪЧКИ
+# ЗАРЕЖДАНЕ НА ПОРЪЧКИТЕ
 # =====================================
 
 def get_kitchen_orders():
-
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-
         cur.execute(
             """
             SELECT
-                o.id AS order_id,
-                rt.table_number,
-                o.created_at,
-                o.order_status,
-                oi.id AS order_item_id,
-                mi.item_name,
-                oi.quantity,
-                oi.notes,
-                oi.kitchen_status
-            FROM orders o
-            JOIN restaurant_tables rt
-                ON rt.id = o.table_id
-            JOIN order_items oi
-                ON oi.order_id = o.id
-            JOIN menu_items mi
-                ON mi.id = oi.item_id
-            WHERE o.order_status <> 'COMPLETED'
-              AND mi.department = 'kitchen'
-              AND oi.kitchen_status IN (
-                  'NEW',
-                  'PREPARING',
-                  'READY'
-              )
+                rso.id AS order_id,
+                hr.room_number,
+                rso.created_at,
+                rso.order_status,
+                rso.total_amount,
+                rsoi.id AS order_item_id,
+                rsoi.item_id,
+                rsoi.item_name,
+                rsoi.quantity,
+                rsoi.unit_price,
+                rsoi.notes,
+                rsoi.item_status
+            FROM room_service_orders rso
+            JOIN hotel_rooms hr
+                ON hr.id = rso.room_id
+            JOIN room_service_order_items rsoi
+                ON rsoi.order_id = rso.id
+            WHERE rso.order_status IN (
+                'NEW',
+                'PREPARING'
+            )
             ORDER BY
-                o.created_at ASC,
-                o.id ASC,
-                oi.id ASC
+                rso.created_at ASC,
+                rso.id ASC,
+                rsoi.id ASC
             """
         )
 
@@ -578,68 +339,40 @@ def get_kitchen_orders():
         cur.close()
         conn.close()
 
-# =====================================
-# СТАТУС НА ЕДИН АРТИКУЛ
-# =====================================
-
-def update_item_status(order_item_id, new_status):
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-
-        cur.execute(
-            """
-            UPDATE order_items
-            SET kitchen_status = %s
-            WHERE id = %s
-            """,
-            (
-                new_status,
-                order_item_id
-            )
-        )
-
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cur.close()
-        conn.close()
-
 
 # =====================================
-# ВСИЧКИ АРТИКУЛИ В ПОДГОТОВКА
+# ЦЯЛАТА ПОРЪЧКА СЕ ПРИГОТВЯ
 # =====================================
 
 def start_order(order_id):
-
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-
         cur.execute(
             """
-            UPDATE order_items
-            SET kitchen_status = 'PREPARING'
-            WHERE order_id = %s
-              AND kitchen_status = 'NEW'
+            UPDATE room_service_orders
+            SET
+                order_status = 'PREPARING',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+              AND order_status IN (
+                  'NEW',
+                  'PREPARING'
+              )
             """,
             (order_id,)
         )
 
         cur.execute(
             """
-            UPDATE orders
-            SET
-                order_status = 'IN_PROGRESS',
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = %s
+            UPDATE room_service_order_items
+            SET item_status = 'PREPARING'
+            WHERE order_id = %s
+              AND item_status IN (
+                  'NEW',
+                  'PREPARING'
+              )
             """,
             (order_id,)
         )
@@ -660,18 +393,18 @@ def start_order(order_id):
 # =====================================
 
 def finish_order(order_id):
-
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-
         cur.execute(
             """
-            UPDATE order_items
-            SET kitchen_status = 'READY'
-            WHERE order_id = %s
-              AND kitchen_status IN (
+            UPDATE room_service_orders
+            SET
+                order_status = 'READY',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+              AND order_status IN (
                   'NEW',
                   'PREPARING'
               )
@@ -681,11 +414,13 @@ def finish_order(order_id):
 
         cur.execute(
             """
-            UPDATE orders
-            SET
-                order_status = 'READY',
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = %s
+            UPDATE room_service_order_items
+            SET item_status = 'READY'
+            WHERE order_id = %s
+              AND item_status IN (
+                  'NEW',
+                  'PREPARING'
+              )
             """,
             (order_id,)
         )
@@ -702,201 +437,338 @@ def finish_order(order_id):
 
 
 # =====================================
+# СТАТУС НА ОТДЕЛЕН АРТИКУЛ
+# =====================================
+
+def update_item_status(
+    order_item_id,
+    new_status
+):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            UPDATE room_service_order_items
+            SET item_status = %s
+            WHERE id = %s
+            """,
+            (
+                new_status,
+                order_item_id
+            )
+        )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+# =====================================
+# СЪОБЩЕНИЯ
+# =====================================
+
+if st.session_state.kitchen_message:
+    st.success(
+        st.session_state.kitchen_message
+    )
+
+    st.session_state.kitchen_message = None
+
+
+if st.session_state.kitchen_error:
+    st.error(
+        st.session_state.kitchen_error
+    )
+
+    st.session_state.kitchen_error = None
+
+
+# =====================================
+# ЗАРЕЖДАНЕ НА ДАННИТЕ
+# =====================================
+
+try:
+    rows = get_kitchen_orders()
+
+except Exception as error:
+    st.error(
+        "Поръчките не могат да бъдат заредени.\n\n"
+        f"Причина: {error}"
+    )
+
+    st.stop()
+
+
+# =====================================
 # ГРУПИРАНЕ ПО ПОРЪЧКА
 # =====================================
 
-rows = get_kitchen_orders()
-active_count = len(set(row[0] for row in rows))
-
-st.info(
-    f"👨‍🍳 Активни поръчки: {active_count}"
-)
 orders = {}
 
 for row in rows:
-
     order_id = row[0]
-    table_number = row[1]
-    created_at = row[2]
-    order_status = row[3]
-
-    order_item = {
-        "row_id": row[4],
-        "name": row[5],
-        "quantity": row[6],
-        "notes": row[7],
-        "status": row[8]
-    }
 
     if order_id not in orders:
-
         orders[order_id] = {
-            "table_number": table_number,
-            "created_at": created_at,
-            "order_status": order_status,
+            "room_number": row[1],
+            "created_at": row[2],
+            "order_status": row[3],
+            "total_amount": row[4],
             "items": []
         }
 
-    orders[order_id]["items"].append(order_item)
+    orders[order_id]["items"].append(
+        {
+            "order_item_id": row[5],
+            "item_id": row[6],
+            "item_name": row[7],
+            "quantity": row[8],
+            "unit_price": row[9],
+            "notes": row[10],
+            "item_status": row[11]
+        }
+    )
 
 
 # =====================================
-# ПОКАЗВАНЕ
+# ОБОБЩЕНИЕ
+# =====================================
+
+new_orders = sum(
+    1
+    for order in orders.values()
+    if order["order_status"] == "NEW"
+)
+
+preparing_orders = sum(
+    1
+    for order in orders.values()
+    if order["order_status"] == "PREPARING"
+)
+
+metric_col1, metric_col2, metric_col3 = (
+    st.columns(3)
+)
+
+with metric_col1:
+    st.metric(
+        "Активни поръчки",
+        len(orders)
+    )
+
+with metric_col2:
+    st.metric(
+        "Нови",
+        new_orders
+    )
+
+with metric_col3:
+    st.metric(
+        "В подготовка",
+        preparing_orders
+    )
+
+st.divider()
+
+
+# =====================================
+# ПОКАЗВАНЕ НА ПОРЪЧКИТЕ
 # =====================================
 
 if not orders:
-
-    st.success("Няма активни поръчки.")
+    st.success(
+        "Няма активни Room Service поръчки."
+    )
 
 else:
-
     for order_id, order_data in orders.items():
+        room_number = order_data[
+            "room_number"
+        ]
 
-        table_number = order_data["table_number"]
-        created_at = order_data["created_at"]
-        order_status = order_data["order_status"]
+        created_at = order_data[
+            "created_at"
+        ]
+
+        order_status = order_data[
+            "order_status"
+        ]
+
+        total_amount = float(
+            order_data["total_amount"] or 0
+        )
+
         items = order_data["items"]
 
         with st.container(border=True):
-
-            title_col, time_col = st.columns([4, 2])
+            title_col, time_col, total_col = (
+                st.columns(
+                    [4, 2, 2]
+                )
+            )
 
             with title_col:
-
                 st.subheader(
-                    f"🍽️ Поръчка №{order_id}"
+                    f"🍽️ Room Service Order "
+                    f"#{order_id}"
                 )
 
                 st.markdown(
-                    f"""
-                    <div style="
-                        color:#FF8C42;
-                        font-size:34px;
-                        font-weight:800;
-                        margin-top:5px;
-                        margin-bottom:10px;
-                    ">
-                       Маса № {table_number}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
+                    f"### 🛎️ Стая №{room_number}"
                 )
 
             with time_col:
-
                 if created_at:
-
-                    from datetime import timedelta
-
-                    local_time = created_at + timedelta(hours=3)
-                    
                     st.caption(
                         "Получена: "
-                        f"{local_time.strftime('%H:%M:%S')}"
+                        f"{created_at.strftime('%d.%m.%Y %H:%M')}"
                     )
 
-            # =====================================
-            # ОБЩ СТАТУС
-            # =====================================
+                if order_status == "NEW":
+                    st.error(
+                        "🔴 НОВА ПОРЪЧКА"
+                    )
 
-            if order_status == "NEW":
+                elif order_status == "PREPARING":
+                    st.warning(
+                        "🟡 В ПОДГОТОВКА"
+                    )
 
-                st.error("🔴 НОВА ПОРЪЧКА")
+            with total_col:
+                st.metric(
+                    "Общо",
+                    f"€ {total_amount:.2f}"
+                )
 
-            elif order_status == "IN_PROGRESS":
-
-                st.warning("🟡 В ПОДГОТОВКА")
-
-            elif order_status == "READY":
-
-                st.success("🟢 ГОТОВА ПОРЪЧКА")
-
-            st.markdown("#### Артикули")
-
-            # =====================================
-            # АРТИКУЛИ С ОТМЕТКИ
-            # =====================================
+            st.markdown(
+                "#### Артикули"
+            )
 
             for item in items:
-
-                item_row_id = item["row_id"]
-                item_name = item["name"]
-                quantity = item["quantity"]
-                notes = item["notes"]
-                item_status = item["status"]
-
                 item_col, status_col = st.columns(
                     [5, 2],
                     vertical_alignment="center"
                 )
 
                 with item_col:
-
                     st.write(
-                        f"**{item_name} x{quantity}**"
+                        f"**{item['item_name']} "
+                        f"x{item['quantity']}**"
                     )
 
-                    if notes:
-
+                    if item["notes"]:
                         st.caption(
-                            f"📝 Коментар: {notes}"
+                            f"📝 Коментар: "
+                            f"{item['notes']}"
                         )
 
                 with status_col:
+                    item_status = item[
+                        "item_status"
+                    ]
 
                     if item_status == "NEW":
-                        st.error("🔴 Нова")
-                
+                        st.error(
+                            "🔴 Ново"
+                        )
+
                     elif item_status == "PREPARING":
-                        st.warning("🟡 Приготвя се")
-                
+                        st.warning(
+                            "🟡 Приготвя се"
+                        )
+
                     elif item_status == "READY":
-                        st.success("🟢 Готово")
-
-
-                if item_status == "NEW":
-
-                    st.caption("🔴 Не е започнато")
-
-                elif item_status == "PREPARING":
-
-                    st.caption("🟡 Приготвя се")
-
-                elif item_status == "READY":
-
-                    st.caption("🟢 Готово")
+                        st.success(
+                            "🟢 Готово"
+                        )
 
                 st.divider()
 
-            # =====================================
-            # БУТОНИ ЗА ЦЯЛАТА ПОРЪЧКА
-            # =====================================
-
-            preparing_col, ready_col = st.columns(2)
+            preparing_col, ready_col = (
+                st.columns(2)
+            )
 
             with preparing_col:
-
                 if st.button(
-                    "🟡 Приготвя се",
+                    "🟡 Започни подготовката",
                     key=f"start_order_{order_id}",
-                    use_container_width=True
+                    use_container_width=True,
+                    disabled=(
+                        order_status == "PREPARING"
+                    )
                 ):
+                    try:
+                        start_order(order_id)
 
-                    start_order(order_id)
-                    st.cache_data.clear()
+                        st.session_state.kitchen_message = (
+                            f"Поръчка №{order_id} "
+                            "е отбелязана като "
+                            "„В подготовка“."
+                        )
 
-                    st.rerun()
+                        st.rerun()
+
+                    except Exception as error:
+                        st.session_state.kitchen_error = (
+                            "Статусът не беше обновен. "
+                            f"Причина: {error}"
+                        )
+
+                        st.rerun()
 
             with ready_col:
-
                 if st.button(
                     "✅ Цялата поръчка е готова",
                     key=f"finish_order_{order_id}",
                     type="primary",
                     use_container_width=True
                 ):
+                    try:
+                        finish_order(order_id)
 
-                    finish_order(order_id)
-                    st.cache_data.clear()
+                        st.session_state.kitchen_message = (
+                            f"Поръчка №{order_id} "
+                            "е готова за доставка."
+                        )
 
-                    st.rerun()
+                        st.rerun()
+
+                    except Exception as error:
+                        st.session_state.kitchen_error = (
+                            "Поръчката не беше "
+                            "отбелязана като готова. "
+                            f"Причина: {error}"
+                        )
+
+                        st.rerun()
+
+
+# =====================================
+# РЪЧНО ОБНОВЯВАНЕ
+# =====================================
+
+st.divider()
+
+if st.button(
+    "🔄 Обнови поръчките",
+    key="refresh_kitchen_orders",
+    use_container_width=True
+):
+    st.rerun()
+
+
+# =====================================
+# БРАНДИРАНЕ
+# =====================================
+
+st.caption(
+    "Powered by HMITSEVAPPS"
+)
