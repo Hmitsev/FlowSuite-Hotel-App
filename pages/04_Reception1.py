@@ -934,7 +934,6 @@ if view_mode == ACTIVITIES_VIEW:
                                 )
                             )
 
-                            st.session_state.reception_view_mode = ACTIVITIES_VIEW
 
                             st.rerun()
 
@@ -1010,7 +1009,6 @@ with st.form(
                 new_status=selected_activity_status
             )
 
-            st.session_state.reception_view_mode = ACTIVITIES_VIEW
 
             st.rerun()
 
@@ -1029,7 +1027,6 @@ with st.form(
         key="refresh_activity_requests",
         use_container_width=True
     ):
-        st.session_state.reception_view_mode = ACTIVITIES_VIEW
 
         st.rerun()
 
