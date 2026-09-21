@@ -282,20 +282,6 @@ div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] p {
 st.markdown(page_style, unsafe_allow_html=True)
 
 # =========================================================
-# ЕЗИК
-# =========================================================
-
-lang_toggle = st.toggle(
-    "🇬🇧 English",
-    value=(st.session_state.lang == "en")
-)
-
-new_lang = "en" if lang_toggle else "bg"
-
-if new_lang != st.session_state.lang:
-    st.session_state.lang = new_lang
-    st.rerun()
-# =========================================================
 # ХОТЕЛСКИ БАНЕР
 # =========================================================
 if hotel_banner_path:
@@ -308,7 +294,31 @@ st.markdown(
     f'<div class="compact-welcome">{t["welcome"]}</div>',
     unsafe_allow_html=True,
 )
+# =========================================================
+# ЕЗИК
+# =========================================================
 
+st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns([3, 1, 3])
+
+with col2:
+
+    if st.button(
+        "🇬🇧 EN" if st.session_state.lang == "bg" else "🇧🇬 BG",
+        key="lang_btn",
+        use_container_width=True
+    ):
+
+        st.session_state.lang = (
+            "en"
+            if st.session_state.lang == "bg"
+            else "bg"
+        )
+
+        st.rerun()
+
+st.write("Current language:", st.session_state.lang)
 
 # =========================================================
 # КАРТИ НА УСЛУГИТЕ
