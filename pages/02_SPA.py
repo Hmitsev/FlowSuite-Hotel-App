@@ -1,4 +1,93 @@
 import streamlit as st
+from database.db import get_connection
+
+# =====================================
+# НОМЕР НА СТАЯТА ОТ QR КОДА
+# =====================================
+
+raw_room_number = st.query_params.get(
+    "room",
+    "204"
+)
+
+try:
+    room_number = int(raw_room_number)
+except (TypeError, ValueError):
+    room_number = 204
+
+
+# =====================================
+# ЗАПИС НА SPA ЗАЯВКАТА
+# =====================================
+
+def create_activity_request(
+    room_number,
+    activity_name,
+    guest_message
+):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+
+        cur.execute(
+            """
+            SELECT id
+            FROM hotel_rooms
+            WHERE room_number = %s
+            LIMIT 1
+            """,
+            (room_number,)
+        )
+
+        room = cur.fetchone()
+
+        if not room:
+            raise Exception(
+                f"Стая {room_number} не е намерена."
+            )
+
+        room_id = room[0]
+
+        cur.execute(
+            """
+            INSERT INTO activity_requests
+            (
+                room_id,
+                activity_name,
+                guest_message,
+                request_status
+            )
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                'NEW'
+            )
+            RETURNING id
+            """,
+            (
+                room_id,
+                activity_name,
+                guest_message
+            )
+        )
+
+        request_id = cur.fetchone()[0]
+
+        conn.commit()
+
+        return request_id
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
 
 # =====================================
 # НАСТРОЙКИ НА СТРАНИЦАТА
