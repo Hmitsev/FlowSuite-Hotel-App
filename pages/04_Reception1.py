@@ -747,7 +747,8 @@ view_mode = st.radio(
     label_visibility="collapsed",
     key="reception_view_mode"
 )
-
+if "reception_view_mode" not in st.session_state:
+    st.session_state.reception_view_mode = ACTIVE_VIEW
 
 # =====================================
 # ACTIVITIES ИЗГЛЕД
