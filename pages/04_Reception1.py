@@ -186,30 +186,7 @@ with title_center_col:
     )
 
 with bell_col:
-
     notification_bell_placeholder = st.empty()
-
-    if total_new_notifications > 0:
-
-        notification_bell_placeholder.markdown(
-            f"""
-            <div class="notification-bell-wrapper">
-
-                <div class="notification-bell">
-
-                    🔔
-
-                    <div class="notification-count">
-                        {total_new_notifications}
-                    </div>
-
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
 # =====================================
 # ЗАРЕЖДАНЕ НА ROOM SERVICE ПОРЪЧКИТЕ
 # =====================================
