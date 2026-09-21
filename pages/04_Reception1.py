@@ -1086,7 +1086,7 @@ if view_mode == SPA_VIEW:
 # =====================================
 
 try:
-    if view_mode == ROOM_SERVICE_VIEW:
+    if view_mode == ACTIVE_VIEW:
         rows = get_room_service_orders()
 
     elif view_mode == COMPLETED_VIEW:
@@ -1269,7 +1269,7 @@ else:
             # ROOM SERVICE СТАТУС
             # =====================================
 
-            if view_mode == ROOM_SERVICE_VIEW:
+            if view_mode == ACTIVE_VIEW:
 
                 room_service_statuses = [
                     "NEW",
