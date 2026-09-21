@@ -16,7 +16,7 @@ TRANSLATIONS = {
         # Начална страница
         "welcome": "Добре дошли",
         "hotel_services": "Хотелски услуги",
-        "room_service": "РУМ СЪРВИЗ "",
+        "room_service": "РУМ СЪРВИЗ ",
         "room_service_description": "Храна и напитки",
         "spa": "СПА",
         "spa_description": "Масажи и терапии",
