@@ -413,23 +413,18 @@ with activities_column:
 # =========================================================
 # БРАНДИРАНЕ
 # =========================================================
-st.caption(t["footer"])
 # =========================================================
 # ЕЗИК
 # =========================================================
 
-st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
+bottom_left, bottom_right = st.columns([1, 8])
 
-col1, col2, col3 = st.columns([3, 1, 3])
-
-with col2:
+with bottom_left:
 
     if st.button(
         "🇬🇧 EN" if st.session_state.lang == "bg" else "🇧🇬 BG",
-        key="lang_btn",
-        use_container_width=True
+        key="lang_btn_bottom"
     ):
-
         st.session_state.lang = (
             "en"
             if st.session_state.lang == "bg"
@@ -437,5 +432,6 @@ with col2:
         )
 
         st.rerun()
+st.caption(t["footer"])
 
-st.write("Current language:", st.session_state.lang)
+
