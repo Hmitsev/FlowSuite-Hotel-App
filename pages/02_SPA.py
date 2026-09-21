@@ -2,6 +2,7 @@ import streamlit as st
 from database.db import get_connection
 if "spa_request_success" not in st.session_state:
     st.session_state.spa_request_success = False
+from translations import get_translations    
 
 # =====================================
 # НОМЕР НА СТАЯТА ОТ QR КОДА
@@ -108,7 +109,10 @@ st.set_page_config(
     page_icon="💆",
     layout="wide"
 )
+if "lang" not in st.session_state:
+    st.session_state.lang = "bg"
 
+t = get_translations()
 # =====================================
 # НАВИГАЦИЯ
 # =====================================
@@ -176,7 +180,7 @@ with st.container(border=True):
     with info_col:
 
         with st.popover(
-            "ℹ️ Информация и резервация",
+            t["information_booking"],
             use_container_width=True
         ):
 
@@ -191,7 +195,7 @@ with st.container(border=True):
             )
 
             reservation_text = st.text_area(
-                "Вашето съобщение",
+                t["your_message"],
                 placeholder=(
                     "Пример: Желая масаж на "
                     "22.09.2026 от 16:00 часа."
@@ -201,7 +205,7 @@ with st.container(border=True):
             )
 
             if st.button(
-                "✅ Изпрати заявка",
+                t["send_request"],
                 key="massage_request",
                 type="primary",
                 use_container_width=True
