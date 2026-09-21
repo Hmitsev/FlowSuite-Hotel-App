@@ -285,6 +285,7 @@ div[data-testid="stButton"] button[kind="primary"] {{
             0.18
         ) !important;
 }
+}
 
 div[data-testid="stButton"] button[kind="primary"]:hover {{
 
@@ -298,6 +299,7 @@ div[data-testid="stButton"] button[kind="primary"]:hover {{
             0.28
         ) !important;
 }
+}
 
 div[data-testid="stButton"] button[kind="primary"] p {{
 
@@ -306,7 +308,7 @@ div[data-testid="stButton"] button[kind="primary"] p {{
     font-size: 14px !important;
 
     font-weight: 700 !important;
-}
+}}
 /* =====================================================
    ВТОРИЧНИ БУТОНИ
 ===================================================== */
