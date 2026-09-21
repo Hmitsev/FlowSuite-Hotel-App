@@ -186,7 +186,7 @@ st.markdown(
         padding-bottom:10px;
         border-bottom:1px solid rgba(212,175,55,0.40);
     ">
-        🍽️ Room Service Menu
+        t["room_service_menu"]
     </div>
     """,
     unsafe_allow_html=True
@@ -199,10 +199,10 @@ categories = [
 ]
 
 category_display = {
-    "Breakfast": "🍳 Breakfast",
-    "Main Course": "🍽️ Main Course",
-    "Desserts": "🍰 Desserts",
-    "Drinks": "🥤 Drinks"
+    "Breakfast": f"🍳 {t['breakfast']}",
+    "Main Courses": f"🍽️ {t['main_courses']}",
+    "Desserts": f"🍰 {t['desserts']}",
+    "Beverages": f"🥤 {t['beverages']}"
 }
 
 category_grams = {}
