@@ -529,12 +529,7 @@ st.success(
 
 st.caption(
     "Room Service Menu"
-)
 
-if st.button(
-    "☎️ Свържи се с рецепция",
-    use_container_width=True
-):
     st.success(
         "Заявката е изпратена до рецепция."
     )
