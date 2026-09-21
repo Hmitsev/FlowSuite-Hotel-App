@@ -183,7 +183,7 @@ st.markdown(
         font-weight:800;
         box-shadow:0 0 12px rgba(212,175,55,0.18);
     ">
-        🛎️ Room {room_number}
+        🛎️ {t["room"]} {room_number}
     </div>
     """,
     unsafe_allow_html=True
@@ -194,7 +194,7 @@ st.markdown(
 # =====================================
 
 st.markdown(
-    """
+    f"""
     <div style="
         color:#F5E6C8;
         font-size:28px;
@@ -204,39 +204,39 @@ st.markdown(
         padding-bottom:10px;
         border-bottom:1px solid rgba(212,175,55,0.40);
     ">
-        t["room_service_menu"]
+        🍽️ {t["room_service_menu"]}
     </div>
     """,
     unsafe_allow_html=True
 )
+
+
+# =====================================
+# КАТЕГОРИИ
+# =====================================
+
 categories = [
-    ("Breakfast",),
-    ("Main Course",),
-    ("Desserts",),
-    ("Drinks",)
+    "Breakfast",
+    "Main Course",
+    "Desserts",
+    "Drinks"
 ]
 
 category_display = {
     "Breakfast": f"🍳 {t['breakfast']}",
-    "Main Courses": f"🍽️ {t['main_courses']}",
+    "Main Course": f"🍽️ {t['main_courses']}",
     "Desserts": f"🍰 {t['desserts']}",
-    "Beverages": f"🥤 {t['beverages']}"
+    "Drinks": f"🥤 {t['beverages']}"
 }
 
-category_grams = {}
-
-category_banners = {}
-
 reverse_display = {
-    value: key
-    for key, value in category_display.items()
+    displayed_name: internal_name
+    for internal_name, displayed_name
+    in category_display.items()
 }
 
 category_names = [
-    category_display.get(
-        category[0],
-        category[0]
-    )
+    category_display[category]
     for category in categories
 ]
 
@@ -249,40 +249,48 @@ selected_display = st.segmented_control(
 
 selected_category = reverse_display.get(
     selected_display,
-    selected_display
+    categories[0]
 )
+
+
+# =====================================
+# ДЕМОНСТРАЦИОННИ АРТИКУЛИ
+# =====================================
 
 demo_items = {
     "Breakfast": [
         (
             1,
-            "English Breakfast",
+            t["english_breakfast"],
             18,
-            "Fresh breakfast"
+            t["english_breakfast_description"]
         )
     ],
+
     "Main Course": [
         (
             2,
-            "Club Sandwich",
+            t["club_sandwich"],
             24,
-            "Served with fries"
+            t["club_sandwich_description"]
         )
     ],
+
     "Desserts": [
         (
             3,
-            "Chocolate Soufflé",
+            t["chocolate_souffle"],
             12,
-            "Homemade dessert"
+            t["chocolate_souffle_description"]
         )
     ],
+
     "Drinks": [
         (
             4,
-            "Mineral Water",
+            t["mineral_water"],
             4,
-            "330 ml"
+            t["mineral_water_description"]
         )
     ]
 }
@@ -305,7 +313,7 @@ burger_images = {}
 if not items:
 
     st.info(
-        "В тази секция все още няма налични артикули."
+        t["no_items"]
     )
 
 else:
@@ -496,22 +504,20 @@ else:
                         "Няма описание."
                     )
         
-                comment_label = "Коментар"
-        
-                if selected_category not in (
-                    "Напитки",
-                ):
-                    comment_label = "Коментар към кухнята"
+                comment_label = t["comment"]
+
+                if selected_category != "Drinks":
+                    comment_label = t["kitchen_comment"]
         
                 comment = st.text_area(
                     comment_label,
-                    placeholder=" коментар",
+                    placeholder=t["comment_placeholder"],
                     key=f"comment_{item_id}_{item_index}",
                     height=80
                 )
         
                 if st.button(
-                    "Запази коментар",
+                    t["save_comment"],
                     key=f"save_{item_id}_{item_index}"
                 ):
         
@@ -520,7 +526,7 @@ else:
                     ] = comment
         
                     st.success(
-                        "Коментарът е запазен."
+                        t["comment_saved"]
                     )
         # =====================================
         # ЦЕНА
@@ -557,7 +563,7 @@ else:
             if item_is_in_cart:
 
                 st.markdown(
-                    """
+                    f"""
                     <div style="
                         background:#198754;
                         color:white;
@@ -568,7 +574,7 @@ else:
                         font-weight:700;
                         margin-bottom:4px;
                     ">
-                        ✅ Добавено
+                        ✅ {t["added"]}
                     </div>
                     """,
                     unsafe_allow_html=True
@@ -605,7 +611,10 @@ else:
 
 st.divider()
 
-st.subheader("🛒 Вашата поръчка")
+st.subheader(
+    f"🛒 {t['cart']}"
+)
+
 
 
 if st.session_state.room_service_error:
@@ -631,7 +640,7 @@ if st.session_state.last_order_id is not None:
 
 if not st.session_state.cart:
     st.info(
-        "Няма избрани артикули."
+        t["no_selected_items"]
     )
 
 else:
@@ -719,27 +728,25 @@ else:
         total += row_total
 
     st.success(
-        f"Общо: € {total:.2f}"
+        f"{t['total']}: € {total:.2f}"
     )
 
     # =====================================
     # ФИНАЛНИ БУТОНИ
     # =====================================
 
-    clear_col, send_col = st.columns(2)
-
     with clear_col:
         if st.button(
-            "🗑️ Изчисти количката",
+            t["clear_cart"],
             key="clear_room_service_cart",
             use_container_width=True
         ):
             st.session_state.cart = []
             st.rerun()
-
+    
     with send_col:
         if st.button(
-            "✅ Изпрати поръчка",
+            t["send_order"],
             key="send_room_service_order",
             type="primary",
             use_container_width=True
@@ -749,19 +756,17 @@ else:
                     room_number=room_number,
                     cart=st.session_state.cart
                 )
-
+    
                 st.session_state.cart = []
                 st.session_state.last_order_id = order_id
                 st.session_state.room_service_error = None
-
+    
                 st.rerun()
-
+    
             except Exception as error:
-                st.session_state.room_service_error = str(
-                    error
-                )
-
+                st.session_state.room_service_error = str(error)
                 st.rerun()
+
 
 
 # =====================================
