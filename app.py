@@ -285,23 +285,17 @@ st.markdown(page_style, unsafe_allow_html=True)
 # ЕЗИК
 # =========================================================
 
-col_left, col_right = st.columns([6, 1])
+if st.button(
+    "🇬🇧 EN" if st.session_state.lang == "bg" else "🇧🇬 BG",
+    key="lang_btn"
+):
+    st.session_state.lang = (
+        "en"
+        if st.session_state.lang == "bg"
+        else "bg"
+    )
 
-with col_right:
-
-    if st.button(
-        "🇬🇧 EN" if st.session_state.lang == "bg" else "🇧🇬 BG",
-        key="lang_btn",
-        use_container_width=True
-    ):
-
-        st.session_state.lang = (
-            "en"
-            if st.session_state.lang == "bg"
-            else "bg"
-        )
-
-        st.rerun()
+    st.rerun()
 # =========================================================
 # ХОТЕЛСКИ БАНЕР
 # =========================================================
