@@ -342,7 +342,7 @@ with room_service_column:
         font-weight:600;
         margin-bottom:8px;
     ">
-        st.caption(t["room_service_description"])
+        st.caption(t["room_service_description"]),
     </div>
     """,
     unsafe_allow_html=True
@@ -381,7 +381,7 @@ with spa_column:
 )
 
     if st.button(
-        f"💆 {t['spa']}"
+        f"💆 {t['spa']}",
         key="spa_btn",
         type="primary",
         use_container_width=True,
@@ -413,7 +413,7 @@ with activities_column:
 )
 
     if st.button(
-        f"🎿 {t['activities']}"
+        f"🎿 {t['activities']}",
         key="activities_btn",
         type="primary",
         use_container_width=True,
