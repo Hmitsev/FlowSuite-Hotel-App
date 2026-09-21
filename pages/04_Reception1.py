@@ -942,7 +942,197 @@ if view_mode == ACTIVITIES_VIEW:
     )
 
     st.stop()
+# =====================================
+# SPA ИЗГЛЕД
+# =====================================
 
+if view_mode == SPA_VIEW:
+
+    try:
+        spa_rows = get_spa_requests()
+
+    except Exception as error:
+        st.error(
+            "SPA заявките не могат да бъдат заредени."
+            "\n\n"
+            f"Причина: {error}"
+        )
+        st.stop()
+
+    st.markdown(
+        """
+        <div style="
+            color:#D4AF37;
+            font-size:28px;
+            font-weight:900;
+            margin-bottom:15px;
+        ">
+            💆 SPA ЗАЯВКИ
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    spa_col1, spa_col2 = st.columns(2)
+
+    with spa_col1:
+        st.metric(
+            "Активни SPA заявки",
+            len(spa_rows)
+        )
+
+    with spa_col2:
+        displayed_new_spa_count = sum(
+            1
+            for row in spa_rows
+            if str(
+                row[4] or ""
+            ).strip().upper() == "NEW"
+        )
+
+        st.metric(
+            "Нови SPA заявки",
+            displayed_new_spa_count
+        )
+
+    st.divider()
+
+    if not spa_rows:
+        st.success(
+            "Няма активни SPA заявки."
+        )
+
+    else:
+        spa_statuses = [
+            "NEW",
+            "CONTACTED",
+            "CONFIRMED",
+            "COMPLETED",
+            "CANCELLED"
+        ]
+
+        spa_status_labels = {
+            "NEW": "🔴 NEW",
+            "CONTACTED": "🟡 CONTACTED",
+            "CONFIRMED": "🟢 CONFIRMED",
+            "COMPLETED": "✅ COMPLETED",
+            "CANCELLED": "❌ CANCELLED"
+        }
+
+        for spa_row in spa_rows:
+
+            request_id = spa_row[0]
+            room_number = spa_row[1]
+            service_name = spa_row[2]
+            guest_message = spa_row[3]
+
+            request_status = str(
+                spa_row[4] or "NEW"
+            ).strip().upper()
+
+            created_at = spa_row[5]
+
+            with st.container(border=True):
+
+                title_col, status_col = st.columns(
+                    [5, 2]
+                )
+
+                with title_col:
+                    st.subheader(
+                        f"💆 SPA заявка #{request_id}"
+                    )
+
+                    st.markdown(
+                        f"### 🛎️ Стая №{room_number}"
+                    )
+
+                    st.write(
+                        f"**Услуга:** {service_name}"
+                    )
+
+                with status_col:
+                    st.write(
+                        "Статус: "
+                        f"{spa_status_labels.get(
+                            request_status,
+                            request_status
+                        )}"
+                    )
+
+                    if created_at:
+                        st.caption(
+                            "Получена: "
+                            f"{created_at.strftime('%d.%m.%Y %H:%M')}"
+                        )
+
+                st.markdown(
+                    "#### Съобщение от госта"
+                )
+
+                st.info(
+                    guest_message
+                )
+
+                status_select_col, save_col = st.columns(
+                    [2, 3]
+                )
+
+                with status_select_col:
+                    selected_spa_status = st.selectbox(
+                        "Статус",
+                        spa_statuses,
+                        index=(
+                            spa_statuses.index(
+                                request_status
+                            )
+                            if request_status in spa_statuses
+                            else 0
+                        ),
+                        key=f"spa_status_{request_id}"
+                    )
+
+                with save_col:
+                    if st.button(
+                        "✅ Запази статуса",
+                        key=f"save_spa_status_{request_id}",
+                        type="primary",
+                        use_container_width=True
+                    ):
+                        try:
+                            update_spa_request_status(
+                                request_id=request_id,
+                                new_status=selected_spa_status
+                            )
+
+                            st.success(
+                                "Статусът на SPA заявката "
+                                "е обновен."
+                            )
+
+                            st.rerun()
+
+                        except Exception as error:
+                            st.error(
+                                "Статусът не беше обновен."
+                                "\n\n"
+                                f"Причина: {error}"
+                            )
+
+    st.divider()
+
+    if st.button(
+        "🔄 Обнови SPA заявките",
+        key="refresh_spa_requests",
+        use_container_width=True
+    ):
+        st.rerun()
+
+    st.caption(
+        "Powered by HMITSEVAPPS"
+    )
+
+    st.stop()
 # =====================================
 # ЗАРЕЖДАНЕ НА ROOM SERVICE ДАННИТЕ
 # =====================================
@@ -950,12 +1140,17 @@ if view_mode == ACTIVITIES_VIEW:
 try:
     if view_mode == ACTIVE_VIEW:
         rows = get_room_service_orders()
-    else:
+
+    elif view_mode == COMPLETED_VIEW:
         rows = get_completed_room_service_orders()
+
+    else:
+        rows = []
 
 except Exception as error:
     st.error(
-        "Поръчките не могат да бъдат заредени.\n\n"
+        "Поръчките не могат да бъдат заредени."
+        "\n\n"
         f"Причина: {error}"
     )
 
