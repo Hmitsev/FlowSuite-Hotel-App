@@ -640,9 +640,19 @@ if view_mode == ACTIVITIES_VIEW:
 
     # Останалата Activities логика продължава тук
 
-    st.markdown("##  Activities заявки")
-
-    activity_col1, activity_col2 = st.columns(2)
+    st.markdown(
+    """
+    <div style="
+        color:#D4AF37;
+        font-size:28px;
+        font-weight:900;
+        margin-bottom:15px;
+    ">
+        🎿 ACTIVITIES ЗАЯВКИ
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
     with activity_col1:
         st.metric(
