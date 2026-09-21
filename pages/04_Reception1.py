@@ -566,7 +566,19 @@ if total_new_notifications > 0:
 else:
     notification_bell_placeholder.empty()
 
+# =====================================
+# ROOM SERVICE НАДПИС
+# =====================================
 
+if new_room_service_count > 0:
+    ACTIVE_VIEW = (
+        f"🔴 {new_room_service_count} | "
+        "🍽️ Активни Room Service поръчки"
+    )
+else:
+    ACTIVE_VIEW = (
+        "🍽️ Активни Room Service поръчки"
+    )
 # =====================================
 # ACTIVITIES НАДПИС
 # =====================================
