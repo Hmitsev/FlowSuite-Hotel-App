@@ -1366,10 +1366,11 @@ else:
                                 new_status=selected_status
                             )
 
-                            st.success(
-                                "Статусът е обновен."
+                            update_activity_request_status(
+                                request_id=request_id,
+                                new_status=selected_activity_status
                             )
-
+                            
                             st.rerun()
 
                         except Exception as error:
