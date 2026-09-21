@@ -326,6 +326,20 @@ def get_kitchen_orders():
                 'NEW',
                 'PREPARING'
             )
+            AND LOWER(rsoi.item_name) NOT LIKE '%water%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%cola%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%coca%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%sprite%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%fanta%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%juice%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%tea%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%coffee%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%espresso%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%cappuccino%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%whiskey%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%vodka%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%wine%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%beer%'
             ORDER BY
                 rso.created_at ASC,
                 rso.id ASC,
