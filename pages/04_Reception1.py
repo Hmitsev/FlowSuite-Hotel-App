@@ -747,8 +747,7 @@ view_mode = st.radio(
     label_visibility="collapsed",
     key="reception_view_mode"
 )
-if "reception_view_mode" not in st.session_state:
-    st.session_state.reception_view_mode = ACTIVE_VIEW
+st.session_state["current_view"] = view_mode
 
 # =====================================
 # ACTIVITIES ИЗГЛЕД
@@ -928,15 +927,16 @@ if view_mode == ACTIVITIES_VIEW:
                         )
 
                     if save_activity_status:
+
                         try:
+                    
+                            st.session_state["current_view"] = ACTIVITIES_VIEW
+                    
                             update_activity_request_status(
                                 request_id=request_id,
-                                new_status=(
-                                    selected_activity_status
-                                )
+                                new_status=selected_activity_status
                             )
-
-
+                    
                             st.rerun()
 
                         except Exception as error:
@@ -1136,12 +1136,16 @@ if view_mode == SPA_VIEW:
                         )
 
                     if save_spa_status:
+
                         try:
+                    
+                            st.session_state["current_view"] = SPA_VIEW
+                    
                             update_spa_request_status(
                                 request_id=request_id,
                                 new_status=selected_spa_status
                             )
-
+                    
                             st.rerun()
 
                         except Exception as error:
