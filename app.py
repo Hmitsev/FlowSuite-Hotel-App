@@ -255,8 +255,17 @@ div[data-testid="stButton"] button {{
    ОСНОВНИ БУТОНИ
 ===================================================== */
 div[data-testid="stButton"] button[kind="primary"] {
-    min-height: 48px;
-    width: 100%;
+
+    height: 42px !important;
+    min-height: 42px !important;
+
+    padding: 0 !important;
+
+    font-size: 14px !important;
+    font-weight: 700 !important;
+
+    border-radius: 12px !important;
+
     background:
         linear-gradient(
             135deg,
@@ -265,16 +274,8 @@ div[data-testid="stButton"] button[kind="primary"] {
             #F5D77B 100%
         ) !important;
 
-    border: 1px solid #F5D77B !important;
-    border-radius: 12px !important;
-
     color: #101010 !important;
 
-    font-size: 15px !important;
-    font-weight: 800 !important;
-
-    box-shadow:
-        0 6px 16px rgba(212,175,55,0.18);
 }
     font-weight: 800 !important;
     letter-spacing: 0.4px !important;
