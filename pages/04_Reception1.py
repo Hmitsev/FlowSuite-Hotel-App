@@ -370,9 +370,10 @@ def get_activity_requests():
             FROM activity_requests ar
             JOIN hotel_rooms hr
                 ON hr.id = ar.room_id
-            WHERE ar.request_status NOT IN (
-                'COMPLETED',
-                'CANCELLED'
+            WHERE UPPER(TRIM(ar.request_status)) IN (
+                'NEW',
+                'CONTACTED',
+                'CONFIRMED'
             )
             ORDER BY
                 ar.created_at ASC,
