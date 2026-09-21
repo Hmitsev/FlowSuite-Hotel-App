@@ -353,6 +353,7 @@ st.markdown(
 # =========================================================
 # КАРТИ НА УСЛУГИТЕ
 # =========================================================
+st.markdown("<div style='height:120px;'></div>", unsafe_allow_html=True)
 room_service_column, spa_column, activities_column = st.columns(
     3,
     gap="medium",
