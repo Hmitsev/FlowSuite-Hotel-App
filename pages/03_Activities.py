@@ -498,7 +498,7 @@ with st.container(border=True):
 # =====================================
 
 st.info(
-    t["reception_message"]
+    t["activity_reception_message"]
 )
 
 
