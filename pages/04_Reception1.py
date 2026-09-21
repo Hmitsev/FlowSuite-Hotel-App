@@ -609,62 +609,6 @@ view_mode = st.radio(
 )
 
 
-# =====================================
-# ROOM SERVICE НАДПИС
-# =====================================
-
-if new_room_service_count > 0:
-    ACTIVE_VIEW = (
-        f"🔴 {new_room_service_count} | 🍽️ Активни Room Service поръчки"
-    )
-else:
-    ACTIVE_VIEW = (
-        "🍽️ Активни Room Service поръчки"
-    )
-
-
-# =====================================
-# ПРИКЛЮЧЕНИ ПОРЪЧКИ
-# =====================================
-
-COMPLETED_VIEW = (
-    "📜 Приключени поръчки"
-)
-
-# =====================================
-# ДИНАМИЧЕН НАДПИС ЗА ACTIVITIES
-# =====================================
-
-if new_activity_count > 0:
-    rooms_text = ", ".join(
-        str(room_number)
-        for room_number in new_activity_rooms
-    )
-
-    if new_activity_count == 1:
-        activity_count_text = "1 нова"
-    else:
-        activity_count_text = (
-            f"{new_activity_count} нови"
-        )
-
-    if len(new_activity_rooms) == 1:
-        room_text = (
-            f"стая {rooms_text}"
-        )
-    else:
-        room_text = (
-            f"стаи {rooms_text}"
-        )
-
-    ACTIVITIES_VIEW = (
-        f"🔴 {new_activity_count} |  Activities заявки"
-    )
-
-else:
-    ACTIVITIES_VIEW = (
-        " Activities заявки"
-    )
 
 # =====================================
 # ACTIVITIES ИЗГЛЕД
