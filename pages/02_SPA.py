@@ -106,7 +106,7 @@ def create_spa_request(
 
 st.set_page_config(
     page_title="SPA",
-    page_icon="💆🏼‍♀️",
+    page_icon"🧘🏻‍♀️",
     layout="wide"
 )
 if "lang" not in st.session_state:
@@ -172,7 +172,7 @@ with st.container(border=True):
            with activity_col:
 
                 st.subheader(
-                    f"💆 {t['relaxing_massage']}"
+                    f"🧘🏻‍♀️ {t['relaxing_massage']}"
                 )
             
                 st.write(
