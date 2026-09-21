@@ -721,8 +721,15 @@ else:
 # =====================================
 
 ACTIVE_VIEW = f"🔴 {new_room_service_count} | 🔔 Room Service"
-ACTIVITIES_VIEW = "🎿 Activities"
-SPA_VIEW = "SPA"
+ACTIVITIES_VIEW = (
+    f"🔴 {new_activity_count} "
+    f"🎿 Activities"
+)
+
+SPA_VIEW = (
+    f"🔴 {new_spa_count} "
+    f"SPA"
+)
 COMPLETED_VIEW = "📜 Приключени"
 
 
