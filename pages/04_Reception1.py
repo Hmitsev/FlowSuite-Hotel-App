@@ -2,7 +2,7 @@
 import streamlit as st
 
 from database.db import get_connection
-
+from streamlit_autorefresh import st_autorefresh
 
 # =====================================
 # НАСТРОЙКИ
@@ -13,7 +13,14 @@ st.set_page_config(
     page_icon="🛎️",
     layout="wide"
 )
+# =====================================
+# AUTO REFRESH
+# =====================================
 
+st_autorefresh(
+    interval=2000,  # 2 секунди
+    key="reception_refresh"
+)
 
 # =====================================
 # БАНЕР НА РЕЦЕПЦИЯТА
@@ -689,7 +696,7 @@ else:
 if new_room_service_count > 0:
     ACTIVE_VIEW = (
         f"🔴 {new_room_service_count} | "
-        "🍽️ Активни Room Service поръчки"
+       🔔 Активни Room Service поръчк
     )
 else:
     ACTIVE_VIEW = (
