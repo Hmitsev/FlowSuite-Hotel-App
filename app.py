@@ -254,6 +254,7 @@ div[data-testid="stButton"] button {{
 /* =====================================================
    ОСНОВНИ БУТОНИ
 ===================================================== */
+
 div[data-testid="stButton"] button[kind="primary"] {
 
     height: 42px !important;
@@ -276,28 +277,36 @@ div[data-testid="stButton"] button[kind="primary"] {
 
     color: #101010 !important;
 
+    box-shadow:
+        0 4px 12px rgba(
+            212,
+            175,
+            55,
+            0.18
+        ) !important;
 }
-    font-weight: 800 !important;
-    letter-spacing: 0.4px !important;
-    box-shadow:
-        0 8px 24px rgba(212, 175, 55, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}}
 
-div[data-testid="stButton"] button[kind="primary"]:hover {{
-    transform: translateY(-2px);
-    border-color: #FFF0B3 !important;
-    box-shadow:
-        0 12px 30px rgba(212, 175, 55, 0.35),
-        0 0 14px rgba(245, 215, 123, 0.18);
-}}
+div[data-testid="stButton"] button[kind="primary"]:hover {
 
-div[data-testid="stButton"] button[kind="primary"] p {{
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 6px 14px rgba(
+            212,
+            175,
+            55,
+            0.28
+        ) !important;
+}
+
+div[data-testid="stButton"] button[kind="primary"] p {
+
     color: #101010 !important;
-    font-weight: 800 !important;
-}}
 
+    font-size: 14px !important;
 
+    font-weight: 700 !important;
+}
 /* =====================================================
    ВТОРИЧНИ БУТОНИ
 ===================================================== */
