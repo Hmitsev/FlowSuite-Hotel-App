@@ -865,16 +865,9 @@ else:
 # ПОСТОЯННИ ИМЕНА НА ИЗГЛЕДИТЕ
 # =====================================
 
-ACTIVE_VIEW = f"🔴 {new_room_service_count} | 🔔 Room Service"
-ACTIVITIES_VIEW = (
-    f"🔴 {new_activity_count} "
-    f"🎿 Activities"
-)
-
-SPA_VIEW = (
-    f"🔴 {new_spa_count} "
-    f"SPA"
-)
+ACTIVE_VIEW = "🔔 Room Service"
+ACTIVITIES_VIEW = "🎿 Activities"
+SPA_VIEW = "💆 SPA"
 COMPLETED_VIEW = "📜 Приключени"
 
 
@@ -1369,32 +1362,39 @@ if view_mode == SPA_VIEW:
                         )
 
                         if save_spa_status:
-                            try:
-                                from datetime import time
+    try:
+        from datetime import time
 
-                                selected_hour, selected_minute = map(
-                                    int,
-                                    selected_time_text.split(":")
-                                )
+        selected_hour, selected_minute = map(
+            int,
+            selected_time_text.split(":")
+        )
 
-                                selected_reservation_time = time(
-                                    selected_hour,
-                                    selected_minute
-                                )
+        selected_reservation_time = time(
+            selected_hour,
+            selected_minute
+        )
 
-                                update_spa_request_status(
-                                    request_id=request_id,
-                                    new_status=selected_spa_status,
-                                    reservation_date=(
-                                        selected_reservation_date
-                                    ),
-                                    reservation_time=(
-                                        selected_reservation_time
-                                    ),
-                                    duration_minutes=duration_minutes
-                                )
+        update_spa_request_status(
+            request_id=request_id,
+            new_status=selected_spa_status,
+            reservation_date=selected_reservation_date,
+            reservation_time=selected_reservation_time,
+            duration_minutes=duration_minutes
+        )
 
-                                st.rerun()
+        # Запази къде се намираме
+        st.session_state.reception_view_mode = SPA_VIEW
+        st.session_state.spa_subview = "📋 Активни заявки"
+
+        st.rerun()
+
+    except Exception as error:
+        st.error(
+            "SPA заявката не беше обновена."
+            "\n\n"
+            f"Причина: {error}"
+        )
 
                             except Exception as error:
                                 st.error(
