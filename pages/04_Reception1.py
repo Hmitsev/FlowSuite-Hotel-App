@@ -3,29 +3,7 @@ import streamlit as st
 
 from database.db import get_connection
 
-# =====================================
-# БАНЕР НА ROOM SERVICE
-# =====================================
 
-st.image(
-    "assets/Screenshot 2026-09-09 025744.png",
-    use_container_width=True
-)
-st.markdown(
-    """
-    <div style="
-        text-align:center;
-        color:#D4AF37;
-        font-size:34px;
-        font-weight:800;
-        margin-top:15px;
-        margin-bottom:20px;
-    ">
-         ROOM SERVICE
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 # =====================================
 # НАСТРОЙКИ
 # =====================================
@@ -36,6 +14,15 @@ st.set_page_config(
     layout="wide"
 )
 
+
+# =====================================
+# БАНЕР НА РЕЦЕПЦИЯТА
+# =====================================
+
+st.image(
+    "assets/Screenshot 2026-09-09 025744.png",
+    use_container_width=True
+)
 # =====================================
 # ДОСТЪП ДО РЕЦЕПЦИЯ
 # =====================================
@@ -218,22 +205,6 @@ title_left_col, title_center_col, bell_col = st.columns(
 )
 
 with title_center_col:
-    st.markdown(
-        """
-        <div style="
-            text-align:center;
-            color:#D4AF37;
-            font-size:34px;
-            font-weight:800;
-            letter-spacing:1px;
-            margin-top:15px;
-            margin-bottom:20px;
-        ">
-            ROOM SERVICE
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 
 with bell_col:
     notification_bell_placeholder = st.empty()
