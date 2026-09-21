@@ -357,7 +357,6 @@ div[data-testid="stButton"] button[kind="secondary"]:hover {{
         min-height: 42px;
         font-size: 14px !important;
     }}
-}}
 
 </style>
 """
