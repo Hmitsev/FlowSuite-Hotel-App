@@ -495,6 +495,129 @@ def get_new_room_service_notifications():
         cur.close()
         conn.close()
 # =====================================
+# ЗАРЕЖДАНЕ НА АКТИВНИ SPA ЗАЯВКИ
+# =====================================
+
+def get_spa_requests():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                sr.id,
+                hr.room_number,
+                sr.service_name,
+                sr.guest_message,
+                sr.request_status,
+                sr.created_at
+            FROM spa_requests sr
+            JOIN hotel_rooms hr
+                ON hr.id = sr.room_id
+            WHERE UPPER(TRIM(sr.request_status)) IN (
+                'NEW',
+                'CONTACTED',
+                'CONFIRMED'
+            )
+            ORDER BY
+                sr.created_at ASC,
+                sr.id ASC
+            """
+        )
+
+        return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+# =====================================
+# БРОЙ НОВИ SPA ЗАЯВКИ
+# =====================================
+
+def get_new_spa_request_count():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT COUNT(*)
+            FROM spa_requests
+            WHERE UPPER(TRIM(request_status)) = 'NEW'
+            """
+        )
+
+        result = cur.fetchone()
+
+        return int(
+            result[0] or 0
+        )
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+# =====================================
+# ПРОМЯНА НА СТАТУС НА SPA ЗАЯВКА
+# =====================================
+
+def update_spa_request_status(
+    request_id,
+    new_status
+):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        if new_status in (
+            "COMPLETED",
+            "CANCELLED"
+        ):
+            cur.execute(
+                """
+                UPDATE spa_requests
+                SET
+                    request_status = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (
+                    new_status,
+                    request_id
+                )
+            )
+
+        else:
+            cur.execute(
+                """
+                UPDATE spa_requests
+                SET
+                    request_status = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = NULL
+                WHERE id = %s
+                """,
+                (
+                    new_status,
+                    request_id
+                )
+            )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()       
+# =====================================
 # ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
 # =====================================
 
