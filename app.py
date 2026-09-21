@@ -485,13 +485,13 @@ with spa_column:
 with activities_column:
 
     
-    st.subheader("Аctivitie")
+    st.subheader("Аctivities")
     st.caption(
         "Разгледайте и резервирайте хотелски активности."
     )
 
     if st.button(
-        " Аctivitie",
+        " Аctivities",
         key="activities_btn",
         type="primary",
         use_container_width=True
