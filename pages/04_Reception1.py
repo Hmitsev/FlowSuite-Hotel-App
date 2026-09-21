@@ -167,24 +167,6 @@ title_left_col, title_center_col, bell_col = st.columns(
     vertical_alignment="center"
 )
 
-with title_center_col:
-    st.markdown(
-        """
-        <div style="
-            text-align:center;
-            color:#D4AF37;
-            font-size:34px;
-            font-weight:800;
-            letter-spacing:1px;
-            margin-top:15px;
-            margin-bottom:20px;
-        ">
-            ROOM SERVICE
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
 with bell_col:
     notification_bell_placeholder = st.empty()
 # =====================================
