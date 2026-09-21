@@ -19,45 +19,54 @@ except (TypeError, ValueError):
 
 
 # =====================================
-# ЗАПИС НА SPA ЗАЯВКАТА
+# ЗАПИС НА SPA ЗАЯВКА
 # =====================================
 
-def create_activity_request(
+def create_spa_request(
     room_number,
-    activity_name,
+    service_name,
     guest_message
 ):
+    clean_message = str(
+        guest_message
+    ).strip()
+
+    if not clean_message:
+        raise ValueError(
+            "Моля, въведете съобщение."
+        )
 
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-
         cur.execute(
             """
             SELECT id
             FROM hotel_rooms
             WHERE room_number = %s
+              AND is_active = TRUE
             LIMIT 1
             """,
-            (room_number,)
+            (int(room_number),)
         )
 
-        room = cur.fetchone()
+        room_result = cur.fetchone()
 
-        if not room:
-            raise Exception(
-                f"Стая {room_number} не е намерена."
+        if room_result is None:
+            raise ValueError(
+                f"Стая №{room_number} не е намерена "
+                "или не е активна."
             )
 
-        room_id = room[0]
+        room_id = room_result[0]
 
         cur.execute(
             """
-            INSERT INTO activity_requests
+            INSERT INTO spa_requests
             (
                 room_id,
-                activity_name,
+                service_name,
                 guest_message,
                 request_status
             )
@@ -72,8 +81,8 @@ def create_activity_request(
             """,
             (
                 room_id,
-                activity_name,
-                guest_message
+                str(service_name).strip(),
+                clean_message
             )
         )
 
@@ -90,7 +99,6 @@ def create_activity_request(
     finally:
         cur.close()
         conn.close()
-
 # =====================================
 # НАСТРОЙКИ НА СТРАНИЦАТА
 # =====================================
@@ -209,11 +217,12 @@ with st.container(border=True):
 
                     try:
 
-                        request_id = create_activity_request(
+                        request_id = create_spa_request(
                             room_number=room_number,
-                            activity_name="SPA Massage",
+                            service_name="Relaxing Massage",
                             guest_message=reservation_text
                         )
+
 
                         st.session_state.spa_request_success = True
                         st.rerun()
