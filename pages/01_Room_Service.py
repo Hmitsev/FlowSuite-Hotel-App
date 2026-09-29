@@ -630,6 +630,7 @@ if st.session_state.last_order_id is not None:
         f"{st.session_state.last_order_id}\n\n"
         f"🛎️ Стая № {room_number}\n\n"
         "Рецепцията вече вижда Вашата поръчка."
+        "Сумата по вашата поръчка ще бъде добавена към стаята ви."
     )
 
     st.session_state.last_order_id = None
