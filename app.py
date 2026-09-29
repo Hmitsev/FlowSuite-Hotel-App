@@ -89,7 +89,7 @@ if room_number < 1 or room_number > 9999:
 
 # Запазваме стаята и в session_state за останалите страници.
 st.session_state.room_number = room_number
-
+st.write("DEBUG APP:", room_number)
 
 # =========================================================
 # ЗАРЕЖДАНЕ НА ХОТЕЛСКАТА СНИМКА
