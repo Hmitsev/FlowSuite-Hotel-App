@@ -142,6 +142,9 @@ TRANSLATIONS = {
         "request_number": "Request number",
         "reception_contact": "Reception will contact you.",
         "request_success": "Your request has been successfully sent to reception.",
+        "price": "Price",
+        "room_charge_information":"After confirmation by reception, the cost of the service will be added to your room bill.",
+        "request_error":"An error occurred while sending the request",
 
         # SPA
         "spa_page_title": "SPA",
