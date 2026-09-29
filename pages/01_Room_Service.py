@@ -153,7 +153,7 @@ room_number = st.session_state.get(
     204
 )
 
-st.write("DEBUG ROOM:", room_number)
+
 
 # =====================================
 # КАРТА С НОМЕРА НА СТАЯТА
