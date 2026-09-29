@@ -92,7 +92,7 @@ room_number = st.session_state.get(
     "room_number",
     204
 )
-st.write("DEBUG APP:", room_number)
+
 
 # =========================================================
 # ЗАРЕЖДАНЕ НА ХОТЕЛСКАТА СНИМКА
