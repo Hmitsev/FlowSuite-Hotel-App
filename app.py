@@ -76,19 +76,22 @@ t = get_translations()
 # НОМЕР НА СТАЯТА ОТ QR КОДА
 # Пример: ?room=204
 # =========================================================
-raw_room_number = st.query_params.get("room", "204")
+raw_room_number = st.query_params.get("room")
 
-try:
-    room_number = int(raw_room_number)
-except (TypeError, ValueError):
-    room_number = 204
+if raw_room_number:
+    try:
+        room_number = int(raw_room_number)
 
-if room_number < 1 or room_number > 9999:
-    st.error(t["invalid_room"])
-    st.stop()
+        if 1 <= room_number <= 9999:
+            st.session_state.room_number = room_number
 
-# Запазваме стаята и в session_state за останалите страници.
-st.session_state.room_number = room_number
+    except (TypeError, ValueError):
+        pass
+
+room_number = st.session_state.get(
+    "room_number",
+    204
+)
 st.write("DEBUG APP:", room_number)
 
 # =========================================================
