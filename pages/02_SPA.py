@@ -188,65 +188,16 @@ with st.container(border=True):
 
     with activity_col:
 
-        st.markdown(
-            f"""
-            <div style="
-                display:flex;
-                align-items:center;
-                flex-wrap:wrap;
-                gap:12px;
-                margin-bottom:8px;
-            ">
-                <div style="
-                    color:#F5F5F5;
-                    font-size:28px;
-                    font-weight:700;
-                ">
-                    🧘🏻‍♀️ {SPA_SERVICE_NAME}
-                </div>
-
-                <div style="
-                    background:linear-gradient(
-                        135deg,
-                        #D4AF37,
-                        #B68A24
-                    );
-                    color:#111111;
-                    border-radius:8px;
-                    padding:5px 12px;
-                    font-size:16px;
-                    font-weight:800;
-                    white-space:nowrap;
-                ">
-                    {SPA_SERVICE_PRICE:.2f} {SPA_CURRENCY}
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True
+        st.subheader(
+            f"🧘🏻‍♀️ {SPA_SERVICE_NAME} • {SPA_SERVICE_PRICE:.2f} {SPA_CURRENCY}"
         )
 
         st.write(
             t["relaxing_massage_description"]
         )
 
-        st.markdown(
-            f"""
-            <div style="
-                background:rgba(212, 175, 55, 0.10);
-                border-left:4px solid #D4AF37;
-                border-radius:8px;
-                padding:12px 14px;
-                margin-top:14px;
-                color:#E8E8E8;
-                font-size:14px;
-                line-height:1.5;
-            ">
-                <strong>ℹ️ {t["important_information"]}</strong>
-                <br>
-                {t["room_charge_information"]}
-            </div>
-            """,
-            unsafe_allow_html=True
+        st.info(
+            t["room_charge_information"]
         )
 
     with info_col:
@@ -300,22 +251,12 @@ with st.container(border=True):
 
                         request_id = create_spa_request(
                             room_number=room_number,
-                            service_name=(
-                                f"{SPA_SERVICE_NAME} - "
-                                f"{SPA_SERVICE_PRICE:.2f} "
-                                f"{SPA_CURRENCY}"
-                            ),
+                            service_name=f"{SPA_SERVICE_NAME} - {SPA_SERVICE_PRICE:.2f} {SPA_CURRENCY}",
                             guest_message=reservation_text
                         )
 
-                        st.session_state.spa_success_service_name = (
-                            SPA_SERVICE_NAME
-                        )
-
-                        st.session_state.spa_success_service_price = (
-                            SPA_SERVICE_PRICE
-                        )
-
+                        st.session_state.spa_success_service_name = SPA_SERVICE_NAME
+                        st.session_state.spa_success_service_price = SPA_SERVICE_PRICE
                         st.session_state.spa_request_success = True
 
                         st.rerun()
