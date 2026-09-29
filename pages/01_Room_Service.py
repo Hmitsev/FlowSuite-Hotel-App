@@ -574,7 +574,7 @@ else:
                         font-weight:700;
                         margin-bottom:4px;
                     ">
-                        ✅ {t["added"]}
+                        ✅ {t["Added"]}
                     </div>
                     """,
                     unsafe_allow_html=True
