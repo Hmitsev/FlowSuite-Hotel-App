@@ -198,7 +198,7 @@ TRANSLATIONS = {
         "save_comment": "Save comment",
         "comment_saved": "The comment has been saved.",
         "Added": "Added",
-        "add": "Add",
+        "Add": "Add",
         "remove": "Remove",
         "cart": "Your order",
         "quantity": "Quantity",
