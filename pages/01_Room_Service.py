@@ -580,8 +580,8 @@ else:
                     unsafe_allow_html=True
                 )
 
-            if st.button(
-                "🛒 Добави",
+            if st.button(t(
+                "🛒 Добави")),
                 key=f"add_{item_id}_{item_index}"
             ):
 
