@@ -148,24 +148,15 @@ st.markdown(
 
 
 # =====================================
-# НОМЕР НА СТАЯТА ОТ QR КОДА
+# НОМЕР НА СТАЯТА
 # =====================================
 
-raw_room_number = st.query_params.get(
-    "room",
-    "204"
+room_number = st.session_state.get(
+    "room_number",
+    204
 )
 
-try:
-    room_number = int(raw_room_number)
-except (TypeError, ValueError):
-    room_number = 204
-
-if room_number < 1 or room_number > 9999:
-    st.error(t["invalid_room"])
-    st.stop()
-
-st.session_state.room_number = room_number
+st.write("DEBUG ROOM:", room_number)
 
 
 # =====================================
