@@ -580,7 +580,7 @@ else:
                     unsafe_allow_html=True
                 )
 
-            if st.button(t["add"], key=f"Add_{item_id}"):
+            if st.button(t["Add"], key=f"Add_{item_id}"):
 
                 saved_comment = st.session_state.get(
                     f"saved_note_{item_id}_{item_index}",
