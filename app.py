@@ -209,7 +209,7 @@ div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] p {
 /* Компактен банер */
 [data-testid="stImage"] img {
     width: 100% !important;
-    max-height: 260px !important;
+    max-height: 420px !important;
     object-fit: cover !important;
     border-radius: 14px !important;
 }
@@ -249,7 +249,7 @@ div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] p {
     }
 
     [data-testid="stImage"] img {
-        max-height: 180px !important;
+        max-height: 260px !important;
         border-radius: 12px !important;
     }
 
