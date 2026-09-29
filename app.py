@@ -249,7 +249,7 @@ div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] p {
     }
 
     [data-testid="stImage"] img {
-        max-height: 260px !important;
+        max-height: 360px !important;
         border-radius: 12px !important;
     }
 
