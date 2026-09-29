@@ -581,7 +581,7 @@ else:
                 )
 
             if st.button(
-                "🛒 Add",
+                "🛒 Добави",
                 key=f"add_{item_id}_{item_index}"
             ):
 
