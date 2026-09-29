@@ -580,9 +580,7 @@ else:
                     unsafe_allow_html=True
                 )
 
-            if st.button(t(
-                "🛒 Добави")),
-                key=f"add_{item_id}_{item_index}"
+            if st.button(t("Add"), key=f"add_{item_id}"):
             ):
 
                 saved_comment = st.session_state.get(
