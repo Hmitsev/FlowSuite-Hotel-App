@@ -574,13 +574,13 @@ else:
                         font-weight:700;
                         margin-bottom:4px;
                     ">
-                        ✅ {t["Added"]}
+                        ✅ {t["added"]}
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
-            if st.button(t("Add"), key=f"Add_{item_id}"):
+            if st.button(t("add"), key=f"add_{item_id}"):
             ):
 
                 saved_comment = st.session_state.get(
