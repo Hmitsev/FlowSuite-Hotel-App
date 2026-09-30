@@ -9,26 +9,24 @@ from database.db import get_connection
 
 @st.cache_data(ttl=3600)
 
+@st.cache_data(ttl=3600)
 def get_categories():
 
     conn = get_connection()
     cur = conn.cursor()
 
     try:
+        cur.execute(
+            """
+            SELECT DISTINCT
+                category_name,
+                sort_order
+            FROM menu_categories
+            ORDER BY sort_order, category_name
+            """
+        )
 
-        cur.execute("""
-            SELECT table_name
-            FROM information_schema.tables
-            WHERE table_schema='public'
-            ORDER BY table_name
-        """)
-
-        rows = cur.fetchall()
-
-        print("TABLES FOUND:")
-        print(rows)
-
-        return []
+        return cur.fetchall()
 
     finally:
         cur.close()
