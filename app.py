@@ -38,29 +38,18 @@ button[kind="header"] {
 st.markdown("""
 <style>
 
-/* Streamlit chat/help widget */
-iframe[title*="chat"] {
-    display: none !important;
-}
-
-iframe[src*="intercom"] {
-    display: none !important;
-}
-
-iframe[src*="streamlit"] {
-    display: none !important;
-}
-
-[data-testid="stStatusWidget"] {
-    display: none !important;
-}
-
-[data-testid="stWidgetLabel"]{
+/* Скрива status iframe */
+iframe[title="Streamlit Cloud Status"]{
     display:none !important;
 }
 
-/* всички фиксирани елементи долу вдясно */
-div[style*="position: fixed"]{
+/* Backup */
+iframe[src*="statuspage.io"]{
+    display:none !important;
+}
+
+/* Backup 2 */
+iframe[src*="streamlitstatus"]{
     display:none !important;
 }
 
