@@ -35,6 +35,37 @@ button[kind="header"] {
 
 </style>
 """, unsafe_allow_html=True)
+st.markdown("""
+<style>
+
+/* Streamlit chat/help widget */
+iframe[title*="chat"] {
+    display: none !important;
+}
+
+iframe[src*="intercom"] {
+    display: none !important;
+}
+
+iframe[src*="streamlit"] {
+    display: none !important;
+}
+
+[data-testid="stStatusWidget"] {
+    display: none !important;
+}
+
+[data-testid="stWidgetLabel"]{
+    display:none !important;
+}
+
+/* всички фиксирани елементи долу вдясно */
+div[style*="position: fixed"]{
+    display:none !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 # =========================================================
 # ПЪТИЩА ДО ФАЙЛОВЕТЕ
 # =========================================================
