@@ -13,7 +13,46 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+st.markdown("""
+<style>
 
+/* Скрива горния Streamlit toolbar */
+[data-testid="stToolbar"] {
+    display: none !important;
+}
+
+/* Скрива бутона Deploy/Fork */
+.stAppDeployButton {
+    display: none !important;
+}
+
+/* Скрива менюто с трите точки */
+#MainMenu {
+    visibility: hidden !important;
+}
+
+/* Скрива footer */
+footer {
+    visibility: hidden !important;
+}
+
+/* Скрива "Built with Streamlit" */
+[data-testid="stStatusWidget"] {
+    display: none !important;
+}
+
+/* Скрива горния header */
+header {
+    visibility: hidden !important;
+}
+
+/* Намалява празното място отгоре */
+.block-container {
+    padding-top: 0rem !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # =========================================================
 # ПЪТИЩА ДО ФАЙЛОВЕТЕ
