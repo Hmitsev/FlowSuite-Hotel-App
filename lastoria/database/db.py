@@ -7,7 +7,7 @@ def get_connection():
     database_url = os.getenv("LASTORIA_DATABASE_URL")
 
     st.error(
-        database_url[:120]
+        "LASTORIA DB = " + database_url[:120]
     )
 
     return psycopg2.connect(database_url)
