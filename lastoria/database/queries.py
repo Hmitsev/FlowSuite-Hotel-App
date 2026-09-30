@@ -8,8 +8,6 @@ from database.db import get_connection
 # =====================================
 
 @st.cache_data(ttl=3600)
-
-@st.cache_data(ttl=3600)
 def get_categories():
 
     conn = get_connection()
