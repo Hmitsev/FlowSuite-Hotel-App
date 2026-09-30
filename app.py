@@ -2,7 +2,9 @@ import base64
 from pathlib import Path
 
 import streamlit as st
+
 from translations import get_translations
+from lastoria.client import render_lastoria_client
 
 # =========================================================
 # НАСТРОЙКИ НА СТРАНИЦАТА
@@ -111,7 +113,19 @@ if "lang" not in st.session_state:
     st.session_state.lang = "bg"
 
 t = get_translations()
+# =========================================================
+# LASTORIA ROUTER
+# =========================================================
 
+from lastoria.client import render_lastoria_client
+
+app_type = str(
+    st.query_params.get("app", "hotel")
+).lower()
+
+if app_type == "lastoria":
+    render_lastoria_client()
+    st.stop()
 # =========================================================
 # НОМЕР НА СТАЯТА ОТ QR КОДА
 # Пример: ?room=204
