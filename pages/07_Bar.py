@@ -313,6 +313,172 @@ def get_lobby_bar_orders():
     finally:
         cur.close()
         conn.close()
+        # =========================================================
+# ПРОМЯНА НА СТАТУС НА LOBBY BAR АРТИКУЛ
+# =========================================================
+def update_lobby_bar_item_status(
+    order_item_id,
+    order_id,
+    new_status
+):
+    allowed_statuses = {
+        "NEW",
+        "PREPARING",
+        "READY",
+        "DELIVERING",
+        "COMPLETED",
+        "CANCELLED"
+    }
+
+    normalized_status = str(
+        new_status or ""
+    ).strip().upper()
+
+    if normalized_status not in allowed_statuses:
+        raise ValueError(
+            "Невалиден статус на артикула."
+        )
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            UPDATE lobby_bar_order_items
+            SET item_status = %s
+            WHERE id = %s
+              AND order_id = %s
+            """,
+            (
+                normalized_status,
+                order_item_id,
+                order_id
+            )
+        )
+
+        if cur.rowcount == 0:
+            raise ValueError(
+                "Lobby Bar артикулът не е намерен."
+            )
+
+        # Проверяваме състоянието на цялата поръчка.
+        cur.execute(
+            """
+            SELECT
+                COUNT(*) AS total_items,
+
+                COUNT(*) FILTER (
+                    WHERE UPPER(TRIM(item_status))
+                          IN (
+                              'COMPLETED',
+                              'CANCELLED'
+                          )
+                ) AS finished_items,
+
+                COUNT(*) FILTER (
+                    WHERE UPPER(TRIM(item_status))
+                          = 'DELIVERING'
+                ) AS delivering_items,
+
+                COUNT(*) FILTER (
+                    WHERE UPPER(TRIM(item_status))
+                          = 'READY'
+                ) AS ready_items,
+
+                COUNT(*) FILTER (
+                    WHERE UPPER(TRIM(item_status))
+                          = 'PREPARING'
+                ) AS preparing_items
+
+            FROM lobby_bar_order_items
+            WHERE order_id = %s
+            """,
+            (order_id,)
+        )
+
+        status_row = cur.fetchone()
+
+        total_items = int(
+            status_row[0] or 0
+        )
+
+        finished_items = int(
+            status_row[1] or 0
+        )
+
+        delivering_items = int(
+            status_row[2] or 0
+        )
+
+        ready_items = int(
+            status_row[3] or 0
+        )
+
+        preparing_items = int(
+            status_row[4] or 0
+        )
+
+        if (
+            total_items > 0
+            and finished_items == total_items
+        ):
+            order_status = "COMPLETED"
+
+        elif delivering_items > 0:
+            order_status = "DELIVERING"
+
+        elif (
+            total_items > 0
+            and ready_items + finished_items
+            == total_items
+        ):
+            order_status = "READY"
+
+        elif preparing_items > 0:
+            order_status = "PREPARING"
+
+        else:
+            order_status = "NEW"
+
+        if order_status == "COMPLETED":
+            cur.execute(
+                """
+                UPDATE lobby_bar_orders
+                SET
+                    order_status = 'COMPLETED',
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (order_id,)
+            )
+
+        else:
+            cur.execute(
+                """
+                UPDATE lobby_bar_orders
+                SET
+                    order_status = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = NULL
+                WHERE id = %s
+                """,
+                (
+                    order_status,
+                    order_id
+                )
+            )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
 # =========================================================
 # БРОЙ ROOM SERVICE НАПИТКИ ПО СТАТУС
 # =========================================================
@@ -498,7 +664,31 @@ except Exception as error:
 bar_counts = get_room_service_bar_counts(
     room_service_bar_rows
 )
+# =========================================================
+# ЗАРЕЖДАНЕ НА LOBBY BAR ПОРЪЧКИТЕ
+# =========================================================
+try:
+    lobby_rows = get_lobby_bar_orders()
 
+except Exception as error:
+    st.error(
+        "Lobby Bar поръчките не могат "
+        "да бъдат заредени."
+        "\n\n"
+        f"Причина: {error}"
+    )
+
+    lobby_rows = []
+
+
+lobby_order_ids = {
+    row[0]
+    for row in lobby_rows
+}
+
+lobby_order_count = len(
+    lobby_order_ids
+)
 
 # =========================================================
 # KPI
@@ -537,7 +727,10 @@ ROOM_SERVICE_VIEW = (
     f"({len(room_service_bar_rows)})"
 )
 
-LOBBY_BAR_VIEW = "🍸 Lobby Bar"
+LOBBY_BAR_VIEW = (
+    "🍸 Lobby Bar "
+    f"({lobby_order_count})"
+)
 
 bar_views = [
     ROOM_SERVICE_VIEW,
@@ -761,58 +954,240 @@ if bar_view == ROOM_SERVICE_VIEW:
 # =========================================================
 # LOBBY BAR ИЗГЛЕД
 # =========================================================
-lobby_rows = get_lobby_bar_orders()
+elif bar_view == LOBBY_BAR_VIEW:
 
-if not lobby_rows:
-
-    st.info(
-        "Няма активни Lobby Bar поръчки."
+    st.subheader(
+        "🍸 Lobby Bar поръчки"
     )
 
-else:
+    st.caption(
+        "Активни поръчки от масите в Lobby Bar."
+    )
 
-    orders = {}
-
-    for row in lobby_rows:
-
-        order_id = row[0]
-
-        if order_id not in orders:
-
-            orders[order_id] = {
-                "table_number": row[1],
-                "created_at": row[2],
-                "status": row[3],
-                "total": row[4],
-                "items": []
-            }
-
-        orders[order_id]["items"].append(
-            {
-                "row_id": row[5],
-                "name": row[6],
-                "qty": row[7],
-                "price": row[8],
-                "status": row[9]
-            }
-        )
-
-    for order_id, data in orders.items():
-
-        st.subheader(
-            f"🍸 Lobby Bar поръчка #{order_id}"
-        )
+    if not lobby_rows:
 
         st.success(
-            f"🍽️ Маса №{data['table_number']}"
+            "Няма активни Lobby Bar поръчки."
         )
 
-        for item in data["items"]:
+    else:
+        lobby_orders = {}
 
-            st.write(
-                f"{item['name']} x{item['qty']}"
+        for row in lobby_rows:
+            order_id = row[0]
+
+            if order_id not in lobby_orders:
+                lobby_orders[order_id] = {
+                    "table_number": row[1],
+                    "created_at": row[2],
+                    "order_status": str(
+                        row[3] or "NEW"
+                    ).strip().upper(),
+                    "total_amount": float(
+                        row[4] or 0
+                    ),
+                    "items": []
+                }
+
+            lobby_orders[order_id][
+                "items"
+            ].append(
+                {
+                    "order_item_id": row[5],
+                    "item_name": row[6],
+                    "quantity": int(
+                        row[7] or 0
+                    ),
+                    "unit_price": float(
+                        row[8] or 0
+                    ),
+                    "item_status": str(
+                        row[9] or "NEW"
+                    ).strip().upper()
+                }
             )
 
+        lobby_status_options = [
+            "NEW",
+            "PREPARING",
+            "READY",
+            "DELIVERING",
+            "COMPLETED",
+            "CANCELLED"
+        ]
+
+        for order_id, order_data in (
+            lobby_orders.items()
+        ):
+            with st.container(
+                border=True
+            ):
+                title_col, details_col = (
+                    st.columns([5, 2])
+                )
+
+                with title_col:
+                    st.subheader(
+                        "🍸 Lobby Bar "
+                        f"поръчка #{order_id}"
+                    )
+
+                    st.markdown(
+                        "### 🍽️ "
+                        f"Маса №"
+                        f"{order_data['table_number']}"
+                    )
+
+                with details_col:
+                    if order_data["created_at"]:
+                        st.caption(
+                            "Получена: "
+                            f"{format_datetime(
+                                order_data[
+                                    'created_at'
+                                ]
+                            )}"
+                        )
+
+                    st.write(
+                        "**Общ статус:** "
+                        f"{get_item_status_label(
+                            order_data[
+                                'order_status'
+                            ]
+                        )}"
+                    )
+
+                    st.metric(
+                        "Общо",
+                        "€ "
+                        f"{order_data[
+                            'total_amount'
+                        ]:.2f}"
+                    )
+
+                st.markdown(
+                    "#### Артикули"
+                )
+
+                for item in order_data["items"]:
+                    with st.container(
+                        border=True
+                    ):
+                        item_col, qty_col, price_col = (
+                            st.columns([5, 1, 2])
+                        )
+
+                        with item_col:
+                            st.write(
+                                f"**{item[
+                                    'item_name'
+                                ]}**"
+                            )
+
+                            st.write(
+                                "Статус: "
+                                f"{get_item_status_label(
+                                    item[
+                                        'item_status'
+                                    ]
+                                )}"
+                            )
+
+                        with qty_col:
+                            st.write(
+                                f"x{item['quantity']}"
+                            )
+
+                        with price_col:
+                            item_total = (
+                                item["unit_price"]
+                                * item["quantity"]
+                            )
+
+                            st.write(
+                                f"€ {item_total:.2f}"
+                            )
+
+                        with st.form(
+                            key=(
+                                "lobby_item_form_"
+                                f"{item[
+                                    'order_item_id'
+                                ]}"
+                            ),
+                            clear_on_submit=False
+                        ):
+                            form_col1, form_col2 = (
+                                st.columns(
+                                    [2, 3],
+                                    vertical_alignment=(
+                                        "bottom"
+                                    )
+                                )
+                            )
+
+                            with form_col1:
+                                selected_status = (
+                                    st.selectbox(
+                                        "Статус",
+                                        lobby_status_options,
+                                        index=(
+                                            lobby_status_options.index(
+                                                item[
+                                                    "item_status"
+                                                ]
+                                            )
+                                            if item[
+                                                "item_status"
+                                            ]
+                                            in lobby_status_options
+                                            else 0
+                                        ),
+                                        format_func=(
+                                            get_item_status_label
+                                        ),
+                                        key=(
+                                            "lobby_status_"
+                                            f"{item[
+                                                'order_item_id'
+                                            ]}"
+                                        )
+                                    )
+                                )
+
+                            with form_col2:
+                                save_lobby_status = (
+                                    st.form_submit_button(
+                                        "💾 Запази статуса",
+                                        type="primary",
+                                        use_container_width=True
+                                    )
+                                )
+
+                            if save_lobby_status:
+                                try:
+                                    update_lobby_bar_item_status(
+                                        order_item_id=(
+                                            item[
+                                                "order_item_id"
+                                            ]
+                                        ),
+                                        order_id=order_id,
+                                        new_status=(
+                                            selected_status
+                                        )
+                                    )
+
+                                    st.rerun()
+
+                                except Exception as error:
+                                    st.error(
+                                        "Статусът не беше "
+                                        "обновен."
+                                        "\n\n"
+                                        f"Причина: {error}"
+                                    )
 # =========================================================
 # БРАНДИРАНЕ
 # =========================================================
