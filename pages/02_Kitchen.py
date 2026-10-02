@@ -283,7 +283,69 @@ st_autorefresh(
     interval=30000,
     key="hotel_kitchen_refresh"
 )
+# =====================================
+# BAR ITEMS FILTER
+# =====================================
 
+BAR_KEYWORDS = [
+    "water",
+    "минерална",
+    "вода",
+    "cola",
+    "coca",
+    "pepsi",
+    "sprite",
+    "fanta",
+    "juice",
+    "сок",
+    "tea",
+    "чай",
+    "coffee",
+    "кафе",
+    "espresso",
+    "еспресо",
+    "cappuccino",
+    "капучино",
+    "latte",
+    "лате",
+    "beer",
+    "бира",
+    "wine",
+    "вино",
+    "vodka",
+    "водка",
+    "whiskey",
+    "whisky",
+    "уиски",
+    "gin",
+    "джин",
+    "rum",
+    "ром",
+    "tequila",
+    "текила",
+    "cocktail",
+    "коктейл",
+    "prosecco",
+    "просеко",
+    "champagne",
+    "шампанско",
+    "mojito",
+    "мохито",
+    "aperol",
+    "аперол"
+]
+
+
+def is_bar_item(item_name):
+
+    item_name = str(
+        item_name or ""
+    ).lower()
+
+    return any(
+        keyword in item_name
+        for keyword in BAR_KEYWORDS
+    )
 
 # =====================================
 # ЗАРЕЖДАНЕ НА ПОРЪЧКИТЕ
@@ -645,6 +707,10 @@ else:
             )
 
             for item in items:
+                if is_bar_item(
+                    item["item_name"]
+                ):
+                    continue
                 item_col, status_col = st.columns(
                     [5, 2],
                     vertical_alignment="center"
