@@ -730,8 +730,6 @@ else:
                     "table_number": table_number
                 }
 
-                if "lobby_guest_note" in st.session_state:
-                    st.session_state.lobby_guest_note = ""
 
                 st.rerun()
 
