@@ -813,9 +813,44 @@ else:
                     f"{get_status_label(request_status)}"
                 )
 
-                st.write(
-                    f"**Приоритет:** "
-                    f"{get_priority_label(priority)}"
+                priority_colors = {
+                    "URGENT": "#dc2626",
+                    "HIGH": "#ea580c",
+                    "NORMAL": "#ca8a04",
+                    "LOW": "#16a34a"
+                }
+                
+                priority_icons = {
+                    "URGENT": "🔴",
+                    "HIGH": "🟠",
+                    "NORMAL": "🟡",
+                    "LOW": "🟢"
+                }
+                
+                priority_labels = {
+                    "URGENT": "СПЕШЕН",
+                    "HIGH": "ВИСОК",
+                    "NORMAL": "НОРМАЛЕН",
+                    "LOW": "НИСЪК"
+                }
+                
+                st.markdown(
+                    f"""
+                    <div style="
+                        background:{priority_colors.get(priority, '#374151')};
+                        color:white;
+                        border-radius:10px;
+                        padding:10px;
+                        text-align:center;
+                        font-weight:800;
+                        margin-top:8px;
+                        margin-bottom:8px;
+                    ">
+                        {priority_icons.get(priority, '⚪')}
+                        {priority_labels.get(priority, priority)}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
                 )
 
                 if created_at:
