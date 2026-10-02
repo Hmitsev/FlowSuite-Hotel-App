@@ -53,8 +53,8 @@ if BANNER_FILE.exists():
     background_css = f"""
         background-image:
             linear-gradient(
-                rgba(3, 5, 8, 0.62),
-                rgba(3, 5, 8, 0.90)
+                rgba(3, 5, 8, 0.82),
+                rgba(3, 5, 8, 0.94)
             ),
             url(
                 "data:image/png;base64,{banner_base64}"
