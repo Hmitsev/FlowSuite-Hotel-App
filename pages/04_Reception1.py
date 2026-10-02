@@ -1291,6 +1291,13 @@ if view_mode == SERVICE_VIEW:
                             "%d.%m.%Y %H:%M"
                         )
                     )
+                    st.divider()
+ 
+st.caption(
+"Powered by HMITSEVAPPS"
+)
+ 
+st.stop()
 # =====================================
 # SPA ИЗГЛЕД
 # =====================================
