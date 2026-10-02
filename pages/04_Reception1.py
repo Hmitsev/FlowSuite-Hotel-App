@@ -1208,6 +1208,107 @@ if view_mode == SPA_VIEW:
     )
 
     st.divider()
+    # =====================================
+# ОБСЛУЖВАНЕ
+# =====================================
+if view_mode == SERVICE_VIEW:
+
+    try:
+        service_rows = get_service_requests()
+
+    except Exception as error:
+
+        st.error(
+            f"Грешка при зареждане:\n\n{error}"
+        )
+
+        st.stop()
+
+    st.markdown(
+        """
+        <div style="
+            color:#D4AF37;
+            font-size:28px;
+            font-weight:900;
+            margin-bottom:15px;
+        ">
+            🔧 ЗАЯВКИ КЪМ ОБСЛУЖВАЩ ПЕРСОНАЛ
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    if not service_rows:
+
+        st.success(
+            "Няма активни заявки."
+        )
+
+    else:
+
+        for row in service_rows:
+
+            request_id = row[0]
+            room_number = row[1]
+            department = row[2]
+            category = row[3]
+            request_type = row[4]
+            guest_message = row[5]
+            priority = row[6]
+            request_status = row[7]
+            created_at = row[8]
+
+            with st.container(border=True):
+
+                st.subheader(
+                    f"Заявка #{request_id}"
+                )
+
+                st.markdown(
+                    f"### 🏨 Стая №{room_number}"
+                )
+
+                st.write(
+                    f"**Тип:** {request_type}"
+                )
+
+                st.write(
+                    f"**Статус:** {request_status}"
+                )
+
+                st.write(
+                    f"**Приоритет:** {priority}"
+                )
+
+                if department == "MAINTENANCE":
+
+                    st.info(
+                        "🛠️ Технически проблем"
+                    )
+
+                elif department == "HOUSEKEEPING":
+
+                    st.info(
+                        "🧹 Камериерска заявка"
+                    )
+
+                if guest_message:
+
+                    st.markdown(
+                        "#### Коментар"
+                    )
+
+                    st.info(
+                        guest_message
+                    )
+
+                if created_at:
+
+                    st.caption(
+                        created_at.strftime(
+                            "%d.%m.%Y %H:%M"
+                        )
+                    )
 
     # =====================================
     # АКТИВНИ SPA ЗАЯВКИ
