@@ -329,7 +329,38 @@ def handle_served_checkbox(
     checkbox_key,
     department
 ):
-    pass
+    is_checked = bool(
+        st.session_state.get(
+            checkbox_key,
+            False
+        )
+    )
+
+    if not is_checked:
+        return
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            UPDATE order_items
+            SET kitchen_status = 'SERVED'
+            WHERE id = %s
+            """,
+            (order_item_id,)
+        )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
 
 # =====================================
 # ФИНАЛИЗИРАНЕ НА ПОРЪЧКА
@@ -691,10 +722,22 @@ else:
 
                     st.checkbox(
                         "Сервирано",
-                        value=False,
-                        disabled=False,
-                        key=checkbox_key
+                        value=(
+                            item_status == "SERVED"
+                        ),
+                        disabled=(
+                            item_status == "SERVED"
+                            or not can_be_served
+                        ),
+                        key=checkbox_key,
+                        on_change=handle_served_checkbox,
+                        args=(
+                            item_row_id,
+                            checkbox_key,
+                            department
+                        )
                     )
+
                     
                     st.divider()
 
