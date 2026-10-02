@@ -1,7 +1,7 @@
 import streamlit as st
 
 from streamlit_autorefresh import st_autorefresh
-from database.db import get_connection
+from lastoria.database.db import get_connection
 
 
 # =====================================
@@ -20,7 +20,10 @@ import base64
 # =====================================
 
 def set_kitchen_background():
-    with open("assets/Designer (10).png", "rb") as f:
+    with open(
+        "lastoria/assets/Designer (10).png",
+        "rb"
+    ) as f:
         encoded = base64.b64encode(f.read()).decode()
 
     st.markdown(
