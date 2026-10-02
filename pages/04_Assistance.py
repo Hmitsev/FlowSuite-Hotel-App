@@ -639,12 +639,16 @@ st.info(
     t["camera_note"]
 )
 
-guest_photo = st.camera_input(
-    t["photo_title"],
-    label_visibility="collapsed",
-    key="assistance_guest_photo"
-)
+guest_photo = None
 
+if st.toggle(
+    "📷 Добави снимка към сигнала",
+    key="enable_camera"
+):
+    guest_photo = st.camera_input(
+        "",
+        key="assistance_guest_photo"
+    )
 
 # =========================================================
 # ИЗПРАЩАНЕ НА ЗАЯВКАТА
