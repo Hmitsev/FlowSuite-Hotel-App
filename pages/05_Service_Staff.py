@@ -157,6 +157,8 @@ def get_active_service_requests(
                 sr.priority,
                 sr.request_status,
                 sr.staff_note,
+                sr.assigned_to,
+                sr.assigned_at,
                 sr.created_at,
                 sr.accepted_at,
                 sr.started_at,
@@ -174,6 +176,7 @@ def get_active_service_requests(
         parameters = []
 
         if department:
+
             query += """
                 AND sr.department = %s
             """
@@ -205,7 +208,6 @@ def get_active_service_requests(
     finally:
         cur.close()
         conn.close()
-
 
 # =========================================================
 # ФУНКЦИЯ ЗА ЗАВЪРШЕНИТЕ ЗАДАЧИ
@@ -768,10 +770,13 @@ else:
             priority = row[9]
             request_status = row[10]
             staff_note = row[11]
-            created_at = row[12]
-            accepted_at = row[13]
-            started_at = row[14]
-            updated_at = row[15]
+            assigned_to = row[12]
+            assigned_at = row[13]
+            created_at = row[14]
+            accepted_at = row[15]
+            started_at = row[16]
+            updated_at = row[17]
+
             completed_at = None
 
         request_status = str(
