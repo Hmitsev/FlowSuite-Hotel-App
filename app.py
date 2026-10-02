@@ -479,7 +479,7 @@ with assistance_column:
             font-weight:600;
             margin-bottom:8px;
         ">
-        t["assistance_description"]}
+        {t["assistance_description"]}
         </div>
         """,
         unsafe_allow_html=True
