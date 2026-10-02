@@ -577,7 +577,6 @@ st.subheader(
     "🧾 Вашата поръчка"
 )
 
-
 if not st.session_state.lobby_cart:
 
     st.info(
@@ -586,17 +585,11 @@ if not st.session_state.lobby_cart:
 
 else:
 
-    cart_items = list(
-        st.session_state.lobby_cart.items()
-    )
+    for item_name, item_data in st.session_state.lobby_cart.items():
 
-    for item_name, item_data in cart_items:
-
-        cart_col1, cart_col2, cart_col3 = (
-            st.columns(
-                [5, 2, 2],
-                vertical_alignment="center"
-            )
+        cart_col1, cart_col2, cart_col3 = st.columns(
+            [5, 2, 2],
+            vertical_alignment="center"
         )
 
         with cart_col1:
@@ -605,11 +598,11 @@ else:
             )
 
             st.caption(
-                "Количество: "
-                f"{item_data['quantity']}"
+                f"Количество: {item_data['quantity']}"
             )
 
         with cart_col2:
+
             item_total = (
                 float(item_data["unit_price"])
                 * int(item_data["quantity"])
@@ -620,12 +613,10 @@ else:
             )
 
         with cart_col3:
+
             if st.button(
                 "➖ Премахни",
-                key=(
-                    "lobby_remove_"
-                    f"{item_name}"
-                ),
+                key=f"lobby_remove_{item_name}",
                 use_container_width=True
             ):
                 remove_from_cart(
@@ -642,6 +633,7 @@ else:
         "Общо",
         f"€ {lobby_total:.2f}"
     )
+
 
     guest_note = st.text_area(
         "Коментар към поръчката",
