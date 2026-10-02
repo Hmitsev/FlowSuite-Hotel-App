@@ -882,12 +882,15 @@ try:
 
 except Exception:
     new_spa_count = 0
-    try:
-        new_service_count = int(
-            get_new_service_request_count() or 0
-        )
-    except Exception:
-        new_service_count = 0
+
+
+try:
+    new_service_count = int(
+        get_new_service_request_count() or 0
+    )
+
+except Exception:
+    new_service_count = 0
 
 
 # =====================================
