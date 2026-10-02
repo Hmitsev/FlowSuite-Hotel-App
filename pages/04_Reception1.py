@@ -1191,11 +1191,11 @@ if view_mode == SERVICE_VIEW:
         service_rows = get_service_requests()
 
     except Exception as error:
-
         st.error(
-            f"Грешка при зареждане:\n\n{error}"
+            "Заявките към обслужващия персонал "
+            "не могат да бъдат заредени.\n\n"
+            f"Причина: {error}"
         )
-
         st.stop()
 
     st.markdown(
@@ -1213,13 +1213,11 @@ if view_mode == SERVICE_VIEW:
     )
 
     if not service_rows:
-
         st.success(
             "Няма активни заявки."
         )
 
     else:
-
         for row in service_rows:
 
             request_id = row[0]
@@ -1255,19 +1253,16 @@ if view_mode == SERVICE_VIEW:
                 )
 
                 if department == "MAINTENANCE":
-
                     st.info(
                         "🛠️ Технически проблем"
                     )
 
                 elif department == "HOUSEKEEPING":
-
                     st.info(
                         "🧹 Камериерска заявка"
                     )
 
                 if guest_message:
-
                     st.markdown(
                         "#### Коментар"
                     )
@@ -1277,14 +1272,22 @@ if view_mode == SERVICE_VIEW:
                     )
 
                 if created_at:
-
                     st.caption(
-                        created_at.strftime(
-                            "%d.%m.%Y %H:%M"
-                        )
+                        "Получена: "
+                        f"{created_at.strftime('%d.%m.%Y %H:%M')}"
                     )
-                    st.divider()
- 
+
+    # Footer само за изглед Обслужване.
+    st.divider()
+
+    st.caption(
+        "Powered by HMITSEVAPPS"
+    )
+
+    # Спира изпълнението преди Room Service секцията.
+    st.stop()
+
+
 # =====================================
 # SPA ИЗГЛЕД
 # =====================================
