@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 # =========================================================
-# БАНЕР
+# БАНЕР И ВИЗУАЛЕН СТИЛ
 # =========================================================
 BANNER_FILE = (
     Path("assets")
@@ -34,18 +34,26 @@ def get_base64_image(file_path):
         ).decode()
 
 
-banner_css = ""
+background_css = """
+    background:
+        radial-gradient(
+            circle at top,
+            rgba(28, 23, 15, 0.97) 0%,
+            rgba(7, 10, 15, 0.99) 48%,
+            rgba(3, 5, 8, 1) 100%
+        );
+"""
+
 
 if BANNER_FILE.exists():
-
     banner_base64 = get_base64_image(
         BANNER_FILE
     )
 
-    banner_css = f"""
+    background_css = f"""
         background-image:
             linear-gradient(
-                rgba(3, 5, 8, 0.70),
+                rgba(3, 5, 8, 0.62),
                 rgba(3, 5, 8, 0.90)
             ),
             url(
@@ -57,113 +65,112 @@ if BANNER_FILE.exists():
         background-attachment: fixed;
     """
 
-# =========================================================
-# ВИЗУАЛЕН СТИЛ
-# =========================================================
-st.markdown(
-    f"""
-    <style>
-    .stApp {
-        {banner_css}
-        background-color: #080B12;
-        color: #F5E6C8;
-    }
-                circle at top,
-                rgba(28, 23, 15, 0.97) 0%,
-                rgba(7, 10, 15, 0.99) 48%,
-                rgba(3, 5, 8, 1) 100%
-            );
-        color: #F5E6C8;
-    }
 
-    [data-testid="stSidebar"],
-    [data-testid="collapsedControl"],
-    [data-testid="stHeader"],
-    [data-testid="stToolbar"],
-    [data-testid="stDecoration"],
-    [data-testid="stStatusWidget"],
-    [data-testid="stSpinner"] {
-        display: none !important;
-    }
+page_style = f"""
+<style>
+.stApp {{
+    {background_css}
+    background-color: #080B12;
+    color: #F5E6C8;
+}}
 
-    footer {
-        visibility: hidden;
-    }
+[data-testid="stSidebar"],
+[data-testid="collapsedControl"],
+[data-testid="stHeader"],
+[data-testid="stToolbar"],
+[data-testid="stDecoration"],
+[data-testid="stStatusWidget"],
+[data-testid="stSpinner"] {{
+    display: none !important;
+}}
 
-    .block-container {
-        max-width: 1050px;
-        padding-top: 1rem;
-        padding-bottom: 3rem;
-    }
+footer {{
+    visibility: hidden;
+}}
 
-    h1, h2, h3, h4, p, label, span {
-        color: #F5E6C8;
-    }
+.block-container {{
+    max-width: 1050px;
+    padding-top: 1rem;
+    padding-bottom: 3rem;
+}}
 
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(8, 12, 18, 0.88);
-        border: 1px solid rgba(212, 175, 55, 0.38);
-        border-radius: 16px;
-        box-shadow:
-            0 14px 35px rgba(0, 0, 0, 0.28);
-    }
+h1,
+h2,
+h3,
+h4,
+p,
+label,
+span {{
+    color: #F5E6C8;
+}}
 
-    [data-testid="stMetric"] {
-        background: rgba(8, 12, 18, 0.88);
-        border: 1px solid rgba(212, 175, 55, 0.38);
-        border-radius: 15px;
-        padding: 16px;
-    }
+[data-testid="stVerticalBlockBorderWrapper"] {{
+    background: rgba(8, 12, 18, 0.88);
+    border: 1px solid rgba(212, 175, 55, 0.38);
+    border-radius: 16px;
+    box-shadow:
+        0 14px 35px rgba(0, 0, 0, 0.28);
+}}
 
-    [data-testid="stAlert"] {
-        background: rgba(8, 12, 18, 0.90);
-        border: 1px solid rgba(212, 175, 55, 0.32);
-        border-radius: 14px;
-    }
+[data-testid="stMetric"] {{
+    background: rgba(8, 12, 18, 0.88);
+    border: 1px solid rgba(212, 175, 55, 0.38);
+    border-radius: 15px;
+    padding: 16px;
+}}
+
+[data-testid="stAlert"] {{
+    background: rgba(8, 12, 18, 0.90);
+    border: 1px solid rgba(212, 175, 55, 0.32);
+    border-radius: 14px;
+}}
+
+div[data-testid="stButton"] button,
+div[data-testid="stFormSubmitButton"] button {{
+    min-height: 43px !important;
+    border-radius: 11px !important;
+    font-weight: 800 !important;
+}}
+
+div[data-testid="stButton"] button[kind="primary"],
+div[data-testid="stFormSubmitButton"] button[kind="primary"] {{
+    background:
+        linear-gradient(
+            135deg,
+            #B98528 0%,
+            #D4AF37 48%,
+            #F5D77B 100%
+        ) !important;
+    border: 1px solid #F5D77B !important;
+    color: #101010 !important;
+}}
+
+div[data-testid="stButton"] button[kind="primary"] p,
+div[data-testid="stFormSubmitButton"] button[kind="primary"] p {{
+    color: #101010 !important;
+}}
+
+@media only screen and (max-width: 768px) {{
+    .block-container {{
+        padding-top: 0.5rem;
+        padding-left: 0.7rem;
+        padding-right: 0.7rem;
+    }}
 
     div[data-testid="stButton"] button,
-    div[data-testid="stFormSubmitButton"] button {
-        min-height: 43px !important;
-        border-radius: 11px !important;
-        font-weight: 800 !important;
-    }
+    div[data-testid="stFormSubmitButton"] button {{
+        min-height: 40px !important;
+        font-size: 12px !important;
+    }}
+}}
+</style>
+"""
 
-    div[data-testid="stButton"] button[kind="primary"],
-    div[data-testid="stFormSubmitButton"] button[kind="primary"] {
-        background:
-            linear-gradient(
-                135deg,
-                #B98528 0%,
-                #D4AF37 48%,
-                #F5D77B 100%
-            ) !important;
-        border: 1px solid #F5D77B !important;
-        color: #101010 !important;
-    }
 
-    div[data-testid="stButton"] button[kind="primary"] p,
-    div[data-testid="stFormSubmitButton"] button[kind="primary"] p {
-        color: #101010 !important;
-    }
-
-    @media only screen and (max-width: 768px) {
-        .block-container {
-            padding-top: 0.5rem;
-            padding-left: 0.7rem;
-            padding-right: 0.7rem;
-        }
-
-        div[data-testid="stButton"] button,
-        div[data-testid="stFormSubmitButton"] button {
-            min-height: 40px !important;
-            font-size: 12px !important;
-        }
-    }
-    </style>
-    """,
+st.markdown(
+    page_style,
     unsafe_allow_html=True
 )
-
 
 # =========================================================
 # ДЕМО МЕНЮ
