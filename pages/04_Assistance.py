@@ -307,7 +307,7 @@ st.markdown(
             {t["subtitle"]}
         </span>
     </div>
-    """,
+    ,
     unsafe_allow_html=True
 )
 # =========================================================
