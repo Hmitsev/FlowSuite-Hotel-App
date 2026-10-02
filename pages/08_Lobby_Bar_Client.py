@@ -496,3 +496,4 @@ if not st.session_state.lobby_cart:
 else:
     for item_name, item_data in list(
         st.session_state.lobby
+    ):
