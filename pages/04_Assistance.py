@@ -299,17 +299,13 @@ st.markdown(
             🛎️ {t["title"]}
         </div>
 
+        <p style="
+            color:#F5E6C8;
+            font-size:16px;
+            margin-top:10px;
+        ">
             {t["subtitle"]}
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    f"""
-    <div class="room-card">
-        🏨 {t["room"]} №{room_number}
+        </p>
     </div>
     """,
     unsafe_allow_html=True
