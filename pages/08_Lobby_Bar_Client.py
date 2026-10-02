@@ -362,9 +362,8 @@ def create_lobby_order(
 
         order_id = result[0]
 
-        for item_name, item_data in (
-            st.session_state.lobby_cart.items()
-        ):
+        for item_name, item_data in st.session_state.lobby_cart.items():
+
             cur.execute(
                 """
                 INSERT INTO lobby_bar_order_items (
