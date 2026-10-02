@@ -4,7 +4,7 @@ from database.db import get_connection
 
 
 # =========================================================
-# НАСТРОЙКИ
+# НАСТРОЙКИ НА СТРАНИЦАТА
 # =========================================================
 st.set_page_config(
     page_title="Lobby Bar",
@@ -35,7 +35,9 @@ st.markdown(
     [data-testid="collapsedControl"],
     [data-testid="stHeader"],
     [data-testid="stToolbar"],
-    [data-testid="stDecoration"] {
+    [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"],
+    [data-testid="stSpinner"] {
         display: none !important;
     }
 
@@ -57,7 +59,21 @@ st.markdown(
         background: rgba(8, 12, 18, 0.88);
         border: 1px solid rgba(212, 175, 55, 0.38);
         border-radius: 16px;
-        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.28);
+        box-shadow:
+            0 14px 35px rgba(0, 0, 0, 0.28);
+    }
+
+    [data-testid="stMetric"] {
+        background: rgba(8, 12, 18, 0.88);
+        border: 1px solid rgba(212, 175, 55, 0.38);
+        border-radius: 15px;
+        padding: 16px;
+    }
+
+    [data-testid="stAlert"] {
+        background: rgba(8, 12, 18, 0.90);
+        border: 1px solid rgba(212, 175, 55, 0.32);
+        border-radius: 14px;
     }
 
     div[data-testid="stButton"] button,
@@ -91,6 +107,12 @@ st.markdown(
             padding-left: 0.7rem;
             padding-right: 0.7rem;
         }
+
+        div[data-testid="stButton"] button,
+        div[data-testid="stFormSubmitButton"] button {
+            min-height: 40px !important;
+            font-size: 12px !important;
+        }
     }
     </style>
     """,
@@ -99,9 +121,7 @@ st.markdown(
 
 
 # =========================================================
-# МЕНЮ ЗА ДЕМОТО
-#
-# След това може да се премести в база данни.
+# ДЕМО МЕНЮ
 # =========================================================
 LOBBY_MENU = [
     {
@@ -180,7 +200,8 @@ LOBBY_MENU = [
 
 
 # =========================================================
-# ЗОНА И МАСА ОТ QR ЛИНКА
+# ЗОНА И НОМЕР НА МАСАТА ОТ QR ЛИНКА
+# Пример: ?area=lobby&table=1
 # =========================================================
 raw_area = st.query_params.get(
     "area",
@@ -218,10 +239,18 @@ table_number = st.session_state.get(
 
 
 # =========================================================
-# КОЛИЧКА
+# SESSION STATE
 # =========================================================
 if "lobby_cart" not in st.session_state:
     st.session_state.lobby_cart = {}
+
+
+if "lobby_order_success" not in st.session_state:
+    st.session_state.lobby_order_success = None
+
+
+if "lobby_order_error" not in st.session_state:
+    st.session_state.lobby_order_error = None
 
 
 # =========================================================
@@ -267,9 +296,10 @@ def remove_from_cart(
 
 def get_cart_total():
     return sum(
-        item["quantity"]
-        * item["unit_price"]
-        for item in st.session_state.lobby_cart.values()
+        float(item_data["unit_price"])
+        * int(item_data["quantity"])
+        for item_data
+        in st.session_state.lobby_cart.values()
     )
 
 
@@ -323,7 +353,14 @@ def create_lobby_order(
             )
         )
 
-        order_id = cur.fetchone()[0]
+        result = cur.fetchone()
+
+        if result is None:
+            raise ValueError(
+                "Не беше създадена поръчка."
+            )
+
+        order_id = result[0]
 
         for item_name, item_data in (
             st.session_state.lobby_cart.items()
@@ -369,6 +406,41 @@ def create_lobby_order(
 
 
 # =========================================================
+# СЪОБЩЕНИЯ СЛЕД ИЗПРАЩАНЕ
+# =========================================================
+if st.session_state.lobby_order_success:
+
+    success_data = (
+        st.session_state.lobby_order_success
+    )
+
+    st.success(
+        "Поръчката е изпратена успешно."
+    )
+
+    st.info(
+        "Номер на поръчката: "
+        f"#{success_data['order_id']}"
+    )
+
+    st.info(
+        "🍽️ Lobby Bar, "
+        f"маса №{success_data['table_number']}"
+    )
+
+    st.session_state.lobby_order_success = None
+
+
+if st.session_state.lobby_order_error:
+
+    st.error(
+        st.session_state.lobby_order_error
+    )
+
+    st.session_state.lobby_order_error = None
+
+
+# =========================================================
 # ЗАГЛАВИЕ
 # =========================================================
 st.markdown(
@@ -408,7 +480,17 @@ st.caption(
 
 
 # =========================================================
-# МЕНЮ
+# ПРОВЕРКА НА QR ПАРАМЕТРИТЕ
+# =========================================================
+if service_area != "LOBBY":
+
+    st.warning(
+        "Тази страница е предназначена за Lobby Bar."
+    )
+
+
+# =========================================================
+# КАТЕГОРИИ
 # =========================================================
 menu_categories = []
 
@@ -416,7 +498,9 @@ for menu_item in LOBBY_MENU:
     category = menu_item["category"]
 
     if category not in menu_categories:
-        menu_categories.append(category)
+        menu_categories.append(
+            category
+        )
 
 
 selected_category = st.radio(
@@ -430,20 +514,27 @@ selected_category = st.radio(
 st.divider()
 
 
+# =========================================================
+# ФИЛТРИРАНО МЕНЮ
+# =========================================================
 filtered_menu = [
-    item
-    for item in LOBBY_MENU
-    if item["category"] == selected_category
+    menu_item
+    for menu_item in LOBBY_MENU
+    if menu_item["category"]
+    == selected_category
 ]
 
 
 for menu_item in filtered_menu:
+
     with st.container(
         border=True
     ):
-        item_col, price_col, action_col = st.columns(
-            [5, 2, 2],
-            vertical_alignment="center"
+        item_col, price_col, action_col = (
+            st.columns(
+                [5, 2, 2],
+                vertical_alignment="center"
+            )
         )
 
         with item_col:
@@ -489,9 +580,133 @@ st.subheader(
 
 
 if not st.session_state.lobby_cart:
+
     st.info(
         "Все още няма избрани артикули."
     )
 
 else:
-    for item_name, item_data in st.session_state.lobby_cart.items():
+
+    cart_items = list(
+        st.session_state.lobby_cart.items()
+    )
+
+    for item_name, item_data in cart_items:
+
+        cart_col1, cart_col2, cart_col3 = (
+            st.columns(
+                [5, 2, 2],
+                vertical_alignment="center"
+            )
+        )
+
+        with cart_col1:
+            st.write(
+                f"**{item_name}**"
+            )
+
+            st.caption(
+                "Количество: "
+                f"{item_data['quantity']}"
+            )
+
+        with cart_col2:
+            item_total = (
+                float(item_data["unit_price"])
+                * int(item_data["quantity"])
+            )
+
+            st.write(
+                f"€ {item_total:.2f}"
+            )
+
+        with cart_col3:
+            if st.button(
+                "➖ Премахни",
+                key=(
+                    "lobby_remove_"
+                    f"{item_name}"
+                ),
+                use_container_width=True
+            ):
+                remove_from_cart(
+                    item_name
+                )
+
+                st.rerun()
+
+    st.divider()
+
+    lobby_total = get_cart_total()
+
+    st.metric(
+        "Общо",
+        f"€ {lobby_total:.2f}"
+    )
+
+    guest_note = st.text_area(
+        "Коментар към поръчката",
+        placeholder=(
+            "Например: Без лед, "
+            "допълнителен лимон..."
+        ),
+        key="lobby_guest_note"
+    )
+
+    order_col1, order_col2 = st.columns(
+        2
+    )
+
+    with order_col1:
+        if st.button(
+            "🗑️ Изчисти поръчката",
+            key="clear_lobby_cart",
+            use_container_width=True
+        ):
+            st.session_state.lobby_cart = {}
+            st.rerun()
+
+    with order_col2:
+        if st.button(
+            "✅ Изпрати поръчката",
+            key="send_lobby_order",
+            type="primary",
+            use_container_width=True
+        ):
+            try:
+                new_order_id = create_lobby_order(
+                    selected_table_number=table_number,
+                    selected_service_area=service_area,
+                    guest_note=guest_note
+                )
+
+                st.session_state.lobby_cart = {}
+
+                st.session_state.lobby_order_success = {
+                    "order_id": new_order_id,
+                    "table_number": table_number
+                }
+
+                if "lobby_guest_note" in st.session_state:
+                    st.session_state.lobby_guest_note = ""
+
+                st.rerun()
+
+            except Exception as error:
+                st.session_state.lobby_order_error = (
+                    "Поръчката не беше изпратена."
+                    "\n\n"
+                    f"Причина: {error}"
+                )
+
+                st.rerun()
+
+
+# =========================================================
+# БРАНДИРАНЕ
+# =========================================================
+st.divider()
+
+st.caption(
+    "Powered by HMITSEVAPPS"
+)
