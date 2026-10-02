@@ -964,6 +964,39 @@ else:
                         )
 
                     with form_col2:
+
+                        selected_assigned_to = st.selectbox(
+                            "Изпълнител",
+                            [
+                                "",
+                                "Служител 1",
+                                "Служител 2",
+                                "Служител 3",
+                                "Служител 4",
+                                "Служител 5"
+                            ],
+                            index=(
+                                [
+                                    "",
+                                    "Служител 1",
+                                    "Служител 2",
+                                    "Служител 3",
+                                    "Служител 4",
+                                    "Служител 5"
+                                ].index(assigned_to)
+                                if assigned_to in [
+                                    "",
+                                    "Служител 1",
+                                    "Служител 2",
+                                    "Служител 3",
+                                    "Служител 4",
+                                    "Служител 5"
+                                ]
+                                else 0
+                            ),
+                            key=f"assigned_to_{request_id}"
+                        )
+                    
                         selected_staff_note = st.text_area(
                             "Служебна бележка",
                             value=staff_note or "",
