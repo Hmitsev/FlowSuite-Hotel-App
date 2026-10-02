@@ -45,54 +45,52 @@ def show_lastoria_signature() -> None:
 
 
 def render_lastoria_client() -> None:
-    # =====================================
-    # LANGUAGE
-    # =====================================
+# =====================================
+# LANGUAGE
+# =====================================
 
-    if "lastoria_lang" not in st.session_state:
-        st.session_state.lastoria_lang = "bg"
+if "lastoria_lang" not in st.session_state:
+    st.session_state.lastoria_lang = "bg"
 
-    lang_col1, lang_col2 = st.columns([8, 1])
+lang_col1, lang_col2 = st.columns([8, 1])
 
-    with lang_col2:
+with lang_col2:
 
-        if st.button(
-            " BG" if st.session_state.lastoria_lang == "bg" else " ENG",
-            key="lastoria_lang_toggle",
-            use_container_width=True
-        ):
-            st.session_state.lastoria_lang = (
-                "en"
-                if st.session_state.lastoria_lang == "bg"
-                else "bg"
-            )
-            st.rerun()
+    if st.button(
+        "🇬🇧 EN",
+        key="lastoria_lang_toggle",
+        use_container_width=True
+    ):
 
-    T = {
-        "bg": {
-            "menu": "📋 Меню",
-            "cart": "🛒 Вашата поръчка",
-            "order": "✅ Изпрати поръчка",
-            "call_waiter": "🔔 Извикай сервитьор",
-            "table": "🍽️ Маса №",
-            "empty_cart": "Няма избрани артикули.",
-            "add": "🛒 Добави",
-            "comment": "Коментар"
-        },
+        st.info(
+            "🇬🇧 English version is currently under development and will be available soon."
+        )
 
-        "en": {
-            "menu": "📋 Menu",
-            "cart": "🛒 Your Order",
-            "order": "✅ Send Order",
-            "call_waiter": "🔔 Call Waiter",
-            "table": "🍽️ Table No.",
-            "empty_cart": "No items selected.",
-            "add": "🛒 Add",
-            "comment": "Comment"
-        }
+T = {
+    "bg": {
+        "menu": "📋 Меню",
+        "cart": "🛒 Вашата поръчка",
+        "order": "✅ Изпрати поръчка",
+        "call_waiter": "🔔 Извикай сервитьор",
+        "table": "🍽️ Маса №",
+        "empty_cart": "Няма избрани артикули.",
+        "add": "🛒 Добави",
+        "comment": "Коментар"
+    },
+
+    "en": {
+        "menu": "📋 Menu",
+        "cart": "🛒 Your Order",
+        "order": "✅ Send Order",
+        "call_waiter": "🔔 Call Waiter",
+        "table": "🍽️ Table No.",
+        "empty_cart": "No items selected.",
+        "add": "🛒 Add",
+        "comment": "Comment"
     }
+}
 
-    t = T[st.session_state.lastoria_lang]
+t = T["bg"]
 
     # =====================================
     # ВИЗИЯ
