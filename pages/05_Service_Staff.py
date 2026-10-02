@@ -659,74 +659,77 @@ except Exception as error:
             "✅ Завършени днес",
             completed_today
         )
-        dashboard_col1, dashboard_col2 = st.columns(2)
-        
-        with dashboard_col1:
-        
-            unassigned_count = 0
-        
-            try:
-        
-                conn = get_connection()
-                cur = conn.cursor()
-        
-                cur.execute(
-                    """
-                    SELECT COUNT(*)
-                    FROM service_requests
-                    WHERE request_status IN (
-                        'NEW',
-                        'ACCEPTED',
-                        'IN_PROGRESS'
-                    )
-                    AND (
-                        assigned_to IS NULL
-                        OR TRIM(assigned_to) = ''
-                    )
-                    """
-                )
-        
-                unassigned_count = int(
-                    cur.fetchone()[0] or 0
-                )
-        
-            except Exception:
-                pass
-        
-            finally:
-                try:
-                    cur.close()
-                    conn.close()
-                except:
-                    pass
-        
-            if unassigned_count > 0:
-        
-                st.warning(
-                    f"⚠️ Има {unassigned_count} неназначени задачи."
-                )
-        
-            else:
-        
-                st.success(
-                    "✅ Всички активни задачи имат изпълнител."
-                )
-        
-        with dashboard_col2:
-        
-            active_total = (
-                request_counts["NEW"]
-                + request_counts["ACCEPTED"]
-                + request_counts["IN_PROGRESS"]
-            )
-        
-            st.info(
-                f"📋 Общо активни задачи: {active_total}"
-            )
+# =========================================================
+# DASHBOARD
+# =========================================================
 
+dashboard_col1, dashboard_col2 = st.columns(2)
+
+with dashboard_col1:
+
+    unassigned_count = 0
+
+    try:
+
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT COUNT(*)
+            FROM service_requests
+            WHERE request_status IN (
+                'NEW',
+                'ACCEPTED',
+                'IN_PROGRESS'
+            )
+            AND (
+                assigned_to IS NULL
+                OR TRIM(assigned_to) = ''
+            )
+            """
+        )
+
+        unassigned_count = int(
+            cur.fetchone()[0] or 0
+        )
+
+    except Exception:
+        pass
+
+    finally:
+        try:
+            cur.close()
+            conn.close()
+        except:
+            pass
+
+    if unassigned_count > 0:
+
+        st.warning(
+            f"⚠️ Има {unassigned_count} неназначени задачи"
+        )
+
+    else:
+
+        st.success(
+            "✅ Всички активни задачи имат изпълнител"
+        )
+
+
+with dashboard_col2:
+
+    active_total = (
+        request_counts["NEW"]
+        + request_counts["ACCEPTED"]
+        + request_counts["IN_PROGRESS"]
+    )
+
+    st.info(
+        f"📋 Общо активни задачи: {active_total}"
+    )
 
 st.divider()
-
 
 # =========================================================
 # ИЗГЛЕДИ
