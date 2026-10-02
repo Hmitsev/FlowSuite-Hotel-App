@@ -827,12 +827,12 @@ else:
                     "LOW": "🟢"
                 }
                 
-                   priority_labels = {
-                        "URGENT": "СПЕШНО",
-                        "HIGH": "ПРИОРИТЕТНО",
-                        "NORMAL": "СТАНДАРТНО",
-                        "LOW": "НИСКА ВАЖНОСТ"
-                    }
+               priority_labels = {
+                    "URGENT": "СПЕШНО",
+                    "HIGH": "ПРИОРИТЕТНО",
+                    "NORMAL": "СТАНДАРТНО",
+                    "LOW": "НИСКА ВАЖНОСТ"
+                }
                 
                 st.markdown(
                     f"""
