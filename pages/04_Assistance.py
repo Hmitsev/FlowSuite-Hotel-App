@@ -298,27 +298,15 @@ st.markdown(
         <div class="assistance-title">
             🛎️ {t["title"]}
         </div>
-
-        <span style="
-            color:#F5E6C8;
-            font-size:16px;
-            line-height:1.5;
-        ">
-            {t["subtitle"]}
-        </span>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-st.markdown(
-    f"""
-    <div class="room-card">
-        🏨 {t["room"]} №{room_number}
-    </div>
-    """,
-    unsafe_allow_html=True
+st.caption(
+    t["subtitle"]
 )
+
 # =========================================================
 # УСПЕШНО ИЗПРАТЕНА ЗАЯВКА
 # =========================================================
