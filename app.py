@@ -471,7 +471,7 @@ with activities_column:
 with assistance_column:
 
     st.markdown(
-        """
+        f"""
         <div style="
             text-align:center;
             color:#F5D77B;
@@ -479,7 +479,7 @@ with assistance_column:
             font-weight:600;
             margin-bottom:8px;
         ">
-        {t["assistance_description"]}
+            {t["assistance_description"]}
         </div>
         """,
         unsafe_allow_html=True
