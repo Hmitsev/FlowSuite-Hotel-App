@@ -1181,34 +1181,8 @@ if view_mode == ACTIVITIES_VIEW:
                             )
 
 
+
 # =====================================
-# SPA ИЗГЛЕД
-# =====================================
-
-if view_mode == SPA_VIEW:
-
-    spa_view_options = [
-        "📋 Активни заявки",
-        "📅 SPA календар",
-        "🗄️ Архив"
-    ]
-
-    if "spa_subview" not in st.session_state:
-        st.session_state.spa_subview = "📋 Активни заявки"
-
-    if st.session_state.spa_subview not in spa_view_options:
-        st.session_state.spa_subview = "📋 Активни заявки"
-
-    spa_subview = st.radio(
-        "SPA изглед",
-        spa_view_options,
-        horizontal=True,
-        label_visibility="collapsed",
-        key="spa_subview"
-    )
-
-    st.divider()
-    # =====================================
 # ОБСЛУЖВАНЕ
 # =====================================
 if view_mode == SERVICE_VIEW:
@@ -1309,6 +1283,33 @@ if view_mode == SERVICE_VIEW:
                             "%d.%m.%Y %H:%M"
                         )
                     )
+# =====================================
+# SPA ИЗГЛЕД
+# =====================================
+
+if view_mode == SPA_VIEW:
+
+    spa_view_options = [
+        "📋 Активни заявки",
+        "📅 SPA календар",
+        "🗄️ Архив"
+    ]
+
+    if "spa_subview" not in st.session_state:
+        st.session_state.spa_subview = "📋 Активни заявки"
+
+    if st.session_state.spa_subview not in spa_view_options:
+        st.session_state.spa_subview = "📋 Активни заявки"
+
+    spa_subview = st.radio(
+        "SPA изглед",
+        spa_view_options,
+        horizontal=True,
+        label_visibility="collapsed",
+        key="spa_subview"
+    )
+
+    st.divider()
 
     # =====================================
     # АКТИВНИ SPA ЗАЯВКИ
@@ -1579,7 +1580,7 @@ if view_mode == SERVICE_VIEW:
                                 )
 
     # =====================================
-    # SPA КАЛЕНДАР
+    # SPA КАЛЕНДАР    
     # =====================================
 
     elif spa_subview == "📅 SPA календар":
