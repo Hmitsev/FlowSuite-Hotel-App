@@ -139,7 +139,13 @@ st_autorefresh(
     limit=None,
     key="bar_auto_refresh"
 )
-
+# =========================================================
+# TABLE NUMBER
+# =========================================================
+table_number = st.session_state.get(
+    "table_number",
+    1
+)
 
 
 
@@ -718,30 +724,30 @@ elif bar_view == LOBBY_BAR_VIEW:
         "🍸 Lobby Bar"
     )
 
+    st.success(
+        f"🍽️ Маса №{table_number}"
+    )
+
     st.info(
-        "Lobby Bar изгледът е подготвен. "
-        "Следващата връзка ще бъде към "
-        "реалните Lastoria поръчки по номер на маса."
+        "Демо версия на Lobby Bar."
     )
 
     st.markdown(
-        """
-        #### Бъдеща визуализация
+        f"""
+        ### Активна маса
 
-        ```text
-        Lobby Bar поръчка #15
+        🍽️ **Маса №{table_number}**
 
-        🍽️ Маса №3
+        Примерна поръчка:
 
-        Коктейл x2
-        Минерална вода x1
+        🍸 Аперол x2  
+        ☕ Капучино x1
 
         Статус:
+
         NEW → PREPARING → READY → SERVED → COMPLETED
-        ```
         """
     )
-
 
 # =========================================================
 # БРАНДИРАНЕ
