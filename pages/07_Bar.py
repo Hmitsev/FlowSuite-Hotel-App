@@ -269,7 +269,50 @@ def get_room_service_bar_items():
             conn
         )
 
+# =========================================================
+# LOBBY BAR ПОРЪЧКИ
+# =========================================================
+def get_lobby_bar_orders():
 
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+
+        cur.execute(
+            """
+            SELECT
+                lbo.id,
+                lbo.table_number,
+                lbo.created_at,
+                lbo.order_status,
+                lbo.total_amount,
+
+                lbi.id,
+                lbi.item_name,
+                lbi.quantity,
+                lbi.unit_price,
+                lbi.item_status
+
+            FROM lobby_bar_orders lbo
+            JOIN lobby_bar_order_items lbi
+                ON lbi.order_id = lbo.id
+
+            WHERE UPPER(TRIM(lbo.order_status))
+                  <> 'COMPLETED'
+
+            ORDER BY
+                lbo.created_at ASC,
+                lbo.id ASC,
+                lbi.id ASC
+            """
+        )
+
+        return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
 # =========================================================
 # БРОЙ ROOM SERVICE НАПИТКИ ПО СТАТУС
 # =========================================================
@@ -718,36 +761,57 @@ if bar_view == ROOM_SERVICE_VIEW:
 # =========================================================
 # LOBBY BAR ИЗГЛЕД
 # =========================================================
-elif bar_view == LOBBY_BAR_VIEW:
+lobby_rows = get_lobby_bar_orders()
 
-    st.subheader(
-        "🍸 Lobby Bar"
-    )
-
-    st.success(
-        f"🍽️ Маса №{table_number}"
-    )
+if not lobby_rows:
 
     st.info(
-        "Демо версия на Lobby Bar."
+        "Няма активни Lobby Bar поръчки."
     )
 
-    st.markdown(
-        f"""
-        ### Активна маса
+else:
 
-        🍽️ **Маса №{table_number}**
+    orders = {}
 
-        Примерна поръчка:
+    for row in lobby_rows:
 
-        🍸 Аперол x2  
-        ☕ Капучино x1
+        order_id = row[0]
 
-        Статус:
+        if order_id not in orders:
 
-        NEW → PREPARING → READY → SERVED → COMPLETED
-        """
-    )
+            orders[order_id] = {
+                "table_number": row[1],
+                "created_at": row[2],
+                "status": row[3],
+                "total": row[4],
+                "items": []
+            }
+
+        orders[order_id]["items"].append(
+            {
+                "row_id": row[5],
+                "name": row[6],
+                "qty": row[7],
+                "price": row[8],
+                "status": row[9]
+            }
+        )
+
+    for order_id, data in orders.items():
+
+        st.subheader(
+            f"🍸 Lobby Bar поръчка #{order_id}"
+        )
+
+        st.success(
+            f"🍽️ Маса №{data['table_number']}"
+        )
+
+        for item in data["items"]:
+
+            st.write(
+                f"{item['name']} x{item['qty']}"
+            )
 
 # =========================================================
 # БРАНДИРАНЕ
