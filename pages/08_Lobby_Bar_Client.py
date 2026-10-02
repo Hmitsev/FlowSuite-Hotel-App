@@ -1,6 +1,8 @@
 import streamlit as st
 
 from database.db import get_connection
+from pathlib import Path
+import base64
 
 
 # =========================================================
@@ -12,17 +14,60 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+# =========================================================
+# БАНЕР
+# =========================================================
+BANNER_FILE = (
+    Path("assets")
+    / "Screenshot 2026-09-09 025734.png"
+)
 
+
+@st.cache_data
+def get_base64_image(file_path):
+    with open(
+        file_path,
+        "rb"
+    ) as image_file:
+        return base64.b64encode(
+            image_file.read()
+        ).decode()
+
+
+banner_css = ""
+
+if BANNER_FILE.exists():
+
+    banner_base64 = get_base64_image(
+        BANNER_FILE
+    )
+
+    banner_css = f"""
+        background-image:
+            linear-gradient(
+                rgba(3, 5, 8, 0.70),
+                rgba(3, 5, 8, 0.90)
+            ),
+            url(
+                "data:image/png;base64,{banner_base64}"
+            );
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    """
 
 # =========================================================
 # ВИЗУАЛЕН СТИЛ
 # =========================================================
 st.markdown(
-    """
+    f"""
     <style>
     .stApp {
-        background:
-            radial-gradient(
+        {banner_css}
+        background-color: #080B12;
+        color: #F5E6C8;
+    }
                 circle at top,
                 rgba(28, 23, 15, 0.97) 0%,
                 rgba(7, 10, 15, 0.99) 48%,
