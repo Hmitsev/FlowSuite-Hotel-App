@@ -299,19 +299,17 @@ st.markdown(
             🛎️ {t["title"]}
         </div>
 
-        <p style="
+        <span style="
             color:#F5E6C8;
             font-size:16px;
-            margin-top:10px;
+            line-height:1.5;
         ">
             {t["subtitle"]}
-        </p>
+        </span>
     </div>
     """,
     unsafe_allow_html=True
 )
-
-
 # =========================================================
 # УСПЕШНО ИЗПРАТЕНА ЗАЯВКА
 # =========================================================
