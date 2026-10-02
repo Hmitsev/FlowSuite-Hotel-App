@@ -2,7 +2,7 @@ import streamlit as st
 
 from database.db import get_connection
 from streamlit_autorefresh import st_autorefresh
-
+from datetime import timedelta
 
 # =========================================================
 # НАСТРОЙКИ
@@ -152,6 +152,9 @@ table_number = st.session_state.get(
 # =========================================================
 # ПОМОЩНИ ФУНКЦИИ
 # =========================================================
+from datetime import timedelta
+
+
 def normalize_text(value):
     return str(
         value or ""
@@ -170,11 +173,16 @@ def is_bar_item(item_name):
 
 
 def format_datetime(value):
+
     if value is None:
         return ""
 
     try:
-        return value.strftime(
+
+        # България = UTC+3
+        local_time = value + timedelta(hours=3)
+
+        return local_time.strftime(
             "%d.%m.%Y %H:%M"
         )
 
