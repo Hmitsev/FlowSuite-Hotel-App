@@ -45,53 +45,53 @@ def show_lastoria_signature() -> None:
 
 
 def render_lastoria_client() -> None:
-# =====================================
-# LANGUAGE
-# =====================================
-
-if "lastoria_lang" not in st.session_state:
-    st.session_state.lastoria_lang = "bg"
-
-lang_col1, lang_col2 = st.columns([8, 1])
-
-with lang_col2:
-
-    if st.button(
-        "🇬🇧 EN",
-        key="lastoria_lang_toggle",
-        use_container_width=True
-    ):
-        st.info(
-            "🇬🇧 English version is currently under development and will be available soon."
-        )
-
-T = {
-    "bg": {
-        "menu": "📋 Меню",
-        "cart": "🛒 Вашата поръчка",
-        "order": "✅ Изпрати поръчка",
-        "call_waiter": "🔔 Извикай сервитьор",
-        "table": "🍽️ Маса №",
-        "empty_cart": "Няма избрани артикули.",
-        "add": "🛒 Добави",
-        "comment": "Коментар"
-    },
-
-    "en": {
-        "menu": "📋 Menu",
-        "cart": "🛒 Your Order",
-        "order": "✅ Send Order",
-        "call_waiter": "🔔 Call Waiter",
-        "table": "🍽️ Table No.",
-        "empty_cart": "No items selected.",
-        "add": "🛒 Add",
-        "comment": "Comment"
+    # =====================================
+    # LANGUAGE
+    # =====================================
+    
+    if "lastoria_lang" not in st.session_state:
+        st.session_state.lastoria_lang = "bg"
+    
+    lang_col1, lang_col2 = st.columns([8, 1])
+    
+    with lang_col2:
+    
+        if st.button(
+            "🇬🇧 EN",
+            key="lastoria_lang_toggle",
+            use_container_width=True
+        ):
+            st.info(
+                "🇬🇧 English version is currently under development and will be available soon."
+            )
+    
+    T = {
+        "bg": {
+            "menu": "📋 Меню",
+            "cart": "🛒 Вашата поръчка",
+            "order": "✅ Изпрати поръчка",
+            "call_waiter": "🔔 Извикай сервитьор",
+            "table": "🍽️ Маса №",
+            "empty_cart": "Няма избрани артикули.",
+            "add": "🛒 Добави",
+            "comment": "Коментар"
+        },
+    
+        "en": {
+            "menu": "📋 Menu",
+            "cart": "🛒 Your Order",
+            "order": "✅ Send Order",
+            "call_waiter": "🔔 Call Waiter",
+            "table": "🍽️ Table No.",
+            "empty_cart": "No items selected.",
+            "add": "🛒 Add",
+            "comment": "Comment"
+        }
     }
-}
-
-# Временно винаги използваме BG,
-# докато английските преводи не са готови.
-t = T["bg"]
+    
+    # Временно винаги използваме BG,
+    # докато английските преводи не са готови.
+    t = T["bg"]
 
     # =====================================
     # ВИЗИЯ
