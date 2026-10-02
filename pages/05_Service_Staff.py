@@ -645,6 +645,7 @@ try:
     request_counts = get_service_request_counts()
 
 except Exception as error:
+
     st.error(
         "Броят на задачите не може да бъде зареден."
         "\n\n"
@@ -660,61 +661,60 @@ except Exception as error:
     }
 
 
-    metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(
-        4
+metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+
+with metric_col1:
+    st.metric(
+        "🔴 Нови",
+        request_counts["NEW"]
     )
-    
-    with metric_col1:
-        st.metric(
-            "🔴 Нови",
-            request_counts["NEW"]
+
+with metric_col2:
+    st.metric(
+        "🟡 Приети",
+        request_counts["ACCEPTED"]
+    )
+
+with metric_col3:
+    st.metric(
+        "🔵 В процес",
+        request_counts["IN_PROGRESS"]
+    )
+
+with metric_col4:
+
+    try:
+
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT COUNT(*)
+            FROM service_requests
+            WHERE completed_at IS NOT NULL
+              AND DATE(completed_at) = CURRENT_DATE
+            """
         )
-    
-    with metric_col2:
-        st.metric(
-            "🟡 Приети",
-            request_counts["ACCEPTED"]
+
+        completed_today = int(
+            cur.fetchone()[0] or 0
         )
-    
-    with metric_col3:
-        st.metric(
-            "🔵 В процес",
-            request_counts["IN_PROGRESS"]
-        )
-    
-    with metric_col4:
+
+    except Exception:
+        completed_today = 0
+
+    finally:
         try:
-    
-            conn = get_connection()
-            cur = conn.cursor()
-    
-            cur.execute(
-                """
-                SELECT COUNT(*)
-                FROM service_requests
-                WHERE completed_at IS NOT NULL
-                  AND DATE(completed_at) = CURRENT_DATE
-                """
-            )
-    
-            completed_today = int(
-                cur.fetchone()[0] or 0
-            )
-    
-        except Exception:
-            completed_today = 0
-    
-        finally:
-            try:
-                cur.close()
-                conn.close()
-            except:
-                pass
-    
-        st.metric(
-            "✅ Завършени днес",
-            completed_today
-        )
+            cur.close()
+            conn.close()
+        except:
+            pass
+
+    st.metric(
+        "✅ Завършени днес",
+        completed_today
+    )
 # =========================================================
 # DASHBOARD
 # =========================================================
