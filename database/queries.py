@@ -1,7 +1,7 @@
 import streamlit as st
 
 from database.db import get_connection
-
+from psycopg2 import Binary
 
 # =====================================
 # КАТЕГОРИИ
@@ -442,6 +442,192 @@ def create_room_service_order(room_number, cart):
         conn.commit()
 
         return order_id
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
+# =========================================================
+# СЪЗДАВАНЕ НА ЗАЯВКА КЪМ ОБСЛУЖВАЩ ПЕРСОНАЛ
+# =========================================================
+def create_service_request(
+    room_number,
+    department,
+    category,
+    request_type,
+    guest_message="",
+    guest_image=None,
+    guest_image_name=None,
+    guest_image_type=None,
+    priority="NORMAL"
+):
+    room_number = int(room_number)
+
+    department = str(
+        department or ""
+    ).strip().upper()
+
+    category = str(
+        category or ""
+    ).strip().upper()
+
+    request_type = str(
+        request_type or ""
+    ).strip()
+
+    guest_message = str(
+        guest_message or ""
+    ).strip()
+
+    priority = str(
+        priority or "NORMAL"
+    ).strip().upper()
+
+    allowed_departments = {
+        "MAINTENANCE",
+        "HOUSEKEEPING"
+    }
+
+    allowed_priorities = {
+        "LOW",
+        "NORMAL",
+        "HIGH",
+        "URGENT"
+    }
+
+    if department not in allowed_departments:
+        raise ValueError(
+            "Невалиден отдел за обслужване."
+        )
+
+    if not category:
+        raise ValueError(
+            "Не е избрана категория."
+        )
+
+    if not request_type:
+        raise ValueError(
+            "Не е избран вид на сигнала."
+        )
+
+    if priority not in allowed_priorities:
+        priority = "NORMAL"
+
+    image_binary = None
+
+    if guest_image:
+        if isinstance(
+            guest_image,
+            (
+                bytes,
+                bytearray,
+                memoryview
+            )
+        ):
+            image_binary = Binary(
+                bytes(guest_image)
+            )
+        else:
+            raise ValueError(
+                "Невалиден формат на снимката."
+            )
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        # Намираме вътрешното ID на хотелската стая.
+        cur.execute(
+            """
+            SELECT id
+            FROM hotel_rooms
+            WHERE room_number = %s
+            LIMIT 1
+            """,
+            (
+                room_number,
+            )
+        )
+
+        room_row = cur.fetchone()
+
+        if room_row is None:
+            raise ValueError(
+                f"Стая №{room_number} не е намерена "
+                "или не е активна."
+            )
+
+        room_id = room_row[0]
+
+        # Създаваме новата заявка.
+        cur.execute(
+            """
+            INSERT INTO service_requests (
+                room_id,
+                department,
+                category,
+                request_type,
+                guest_message,
+                guest_image,
+                guest_image_name,
+                guest_image_type,
+                priority,
+                request_status,
+                created_at,
+                updated_at
+            )
+            VALUES (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                'NEW',
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            )
+            RETURNING id
+            """,
+            (
+                room_id,
+                department,
+                category,
+                request_type,
+                guest_message,
+                image_binary,
+                (
+                    str(guest_image_name).strip()
+                    if guest_image_name
+                    else None
+                ),
+                (
+                    str(guest_image_type).strip()
+                    if guest_image_type
+                    else None
+                ),
+                priority
+            )
+        )
+
+        created_request = cur.fetchone()
+
+        if created_request is None:
+            raise RuntimeError(
+                "Заявката не беше създадена."
+            )
+
+        request_id = created_request[0]
+
+        conn.commit()
+
+        return request_id
 
     except Exception:
         conn.rollback()
