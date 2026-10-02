@@ -310,6 +310,15 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+st.markdown(
+    f"""
+    <div class="room-card">
+        🏨 {t["room"]} №{room_number}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # =========================================================
 # УСПЕШНО ИЗПРАТЕНА ЗАЯВКА
 # =========================================================
