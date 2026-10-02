@@ -157,10 +157,12 @@ if raw_table_number:
 
     except (TypeError, ValueError):
         pass
-        table_number = st.session_state.get(
-            "table_number",
-            1
-        )
+
+
+table_number = st.session_state.get(
+    "table_number",
+    1
+)
 
 # =========================================================
 # ЗАРЕЖДАНЕ НА ХОТЕЛСКАТА СНИМКА
