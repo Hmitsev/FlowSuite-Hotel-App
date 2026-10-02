@@ -414,7 +414,7 @@ with title_col:
     )
 
     st.caption(
-        "Room Service напитки и обслужващи бар зони"
+        "Room Service и бар обслужване"
     )
 
 with logout_col:
@@ -460,7 +460,7 @@ metric_col1, metric_col2, metric_col3 = st.columns(
 
 with metric_col1:
     st.metric(
-        "🔴 Нови напитки",
+        "🔴 Нови поръчки",
         bar_counts["NEW"]
     )
 
@@ -472,7 +472,7 @@ with metric_col2:
 
 with metric_col3:
     st.metric(
-        "🟢 Готови",
+        "🟢 Готови за доставка",
         bar_counts["READY"]
     )
 
@@ -522,12 +522,12 @@ st.divider()
 if bar_view == ROOM_SERVICE_VIEW:
 
     st.subheader(
-        "🏨 Room Service напитки"
+        "🏨 Room Service поръчки"
     )
 
     st.caption(
-        "Показват се само разпознатите напитки "
-        "от активните Room Service поръчки."
+        "Показват се всички активни Room Service "
+        "поръчки за обслужване на гостите."
     )
 
     room_service_bar_orders = (
