@@ -3,8 +3,7 @@ import base64
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
-from database.db import get_connection
-
+from lastoria.database.db import get_connection
 
 # =====================================
 # НАСТРОЙКИ НА СТРАНИЦАТА
@@ -21,7 +20,10 @@ st.set_page_config(
 # =====================================
 
 def set_waiter_background():
-    with open("assets/Designer (11).png", "rb") as f:
+    with open(
+        "lastoria/assets/Designer (11).png",
+        "rb"
+    ) as f:
         encoded = base64.b64encode(f.read()).decode()
 
     st.markdown(
