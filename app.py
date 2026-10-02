@@ -479,14 +479,14 @@ with assistance_column:
             font-weight:600;
             margin-bottom:8px;
         ">
-            Технически и камериерски заявки
+            t["assistance_description"]
         </div>
         """,
         unsafe_allow_html=True
     )
 
     if st.button(
-        "🛎️ ПОМОЩ",
+        f"🛎️ {t['assistance']}"
         key="assistance_btn",
         type="primary",
         use_container_width=True
