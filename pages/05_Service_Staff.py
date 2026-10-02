@@ -908,6 +908,17 @@ else:
                 st.write(
                     f"**Заявка:** {request_type}"
                 )
+                if assigned_to:
+
+                st.success(
+                    f"👤 Изпълнител: {assigned_to}"
+                )
+            
+            else:
+            
+                st.warning(
+                    "⚠️ Няма назначен изпълнител"
+                )
 
                 st.caption(
                     f"Категория: {category}"
