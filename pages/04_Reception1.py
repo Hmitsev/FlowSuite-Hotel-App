@@ -1285,11 +1285,6 @@ if view_mode == SERVICE_VIEW:
                     )
                     st.divider()
  
-                    st.caption(
-                    "Powered by HMITSEVAPPS"
-                    )
-                     
-                    st.stop()
 # =====================================
 # SPA ИЗГЛЕД
 # =====================================
