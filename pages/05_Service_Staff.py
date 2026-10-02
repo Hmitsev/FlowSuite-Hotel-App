@@ -604,26 +604,124 @@ except Exception as error:
     }
 
 
-metric_col1, metric_col2, metric_col3 = st.columns(
-    3
-)
+    metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(
+        4
+    )
+    
+    with metric_col1:
+        st.metric(
+            "🔴 Нови",
+            request_counts["NEW"]
+        )
+    
+    with metric_col2:
+        st.metric(
+            "🟡 Приети",
+            request_counts["ACCEPTED"]
+        )
+    
+    with metric_col3:
+        st.metric(
+            "🔵 В процес",
+            request_counts["IN_PROGRESS"]
+        )
+    
+    with metric_col4:
+        try:
+    
+            conn = get_connection()
+            cur = conn.cursor()
+    
+            cur.execute(
+                """
+                SELECT COUNT(*)
+                FROM service_requests
+                WHERE completed_at IS NOT NULL
+                  AND DATE(completed_at) = CURRENT_DATE
+                """
+            )
+    
+            completed_today = int(
+                cur.fetchone()[0] or 0
+            )
+    
+        except Exception:
+            completed_today = 0
+    
+        finally:
+            try:
+                cur.close()
+                conn.close()
+            except:
+                pass
+    
+        st.metric(
+            "✅ Завършени днес",
+            completed_today
+        )
+        dashboard_col1, dashboard_col2 = st.columns(2)
 
-with metric_col1:
-    st.metric(
-        "🔴 Нови",
+with dashboard_col1:
+
+    unassigned_count = 0
+
+    try:
+
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+            SELECT COUNT(*)
+            FROM service_requests
+            WHERE request_status IN (
+                'NEW',
+                'ACCEPTED',
+                'IN_PROGRESS'
+            )
+            AND (
+                assigned_to IS NULL
+                OR TRIM(assigned_to) = ''
+            )
+            """
+        )
+
+        unassigned_count = int(
+            cur.fetchone()[0] or 0
+        )
+
+    except Exception:
+        pass
+
+    finally:
+        try:
+            cur.close()
+            conn.close()
+        except:
+            pass
+
+    if unassigned_count > 0:
+
+        st.warning(
+            f"⚠️ Има {unassigned_count} неназначени задачи."
+        )
+
+    else:
+
+        st.success(
+            "✅ Всички активни задачи имат изпълнител."
+        )
+
+with dashboard_col2:
+
+    active_total = (
         request_counts["NEW"]
+        + request_counts["ACCEPTED"]
+        + request_counts["IN_PROGRESS"]
     )
 
-with metric_col2:
-    st.metric(
-        "🟡 Приети",
-        request_counts["ACCEPTED"]
-    )
-
-with metric_col3:
-    st.metric(
-        "🔵 В процес",
-        request_counts["IN_PROGRESS"]
+    st.info(
+        f"📋 Общо активни задачи: {active_total}"
     )
 
 
