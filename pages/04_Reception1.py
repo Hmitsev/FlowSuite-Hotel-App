@@ -519,6 +519,64 @@ def get_new_room_service_notifications():
     finally:
         cur.close()
         conn.close()
+        # =====================================
+# ОБСЛУЖВАЩ ПЕРСОНАЛ - ЗАЯВКИ
+# =====================================
+def get_service_requests():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                sr.id,
+                hr.room_number,
+                sr.department,
+                sr.category,
+                sr.request_type,
+                sr.guest_message,
+                sr.priority,
+                sr.request_status,
+                sr.created_at
+            FROM service_requests sr
+            JOIN hotel_rooms hr
+                ON hr.id = sr.room_id
+            WHERE sr.request_status <> 'COMPLETED'
+            ORDER BY sr.created_at ASC
+            """
+        )
+
+        return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
+# =====================================
+# БРОЙ НОВИ СЕРВИЗНИ ЗАЯВКИ
+# =====================================
+def get_new_service_request_count():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT COUNT(*)
+            FROM service_requests
+            WHERE request_status = 'NEW'
+            """
+        )
+
+        return int(
+            cur.fetchone()[0] or 0
+        )
+
+    finally:
+        cur.close()
+        conn.close()
         
 # =====================================
 # ЗАРЕЖДАНЕ НА АКТИВНИ SPA ЗАЯВКИ
@@ -824,6 +882,12 @@ try:
 
 except Exception:
     new_spa_count = 0
+    try:
+        new_service_count = int(
+            get_new_service_request_count() or 0
+        )
+    except Exception:
+        new_service_count = 0
 
 
 # =====================================
@@ -834,6 +898,7 @@ total_new_notifications = (
     new_room_service_count
     + int(new_activity_count or 0)
     + new_spa_count
+    + new_service_count
 )
 
 
@@ -876,6 +941,9 @@ ACTIVITIES_VIEW = (
 SPA_VIEW = (
     f"💆 SPA ({new_spa_count})"
 )
+SERVICE_VIEW = (
+    f"🔧 Обслужване ({new_service_count})"
+)
 COMPLETED_VIEW = "📜 Приключени"
 
 # =====================================
@@ -886,6 +954,7 @@ view_options = [
     ACTIVE_VIEW,
     ACTIVITIES_VIEW,
     SPA_VIEW,
+    SERVICE_VIEW,
     COMPLETED_VIEW
 ]
 
