@@ -1179,15 +1179,7 @@ if view_mode == ACTIVITIES_VIEW:
                                 "\n\n"
                                 f"Причина: {error}"
                             )
-                                st.divider()
-
-                            st.caption(
-                                "Powered by HMITSEVAPPS"
-                            )
-                        
-                            st.stop()
-
-
+                               
 
 
 # =====================================
