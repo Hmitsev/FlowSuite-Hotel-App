@@ -328,7 +328,8 @@ def get_service_request_counts():
 def update_service_request(
     request_id,
     new_status,
-    staff_note=""
+    staff_note="",
+    assigned_to=""
 ):
     allowed_statuses = {
         "NEW",
@@ -345,6 +346,10 @@ def update_service_request(
     normalized_note = str(
         staff_note or ""
     ).strip()
+    normalized_assigned_to = str(
+        assigned_to or ""
+    ).strip()
+
 
     if normalized_status not in allowed_statuses:
         raise ValueError(
@@ -375,22 +380,34 @@ def update_service_request(
             )
 
         elif normalized_status == "ACCEPTED":
+
             cur.execute(
                 """
                 UPDATE service_requests
                 SET
                     request_status = 'ACCEPTED',
                     staff_note = %s,
+                    assigned_to = %s,
+        
+                    assigned_at = COALESCE(
+                        assigned_at,
+                        CURRENT_TIMESTAMP
+                    ),
+        
                     accepted_at = COALESCE(
                         accepted_at,
                         CURRENT_TIMESTAMP
                     ),
+        
                     completed_at = NULL,
+        
                     updated_at = CURRENT_TIMESTAMP
+        
                 WHERE id = %s
                 """,
                 (
                     normalized_note,
+                    normalized_assigned_to,
                     request_id
                 )
             )
@@ -441,6 +458,7 @@ def update_service_request(
                 """,
                 (
                     normalized_note,
+                    normalized_assigned_to,
                     request_id
                 )
             )
@@ -452,6 +470,7 @@ def update_service_request(
                 SET
                     request_status = 'CANCELLED',
                     staff_note = %s,
+                    assigned_to = %s,
                     completed_at = CURRENT_TIMESTAMP,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
@@ -1131,7 +1150,8 @@ else:
                             update_service_request(
                                 request_id=request_id,
                                 new_status=selected_status,
-                                staff_note=selected_staff_note
+                                staff_note=selected_staff_note,
+                                assigned_to=selected_assigned_to
                             )
 
                             st.success(
