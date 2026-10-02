@@ -932,11 +932,13 @@ else:
             priority = row[9]
             request_status = row[10]
             staff_note = row[11]
-            created_at = row[12]
-            accepted_at = row[13]
-            started_at = row[14]
-            completed_at = row[15]
-            updated_at = row[16]
+            assigned_to = row[12]
+            assigned_at = row[13]
+            created_at = row[14]
+            accepted_at = row[15]
+            started_at = row[16]
+            completed_at = row[17]
+            updated_at = row[18]
 
         else:
             request_id = row[0]
