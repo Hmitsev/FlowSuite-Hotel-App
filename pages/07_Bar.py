@@ -851,8 +851,18 @@ if bar_view == ROOM_SERVICE_VIEW:
                         )
 
                         with item_col:
-                            st.write(
-                                f"**{item['item_name']}**"
+                            st.markdown(
+                                f"""
+                                <div style="
+                                    color:#5DE0FF;
+                                    font-size:26px;
+                                    font-weight:800;
+                                    margin-bottom:6px;
+                                ">
+                                    {item['item_name']}
+                                </div>
+                                """,
+                                unsafe_allow_html=True
                             )
 
                             st.write(
