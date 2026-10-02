@@ -353,6 +353,9 @@ def update_service_request(
         assigned_to or ""
     ).strip()
 
+    if normalized_assigned_to == "Изберете изпълнител":
+        normalized_assigned_to = ""
+
     if normalized_status not in allowed_statuses:
         raise ValueError(
             "Невалиден статус на задачата."
@@ -362,11 +365,6 @@ def update_service_request(
     cur = conn.cursor()
 
     try:
-        # =================================================
-        # NEW
-        # Запазва избрания изпълнител, но нулира времената
-        # за приемане, започване и приключване.
-        # =================================================
         if normalized_status == "NEW":
             cur.execute(
                 """
@@ -397,10 +395,6 @@ def update_service_request(
                 )
             )
 
-        # =================================================
-        # ACCEPTED
-        # Записва изпълнител, assigned_at и accepted_at.
-        # =================================================
         elif normalized_status == "ACCEPTED":
             cur.execute(
                 """
@@ -434,107 +428,107 @@ def update_service_request(
                 )
             )
 
-        # =================================================
-        # IN_PROGRESS
-        # Записва изпълнител, приемане и начало на работа.
-        # =================================================
         elif normalized_status == "IN_PROGRESS":
-
             cur.execute(
                 """
                 UPDATE service_requests
                 SET
                     request_status = 'IN_PROGRESS',
                     staff_note = %s,
-                    assigned_to = %s,
-        
+                    assigned_to = NULLIF(%s, ''),
+                    assigned_at = CASE
+                        WHEN NULLIF(%s, '') IS NOT NULL
+                        THEN COALESCE(
+                            assigned_at,
+                            CURRENT_TIMESTAMP
+                        )
+                        ELSE NULL
+                    END,
                     accepted_at = COALESCE(
                         accepted_at,
                         CURRENT_TIMESTAMP
                     ),
-        
                     started_at = COALESCE(
                         started_at,
                         CURRENT_TIMESTAMP
                     ),
-        
                     completed_at = NULL,
-        
                     updated_at = CURRENT_TIMESTAMP
-        
                 WHERE id = %s
                 """,
                 (
                     normalized_note,
                     normalized_assigned_to,
+                    normalized_assigned_to,
                     request_id
                 )
             )
 
-        # =================================================
-        # COMPLETED
-        # Записва всички липсващи времена и приключва задачата.
-        # =================================================
         elif normalized_status == "COMPLETED":
-
             cur.execute(
                 """
                 UPDATE service_requests
                 SET
                     request_status = 'COMPLETED',
                     staff_note = %s,
-                    assigned_to = %s,
-        
+                    assigned_to = NULLIF(%s, ''),
+                    assigned_at = CASE
+                        WHEN NULLIF(%s, '') IS NOT NULL
+                        THEN COALESCE(
+                            assigned_at,
+                            CURRENT_TIMESTAMP
+                        )
+                        ELSE NULL
+                    END,
                     accepted_at = COALESCE(
                         accepted_at,
                         CURRENT_TIMESTAMP
                     ),
-        
                     started_at = COALESCE(
                         started_at,
                         CURRENT_TIMESTAMP
                     ),
-        
                     completed_at = CURRENT_TIMESTAMP,
-        
                     updated_at = CURRENT_TIMESTAMP
-        
                 WHERE id = %s
                 """,
                 (
                     normalized_note,
                     normalized_assigned_to,
+                    normalized_assigned_to,
                     request_id
                 )
             )
 
-        # =================================================
-        # CANCELLED
-        # Запазва изпълнителя и приключва задачата като отказана.
-        # =================================================
         elif normalized_status == "CANCELLED":
-
             cur.execute(
                 """
                 UPDATE service_requests
                 SET
                     request_status = 'CANCELLED',
                     staff_note = %s,
-                    assigned_to = %s,
-        
+                    assigned_to = NULLIF(%s, ''),
+                    assigned_at = CASE
+                        WHEN NULLIF(%s, '') IS NOT NULL
+                        THEN COALESCE(
+                            assigned_at,
+                            CURRENT_TIMESTAMP
+                        )
+                        ELSE NULL
+                    END,
                     completed_at = CURRENT_TIMESTAMP,
-        
                     updated_at = CURRENT_TIMESTAMP
-        
                 WHERE id = %s
                 """,
                 (
                     normalized_note,
                     normalized_assigned_to,
+                    normalized_assigned_to,
                     request_id
                 )
             )
-                    if cur.rowcount == 0:
+
+        if cur.rowcount == 0:
             raise ValueError(
                 "Задачата не е намерена."
             )
@@ -548,6 +542,11 @@ def update_service_request(
     finally:
         cur.close()
         conn.close()
+
+
+# =========================================================
+# ПОМОЩНИ ФУНКЦИИ ЗА ИНТЕРФЕЙСА
+# =========================================================
 
 
 # =========================================================
