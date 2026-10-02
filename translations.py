@@ -69,6 +69,19 @@ TRANSLATIONS = {
             "Стая №{room_number} не е намерена "
             "или не е активна."
         ),
+        "assistance": "ПОМОЩ",
+        "assistance_description": "Технически и камериерски заявки",
+        
+        "help_and_service": "Помощ и обслужване",
+        
+        "technical_problem": "Технически проблем",
+        "housekeeping_service": "Камериерско обслужване",
+        
+        "select_category": "Изберете категория",
+        "select_request": "Изберете заявка",
+        
+        "additional_comment": "Допълнителен коментар",
+        "service_request": "Заявка",
 
         # Room Service
         "room_service_menu": "Меню Рум Сървиз",
@@ -179,6 +192,20 @@ TRANSLATIONS = {
             "Room {room_number} was not found "
             "or is not active."
         ),
+        "assistance": "ПОМОЩ",
+        "assistance": "ASSISTANCE",
+        "assistance_description": "Technical and housekeeping requests",
+        
+        "help_and_service": "Help and Service",
+        
+        "technical_problem": "Technical problem",
+        "housekeeping_service": "Housekeeping service",
+        
+        "select_category": "Select category",
+        "select_request": "Select request",
+        
+        "additional_comment": "Additional comment",
+        "service_request": "Request",
 
         # Room Service
         "room_service_menu": "Room Service Menu",
@@ -222,32 +249,6 @@ TRANSLATIONS = {
         "room_service_banner_missing": "The Room Service banner was not found. Please check the image name in the assets folder.",
     },
 }
-"assistance": "ПОМОЩ",
-"assistance_description": "Технически и камериерски заявки",
-
-"help_and_service": "Помощ и обслужване",
-
-"technical_problem": "Технически проблем",
-"housekeeping_service": "Камериерско обслужване",
-
-"select_category": "Изберете категория",
-"select_request": "Изберете заявка",
-
-"additional_comment": "Допълнителен коментар",
-"service_request": "Заявка",
-"assistance": "ASSISTANCE",
-"assistance_description": "Technical and housekeeping requests",
-
-"help_and_service": "Help and Service",
-
-"technical_problem": "Technical problem",
-"housekeeping_service": "Housekeeping service",
-
-"select_category": "Select category",
-"select_request": "Select request",
-
-"additional_comment": "Additional comment",
-"service_request": "Request",
 
 def get_language():
     return st.session_state.get("lang", "bg")
