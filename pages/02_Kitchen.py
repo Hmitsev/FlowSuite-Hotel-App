@@ -661,6 +661,16 @@ else:
         )
 
         items = order_data["items"]
+        visible_items = [
+            item
+            for item in items
+            if not is_bar_item(
+                item["item_name"]
+            )
+        ]
+        
+        if not visible_items:
+            continue
 
         with st.container(border=True):
             title_col, time_col, total_col = (
@@ -706,7 +716,7 @@ else:
                 "#### Артикули"
             )
 
-            for item in items:
+            for item in visible_items:
                 if is_bar_item(
                     item["item_name"]
                 ):
