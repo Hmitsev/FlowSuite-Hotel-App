@@ -299,7 +299,6 @@ st.markdown(
             🛎️ {t["title"]}
         </div>
 
-        <div class="assistance-subtitle">
             {t["subtitle"]}
         </div>
     </div>
