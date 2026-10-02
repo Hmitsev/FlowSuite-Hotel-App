@@ -146,7 +146,21 @@ room_number = st.session_state.get(
     "room_number",
     204
 )
+raw_table_number = st.query_params.get("table")
 
+if raw_table_number:
+    try:
+        table_number = int(raw_table_number)
+
+        if 1 <= table_number <= 999:
+            st.session_state.table_number = table_number
+
+    except (TypeError, ValueError):
+        pass
+        table_number = st.session_state.get(
+            "table_number",
+            1
+        )
 
 # =========================================================
 # ЗАРЕЖДАНЕ НА ХОТЕЛСКАТА СНИМКА
