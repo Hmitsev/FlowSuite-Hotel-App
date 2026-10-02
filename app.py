@@ -362,8 +362,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-room_service_column, spa_column, activities_column = st.columns(
-    3,
+room_service_column, spa_column, activities_column, assistance_column = st.columns(
+    4,
     gap="medium"
 )
 
@@ -464,6 +464,37 @@ with activities_column:
             "pages/03_Activities.py",
             "Дейности",
             "Activities"
+        )
+        # =========================================================
+# ASSISTANCE
+# =========================================================
+with assistance_column:
+
+    st.markdown(
+        """
+        <div style="
+            text-align:center;
+            color:#F5D77B;
+            font-size:15px;
+            font-weight:600;
+            margin-bottom:8px;
+        ">
+            Технически и камериерски заявки
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    if st.button(
+        "🛎️ ПОМОЩ",
+        key="assistance_btn",
+        type="primary",
+        use_container_width=True
+    ):
+        open_hotel_page(
+            "pages/04_Assistance.py",
+            "Помощ",
+            "Assistance"
         )
 
 
