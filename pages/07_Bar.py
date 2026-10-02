@@ -141,72 +141,6 @@ st_autorefresh(
 )
 
 
-# =========================================================
-# ВРЕМЕНЕН РЕЧНИК ЗА РАЗПОЗНАВАНЕ НА НАПИТКИ
-#
-# Това е само за първата демо версия.
-# По-късно ще бъде заменено с preparation_area = 'BAR'.
-# =========================================================
-BAR_KEYWORDS = [
-    "вода",
-    "water",
-    "минерална",
-    "mineral",
-    "газирана",
-    "sparkling",
-    "кола",
-    "cola",
-    "coca",
-    "pepsi",
-    "фанта",
-    "fanta",
-    "спрайт",
-    "sprite",
-    "сок",
-    "juice",
-    "кафе",
-    "coffee",
-    "еспресо",
-    "espresso",
-    "капучино",
-    "cappuccino",
-    "лате",
-    "latte",
-    "чай",
-    "tea",
-    "бира",
-    "beer",
-    "вино",
-    "wine",
-    "просеко",
-    "prosecco",
-    "шампанско",
-    "champagne",
-    "уиски",
-    "whisky",
-    "whiskey",
-    "водка",
-    "vodka",
-    "джин",
-    "gin",
-    "ром",
-    "rum",
-    "текила",
-    "tequila",
-    "коняк",
-    "cognac",
-    "бренди",
-    "brandy",
-    "ликьор",
-    "liqueur",
-    "коктейл",
-    "cocktail",
-    "тоник",
-    "tonic",
-    "айрян",
-    "мляко",
-    "milk"
-]
 
 
 # =========================================================
@@ -321,11 +255,7 @@ def get_room_service_bar_items():
 
         all_rows = cur.fetchall()
 
-        return [
-            row
-            for row in all_rows
-            if is_bar_item(row[6])
-        ]
+        return all_rows
 
     finally:
         close_connection(
