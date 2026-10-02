@@ -61,7 +61,6 @@ with lang_col2:
         key="lastoria_lang_toggle",
         use_container_width=True
     ):
-
         st.info(
             "🇬🇧 English version is currently under development and will be available soon."
         )
@@ -90,6 +89,8 @@ T = {
     }
 }
 
+# Временно винаги използваме BG,
+# докато английските преводи не са готови.
 t = T["bg"]
 
     # =====================================
