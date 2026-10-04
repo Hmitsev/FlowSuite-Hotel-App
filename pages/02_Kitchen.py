@@ -348,7 +348,7 @@ def is_bar_item(item_name):
     )
 
 # =====================================
-# ЗАРЕЖДАНЕ НА ПОРЪЧКИТЕ
+# ЗАРЕЖДАНЕ НА ROOM SERVICE ПОРЪЧКИТЕ
 # =====================================
 
 def get_kitchen_orders():
@@ -392,7 +392,13 @@ def get_kitchen_orders():
     finally:
         cur.close()
         conn.close()
-        def get_lobby_orders():
+
+
+# =====================================
+# ЗАРЕЖДАНЕ НА LOBBY BAR ПОРЪЧКИТЕ
+# =====================================
+
+def get_lobby_orders():
     conn = get_connection()
     cur = conn.cursor()
 
@@ -428,8 +434,6 @@ def get_kitchen_orders():
     finally:
         cur.close()
         conn.close()
-
-
 # =====================================
 # ЦЯЛАТА ПОРЪЧКА СЕ ПРИГОТВЯ
 # =====================================
