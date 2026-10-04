@@ -728,23 +728,22 @@ else:
                     f"#{order_id}"
                 )
 
-                st.markdown(
-                    if str(location).startswith("TABLE-"):
+                if str(location).startswith("TABLE-"):
 
-                        table_no = str(location).replace(
-                            "TABLE-",
-                            ""
-                        )
-                    
-                        st.markdown(
-                            f"### 🍸 Lobby Bar - Маса №{table_no}"
-                        )
-                    
-                    else:
-                    
-                        st.markdown(
-                            f"### 🛎️ Стая №{location}"
-                        )
+                    table_no = str(location).replace(
+                        "TABLE-",
+                        ""
+                    )
+                
+                    st.markdown(
+                        f"### 🍸 Lobby Bar - Маса №{table_no}"
+                    )
+                
+                else:
+                
+                    st.markdown(
+                        f"### 🛎️ Стая №{location}"
+                    )
                     
             with time_col:
                 if created_at:
