@@ -691,7 +691,6 @@ else:
         location = order_data[
             "location"
         ]
-        ]
 
         created_at = order_data[
             "created_at"
