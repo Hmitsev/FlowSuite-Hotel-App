@@ -438,38 +438,54 @@ def get_lobby_orders():
 # ЦЯЛАТА ПОРЪЧКА СЕ ПРИГОТВЯ
 # =====================================
 
-def start_order(order_id):
+def start_order(order_id, source):
+
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-        cur.execute(
-            """
-            UPDATE room_service_orders
-            SET
-                order_status = 'PREPARING',
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = %s
-              AND order_status IN (
-                  'NEW',
-                  'PREPARING'
-              )
-            """,
-            (order_id,)
-        )
 
-        cur.execute(
-            """
-            UPDATE room_service_order_items
-            SET item_status = 'PREPARING'
-            WHERE order_id = %s
-              AND item_status IN (
-                  'NEW',
-                  'PREPARING'
-              )
-            """,
-            (order_id,)
-        )
+        if source == "LOBBY":
+
+            cur.execute(
+                """
+                UPDATE lobby_bar_orders
+                SET order_status = 'PREPARING'
+                WHERE id = %s
+                """,
+                (order_id,)
+            )
+
+            cur.execute(
+                """
+                UPDATE lobby_bar_order_items
+                SET item_status = 'PREPARING'
+                WHERE order_id = %s
+                """,
+                (order_id,)
+            )
+
+        else:
+
+            cur.execute(
+                """
+                UPDATE room_service_orders
+                SET
+                    order_status = 'PREPARING',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (order_id,)
+            )
+
+            cur.execute(
+                """
+                UPDATE room_service_order_items
+                SET item_status = 'PREPARING'
+                WHERE order_id = %s
+                """,
+                (order_id,)
+            )
 
         conn.commit()
 
@@ -486,38 +502,54 @@ def start_order(order_id):
 # ЦЯЛАТА ПОРЪЧКА Е ГОТОВА
 # =====================================
 
-def finish_order(order_id):
+def finish_order(order_id, source):
+
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-        cur.execute(
-            """
-            UPDATE room_service_orders
-            SET
-                order_status = 'READY',
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = %s
-              AND order_status IN (
-                  'NEW',
-                  'PREPARING'
-              )
-            """,
-            (order_id,)
-        )
 
-        cur.execute(
-            """
-            UPDATE room_service_order_items
-            SET item_status = 'READY'
-            WHERE order_id = %s
-              AND item_status IN (
-                  'NEW',
-                  'PREPARING'
-              )
-            """,
-            (order_id,)
-        )
+        if source == "LOBBY":
+
+            cur.execute(
+                """
+                UPDATE lobby_bar_orders
+                SET order_status = 'READY'
+                WHERE id = %s
+                """,
+                (order_id,)
+            )
+
+            cur.execute(
+                """
+                UPDATE lobby_bar_order_items
+                SET item_status = 'READY'
+                WHERE order_id = %s
+                """,
+                (order_id,)
+            )
+
+        else:
+
+            cur.execute(
+                """
+                UPDATE room_service_orders
+                SET
+                    order_status = 'READY',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (order_id,)
+            )
+
+            cur.execute(
+                """
+                UPDATE room_service_order_items
+                SET item_status = 'READY'
+                WHERE order_id = %s
+                """,
+                (order_id,)
+            )
 
         conn.commit()
 
@@ -528,7 +560,6 @@ def finish_order(order_id):
     finally:
         cur.close()
         conn.close()
-
 
 # =====================================
 # СТАТУС НА ОТДЕЛЕН АРТИКУЛ
@@ -614,13 +645,21 @@ for row in rows:
     order_id = row[0]
 
     if order_id not in orders:
-        orders[order_id] = {
+        source = (
+            "LOBBY"
+            if str(row[1]).startswith("TABLE-")
+            else "ROOM"
+            )
+            
+            orders[order_id] = {
             "location": row[1],
             "created_at": row[2],
             "order_status": row[3],
             "total_amount": row[4],
+            "source": source,
             "items": []
-        }
+            }
+
 
     orders[order_id]["items"].append(
         {
@@ -691,6 +730,7 @@ else:
         location = order_data[
             "location"
         ]
+        source = order_data["source"]
 
         created_at = order_data[
             "created_at"
@@ -831,7 +871,10 @@ else:
                     )
                 ):
                     try:
-                        start_order(order_id)
+                        start_order(
+                            order_id,
+                            source
+                        )
 
                         st.session_state.kitchen_message = (
                             f"Поръчка №{order_id} "
@@ -857,7 +900,10 @@ else:
                     use_container_width=True
                 ):
                     try:
-                        finish_order(order_id)
+                        finish_order(
+                            order_id,
+                            source
+                        )
 
                         st.session_state.kitchen_message = (
                             f"Поръчка №{order_id} "
