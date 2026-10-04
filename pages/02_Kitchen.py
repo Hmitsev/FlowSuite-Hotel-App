@@ -687,8 +687,10 @@ if not orders:
 
 else:
     for order_id, order_data in orders.items():
-        room_number = order_data[
+
+        location = order_data[
             "location"
+        ]
         ]
 
         created_at = order_data[
