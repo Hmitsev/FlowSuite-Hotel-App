@@ -638,28 +638,25 @@ except Exception as error:
 # =====================================
 # ГРУПИРАНЕ ПО ПОРЪЧКА
 # =====================================
-
-orders = {}
-
 for row in rows:
     order_id = row[0]
 
     if order_id not in orders:
+
         source = (
             "LOBBY"
             if str(row[1]).startswith("TABLE-")
             else "ROOM"
-            )
-            
-            orders[order_id] = {
+        )
+
+        orders[order_id] = {
             "location": row[1],
             "created_at": row[2],
             "order_status": row[3],
             "total_amount": row[4],
             "source": source,
             "items": []
-            }
-
+        }
 
     orders[order_id]["items"].append(
         {
@@ -672,7 +669,6 @@ for row in rows:
             "item_status": row[11]
         }
     )
-
 
 # =====================================
 # ОБОБЩЕНИЕ
