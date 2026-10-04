@@ -581,6 +581,7 @@ def get_active_service_operations():
 # ВСИЧКИ АКТИВНИ ОПЕРАЦИИ
 # =========================================================
 def get_all_active_operations():
+
     operations = []
 
     operations.extend(
@@ -602,9 +603,9 @@ def get_all_active_operations():
     return sorted(
         operations,
         key=lambda item: (
-            item["created_at"]
-            is not None,
-            item["created_at"]
+            item["created_at"].timestamp()
+            if item["created_at"]
+            else 0
         ),
         reverse=True
     )
