@@ -392,6 +392,42 @@ def get_kitchen_orders():
     finally:
         cur.close()
         conn.close()
+        def get_lobby_orders():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                lbo.id AS order_id,
+                CONCAT('TABLE-', lbo.table_number),
+                lbo.created_at,
+                lbo.order_status,
+                lbo.total_amount,
+                lboi.id AS order_item_id,
+                NULL AS item_id,
+                lboi.item_name,
+                lboi.quantity,
+                lboi.unit_price,
+                '' AS notes,
+                lboi.item_status
+            FROM lobby_bar_orders lbo
+            JOIN lobby_bar_order_items lboi
+                ON lboi.order_id = lbo.id
+            WHERE lbo.order_status IN (
+                'NEW',
+                'PREPARING'
+            )
+            ORDER BY lbo.created_at ASC
+            """
+        )
+
+        return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
 
 
 # =====================================
@@ -550,7 +586,10 @@ if st.session_state.kitchen_error:
 # =====================================
 
 try:
-    rows = get_kitchen_orders()
+    room_rows = get_kitchen_orders()
+    lobby_rows = get_lobby_orders()
+    
+    rows = list(room_rows) + list(lobby_rows)
 
 except Exception as error:
     st.error(
@@ -572,7 +611,7 @@ for row in rows:
 
     if order_id not in orders:
         orders[order_id] = {
-            "room_number": row[1],
+            "location": row[1],
             "created_at": row[2],
             "order_status": row[3],
             "total_amount": row[4],
@@ -645,7 +684,7 @@ if not orders:
 else:
     for order_id, order_data in orders.items():
         room_number = order_data[
-            "room_number"
+            "location"
         ]
 
         created_at = order_data[
@@ -686,9 +725,23 @@ else:
                 )
 
                 st.markdown(
-                    f"### 🛎️ Стая №{room_number}"
-                )
+                    if str(location).startswith("TABLE-"):
 
+                        table_no = str(location).replace(
+                            "TABLE-",
+                            ""
+                        )
+                    
+                        st.markdown(
+                            f"### 🍸 Lobby Bar - Маса №{table_no}"
+                        )
+                    
+                    else:
+                    
+                        st.markdown(
+                            f"### 🛎️ Стая №{location}"
+                        )
+                    
             with time_col:
                 if created_at:
                     st.caption(
