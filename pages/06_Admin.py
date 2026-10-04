@@ -142,12 +142,24 @@ st_autorefresh(
 # =========================================================
 # ПОМОЩНИ ФУНКЦИИ
 # =========================================================
+from datetime import timedelta
+
+
 def format_datetime(value):
+
     if value is None:
         return ""
 
     try:
-        return value.strftime(
+
+        # Ако PostgreSQL връща UTC време
+        # показваме Българско време
+        if getattr(value, "tzinfo", None) is not None:
+            value = value.replace(tzinfo=None)
+
+        local_time = value + timedelta(hours=3)
+
+        return local_time.strftime(
             "%d.%m.%Y %H:%M"
         )
 
@@ -192,8 +204,6 @@ def close_connection(
     finally:
         if conn is not None:
             conn.close()
-
-
 # =========================================================
 # KPI ДАННИ
 # =========================================================
