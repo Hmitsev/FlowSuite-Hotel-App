@@ -638,18 +638,25 @@ except Exception as error:
 # =====================================
 # ГРУПИРАНЕ ПО ПОРЪЧКА
 # =====================================
+
+orders = {}
+
 for row in rows:
     order_id = row[0]
 
-    if order_id not in orders:
+    source = (
+        "LOBBY"
+        if str(row[1]).startswith("TABLE-")
+        else "ROOM"
+    )
 
-        source = (
-            "LOBBY"
-            if str(row[1]).startswith("TABLE-")
-            else "ROOM"
-        )
+    # Room Service #9 и Lobby Bar #9 трябва
+    # да бъдат две различни поръчки.
+    order_key = f"{source}-{order_id}"
 
-        orders[order_id] = {
+    if order_key not in orders:
+        orders[order_key] = {
+            "order_id": order_id,
             "location": row[1],
             "created_at": row[2],
             "order_status": row[3],
@@ -658,7 +665,7 @@ for row in rows:
             "items": []
         }
 
-    orders[order_id]["items"].append(
+    orders[order_key]["items"].append(
         {
             "order_item_id": row[5],
             "item_id": row[6],
@@ -669,7 +676,6 @@ for row in rows:
             "item_status": row[11]
         }
     )
-
 # =====================================
 # ОБОБЩЕНИЕ
 # =====================================
@@ -721,11 +727,10 @@ if not orders:
     )
 
 else:
-    for order_id, order_data in orders.items():
+    for order_key, order_data in orders.items():
 
-        location = order_data[
-            "location"
-        ]
+        order_id = order_data["order_id"]
+        location = order_data["location"]
         source = order_data["source"]
 
         created_at = order_data[
@@ -759,11 +764,15 @@ else:
                 )
             )
 
-            with title_col:
+            if source == "LOBBY":
                 st.subheader(
-                    f"🍽️ Room Service Order "
-                    f"#{order_id}"
+                    f"🍸 Lobby Bar Order #{order_id}"
                 )
+            else:
+                st.subheader(
+                    f"🍽️ Room Service Order #{order_id}"
+                )
+
 
                 if str(location).startswith("TABLE-"):
 
@@ -860,7 +869,7 @@ else:
             with preparing_col:
                 if st.button(
                     "🟡 Започни подготовката",
-                    key=f"start_order_{order_id}",
+                    key=f"start_order_{source}_{order_id}",
                     use_container_width=True,
                     disabled=(
                         order_status == "PREPARING"
@@ -891,7 +900,7 @@ else:
             with ready_col:
                 if st.button(
                     "✅ Цялата поръчка е готова",
-                    key=f"finish_order_{order_id}",
+                    key=f"finish_order_{source}_{order_id}",
                     type="primary",
                     use_container_width=True
                 ):
