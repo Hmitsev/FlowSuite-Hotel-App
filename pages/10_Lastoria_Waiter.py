@@ -5,7 +5,26 @@ from streamlit_autorefresh import st_autorefresh
 
 from lastoria.database.db import get_connection
 
+st.markdown("""
+<style>
 
+/* Скрива стрелките в навигацията */
+[data-testid="stSidebarNav"] button {
+    display: none !important;
+}
+
+/* Скрива expand/collapse */
+[data-testid="stSidebarNavCollapseButton"] {
+    display: none !important;
+}
+
+/* Скрива хедъра на навигацията */
+[data-testid="stSidebarNav"] div[role="button"] {
+    display: none !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 # =====================================
 # НАСТРОЙКИ НА СТРАНИЦАТА
 # =====================================
