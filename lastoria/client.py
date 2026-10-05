@@ -568,10 +568,10 @@ def render_lastoria_client() -> None:
 
                             st.rerun()
 
-                        except Exception as error:
-
+                                                except Exception as error:
                             st.error(
-                                "Поръчката не 
+                                f"Поръчката не беше изпратена: {error}"
+                            )
 
     # =====================================
     # МЕНЮ
