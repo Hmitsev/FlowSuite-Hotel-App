@@ -985,89 +985,99 @@ if view_mode == "🧾 Сметки по маси":
 
     st.stop()
 # =====================================
-# КОМПАКТЕН АРХИВ НА ПРИКЛЮЧЕНИТЕ СМЕТКИ
+# КОМПАКТЕН ИЗГЛЕД: СМЕТКИ ПО МАСИ
 # =====================================
 
-if view_mode == "📜 Приключени за 24ч":
+if view_mode == "🧾 Сметки по маси":
 
-    completed_rows = get_completed_orders()
+    open_bill_rows = get_open_table_bills()
 
-    completed_bills = build_completed_table_bills(
-        completed_rows
+    table_bills = build_open_table_bills(
+        open_bill_rows
     )
 
-    if not completed_bills:
-        st.info(
-            "Няма приключени сметки през "
-            "последните 24 часа."
+    if not table_bills:
+        st.success(
+            "Няма отворени сметки по маси."
         )
 
     else:
-        daily_total = sum(
-            bill["grand_total"]
-            for bill in completed_bills.values()
+        st.caption(
+            "Всички неприключени поръчки от една "
+            "маса са събрани в една обща сметка."
         )
 
-        metric_col1, metric_col2 = st.columns(2)
+        for table_id, table_bill in table_bills.items():
 
-        with metric_col1:
-            st.metric(
-                "Приключени сметки",
-                len(completed_bills)
-            )
+            table_number = table_bill["table_number"]
+            order_ids = table_bill["order_ids"]
+            items = table_bill["items"]
+            grand_total = table_bill["grand_total"]
+            first_order_at = table_bill["first_order_at"]
 
-        with metric_col2:
-            st.metric(
-                "Общ оборот за показания период",
-                f"€ {daily_total:.2f}"
-            )
-
-        for group_key, bill in completed_bills.items():
-
-            table_number = bill[
-                "table_number"
-            ]
-
-            order_ids = bill[
-                "order_ids"
-            ]
-
-            items = bill[
-                "items"
-            ]
-
-            grand_total = bill[
-                "grand_total"
-            ]
-
-            completed_at = bill[
-                "completed_at"
-            ]
-
-            expander_title = (
-                f"🍽️ Маса № {table_number}"
-                f"  |  € {grand_total:.2f}"
-            )
-
-            with st.expander(
-                expander_title,
-                expanded=False
-            ):
-
-                order_numbers = ", ".join(
-                    f"№{order_id}"
-                    for order_id in order_ids
-                )
-
-                st.write(
-                    f"**Поръчки:** {order_numbers}"
-                )
-
-                if completed_at:
-                    st.write(
-                        "**Приключена:** "
-                        f"{completed_at.strftime('%d.%m.%Y %H:%M')}"
+            blocking_items = [
+                item
+                for item in items
+                if (
+                    str(item["department"] or "").lower() != "bar"
+                    and item["status"] not in (
+                        "READY",
+                        "SERVED"
                     )
+                )
+            ]
+
+            can_complete_table = (
+                len(blocking_items) == 0
+            )
+
+            with st.container(border=True):
+
+                header_col, total_col = st.columns(
+                    [5, 2],
+                    vertical_alignment="center"
+                )
+
+                with header_col:
+
+                    st.markdown(
+                        f"""
+                        <div style="
+                            color:#FF8C42;
+                            font-size:34px;
+                            font-weight:900;
+                        ">
+                            🍽️ Маса № {table_number}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                    order_numbers = ", ".join(
+                        f"№{order_id}"
+                        for order_id in order_ids
+                    )
+
+                    st.caption(
+                        f"Поръчки в сметката: {order_numbers}"
+                    )
+
+                    if first_order_at:
+                        st.caption(
+                            "Сметката е отворена от: "
+                            f"{first_order_at.strftime('%d.%m.%Y %H:%M')}"
+                        )
+
+                with total_col:
+
+                    st.metric(
+                        "Обща сметка",
+                        f"€ {grand_total:.2f}"
+                    )
+
+                st.markdown(
+                    "#### Обобщени артикули"
+                )
 
                 consolidated_items = {}
 
@@ -1079,41 +1089,96 @@ if view_mode == "📜 Приключени за 24ч":
                     )
 
                     if item_key not in consolidated_items:
+
                         consolidated_items[item_key] = {
                             "name": item["name"],
                             "quantity": 0,
                             "notes": item["notes"]
                         }
 
-                    consolidated_items[
-                        item_key
-                    ]["quantity"] += int(
+                    consolidated_items[item_key]["quantity"] += int(
                         item["quantity"] or 0
                     )
 
-                for consolidated_item in (
-                    consolidated_items.values()
-                ):
+                for consolidated_item in consolidated_items.values():
 
-                    st.write(
-                        "• "
-                        f"{consolidated_item['name']} "
-                        f"x{consolidated_item['quantity']}"
+                    item_col, quantity_col = st.columns(
+                        [6, 1],
+                        vertical_alignment="center"
                     )
 
-                    if consolidated_item["notes"]:
-                        st.caption(
-                            "📝 "
-                            f"{consolidated_item['notes']}"
+                    with item_col:
+
+                        st.write(
+                            f"**{consolidated_item['name']}**"
+                        )
+
+                        if consolidated_item["notes"]:
+                            st.caption(
+                                f"📝 {consolidated_item['notes']}"
+                            )
+
+                    with quantity_col:
+
+                        st.write(
+                            f"**x{consolidated_item['quantity']}**"
                         )
 
                 st.divider()
 
-                st.markdown(
-                    f"### Общо: € {grand_total:.2f}"
+                if can_complete_table:
+
+                    st.success(
+                        "✅ Сметката е готова за приключване."
+                    )
+
+                else:
+
+                    st.warning(
+                        f"⏳ Има {len(blocking_items)} артикула, които още не са готови."
+                    )
+
+                confirm_payment = st.checkbox(
+                    "Потвърждавам, че сметката е платена",
+                    key=f"confirm_table_payment_{table_id}",
+                    disabled=not can_complete_table
                 )
 
+                if st.button(
+                    f"💳 Приключи и плати Маса № {table_number}",
+                    key=f"complete_table_bill_{table_id}",
+                    type="primary",
+                    use_container_width=True,
+                    disabled=(
+                        not can_complete_table
+                        or not confirm_payment
+                    )
+                ):
+
+                    try:
+
+                        complete_table_bill(
+                            table_id
+                        )
+
+                        st.success(
+                            f"✅ Маса № {table_number} е приключена."
+                        )
+
+                        st.rerun()
+
+                    except Exception as error:
+
+                        st.error(
+                            f"Грешка при приключване: {error}"
+                        )
+
     st.stop()
+
+
+# =====================================
+# КОМПАКТЕН АРХИВ НА ПРИКЛЮЧЕНИТЕ СМЕТКИ
+# =====================================
 
 # =====================================
 # ЗАРЕЖДАНЕ И ГРУПИРАНЕ ПО ПОРЪЧКА
