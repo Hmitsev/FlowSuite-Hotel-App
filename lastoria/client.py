@@ -1179,10 +1179,9 @@ def render_lastoria_client() -> None:
                     unsafe_allow_html=True
                 )
 
-            # =====================================
+                # =====================================
             # ДОБАВЯНЕ В КОЛИЧКАТА
             # =====================================
-        
 
             with col4:
 
@@ -1192,7 +1191,6 @@ def render_lastoria_client() -> None:
                 )
 
                 if item_is_in_cart:
-
                     st.markdown(
                         """
                         <div style="
@@ -1213,7 +1211,8 @@ def render_lastoria_client() -> None:
 
                 if st.button(
                     "🛒 Добави",
-                    key=f"lastoria_add_{item_id}_{item_index}"
+                    key=f"lastoria_add_{item_id}_{item_index}",
+                    use_container_width=True
                 ):
 
                     saved_comment = st.session_state.get(
@@ -1223,23 +1222,39 @@ def render_lastoria_client() -> None:
 
                     final_name = item_name
 
-                    if item_name in drink_variants and selected_variant:
+                    if (
+                        item_name in drink_variants
+                        and selected_variant
+                    ):
                         final_name = (
                             f"{item_name} - {selected_variant}"
                         )
 
-                                        add_to_cart(
-                                            item_id=item_id,
-                                            item_name=final_name,
-                                            price=price,
-                                            note=saved_comment
-                                        )
-                    
-                                        st.toast(
-                                            f"✅ Добавено: {final_name}"
-                                        )
-                    
-                                        st.rerun()
+                    add_to_cart(
+                        item_id=item_id,
+                        item_name=final_name,
+                        price=price,
+                        note=saved_comment
+                    )
+
+                    st.session_state.lastoria_cart_notice = (
+                        f"✅ Добавено: {final_name}"
+                    )
+
+                    st.rerun()
+
+    # =====================================
+    # ПОТВЪРЖДЕНИЕ ЗА ДОБАВЕН АРТИКУЛ
+    # =====================================
+
+    if st.session_state.lastoria_cart_notice:
+        st.toast(
+            st.session_state.lastoria_cart_notice
+        )
+
+        st.session_state.lastoria_cart_notice = None
+
+    show_lastoria_signature()      
     # =====================================
     # КОЛИЧКА
     # =====================================
