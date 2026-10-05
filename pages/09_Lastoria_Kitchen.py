@@ -671,8 +671,7 @@ def get_kitchen_orders():
               AND mi.department = 'kitchen'
               AND oi.kitchen_status IN (
                   'NEW',
-                  'PREPARING',
-                  'READY'
+                  'PREPARING'
               )
             ORDER BY
                 o.created_at ASC,
