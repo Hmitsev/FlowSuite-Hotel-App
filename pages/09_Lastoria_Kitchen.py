@@ -8,13 +8,42 @@ from lastoria.database.db import get_connection
 # НАСТРОЙКИ
 # =====================================
 
+# =====================================
+# НАСТРОЙКИ
+# =====================================
+
 st.set_page_config(
     page_title="Кухня",
     page_icon="🔪",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
+
 import base64
 
+st.markdown("""
+<style>
+
+/* Скрива целия sidebar */
+[data-testid="stSidebar"] {
+    display: none !important;
+}
+
+section[data-testid="stSidebar"] {
+    display: none !important;
+}
+
+/* Скрива бутона за отваряне */
+[data-testid="collapsedControl"] {
+    display: none !important;
+}
+
+button[kind="header"] {
+    display: none !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 # =====================================
 # BACKGROUND
 # =====================================
