@@ -355,7 +355,7 @@ active_count = len(
 # =====================================
 
 st_autorefresh(
-    interval=15000,
+    interval=60000,
     key="waiter_refresh"
 )
 
