@@ -232,6 +232,8 @@ def render_lastoria_client() -> None:
 
     if "lastoria_cart" not in st.session_state:
         st.session_state.lastoria_cart = []
+    if "lastoria_cart_notice" not in st.session_state:
+        st.session_state.lastoria_cart_notice = None   
 
     if "lastoria_last_order_id" not in st.session_state:
         st.session_state.lastoria_last_order_id = None
@@ -357,22 +359,219 @@ def render_lastoria_client() -> None:
         st.stop()
 
     st.success(
-        f"{t['table']} {table_number}"
-    )
-    st.caption(
-        "📱 ↔️ За по-добра видимост може да завъртете телефона хоризонтално"
-    )
-    if st.button(
-        t["call_waiter"],
-        key="lastoria_call_waiter",
-        use_container_width=True
-    ):
+    # =====================================
+    # ЛЕНТА С МАСА И КОЛИЧКА
+    # =====================================
 
-        if call_waiter(table_number):
-            st.success("Сервитьорът е уведомен.")
-        else:
-            st.error("Масата не е намерена в базата данни.")
+    cart_count = len(
+        st.session_state.lastoria_cart
+    )
 
+    table_col, cart_col = st.columns(
+        [6, 2],
+        vertical_alignment="center"
+    )
+
+    with table_col:
+        st.success(
+            f"{t['table']} {table_number}"
+        )
+
+    with cart_col:
+
+        with st.popover(
+            f"🛒 Количка ({cart_count})",
+            use_container_width=True
+        ):
+
+            st.markdown(
+                f"### 🛒 Вашата поръчка"
+            )
+
+            st.caption(
+                f"Добавени артикули: {cart_count}"
+            )
+
+            if not st.session_state.lastoria_cart:
+
+                st.info(
+                    t["empty_cart"]
+                )
+
+            else:
+
+                grouped = {}
+
+                for cart_item in (
+                    st.session_state.lastoria_cart
+                ):
+
+                    group_key = (
+                        cart_item["id"],
+                        cart_item.get(
+                            "note",
+                            ""
+                        ),
+                        cart_item["name"]
+                    )
+
+                    if group_key not in grouped:
+
+                        grouped[group_key] = {
+                            "id": cart_item["id"],
+                            "name": cart_item["name"],
+                            "price": cart_item["price"],
+                            "note": cart_item.get(
+                                "note",
+                                ""
+                            ),
+                            "qty": 0
+                        }
+
+                    grouped[group_key]["qty"] += 1
+
+                cart_total = 0.0
+
+                for group_index, data in enumerate(
+                    grouped.values()
+                ):
+
+                    qty = data["qty"]
+
+                    row_total = (
+                        qty
+                        * float(data["price"])
+                    )
+
+                    cart_total += row_total
+
+                    st.markdown(
+                        f"**{data['name']}**"
+                    )
+
+                    if data["note"]:
+                        st.caption(
+                            f"📝 {data['note']}"
+                        )
+
+                    minus_col, qty_col, plus_col = (
+                        st.columns(
+                            [1, 2, 1],
+                            vertical_alignment="center"
+                        )
+                    )
+
+                    with minus_col:
+
+                        if st.button(
+                            "➖",
+                            key=(
+                                "lastoria_cart_minus_"
+                                f"{group_index}_"
+                                f"{data['id']}"
+                            ),
+                            use_container_width=True
+                        ):
+
+                            remove_one_from_cart(
+                                data["id"],
+                                data["note"]
+                            )
+
+                            st.rerun()
+
+                    with qty_col:
+
+                        st.markdown(
+                            (
+                                "<div style='"
+                                "text-align:center;"
+                                "font-size:18px;"
+                                "font-weight:800;"
+                                "color:#FFD54F;"
+                                "'>"
+                                f"x{qty}"
+                                "</div>"
+                            ),
+                            unsafe_allow_html=True
+                        )
+
+                    with plus_col:
+
+                        if st.button(
+                            "➕",
+                            key=(
+                                "lastoria_cart_plus_"
+                                f"{group_index}_"
+                                f"{data['id']}"
+                            ),
+                            use_container_width=True
+                        ):
+
+                            add_to_cart(
+                                item_id=data["id"],
+                                item_name=data["name"],
+                                price=data["price"],
+                                note=data["note"]
+                            )
+
+                            st.rerun()
+
+                    st.caption(
+                        f"€ {data['price']:.2f} × "
+                        f"{qty} = € {row_total:.2f}"
+                    )
+
+                    st.divider()
+
+                st.success(
+                    f"Общо: € {cart_total:.2f}"
+                )
+
+                clear_col, send_col = st.columns(
+                    2
+                )
+
+                with clear_col:
+
+                    if st.button(
+                        "🗑️ Изчисти",
+                        key="lastoria_clear_cart_popover",
+                        use_container_width=True
+                    ):
+
+                        st.session_state.lastoria_cart = []
+
+                        st.rerun()
+
+                with send_col:
+
+                    if st.button(
+                        t["order"],
+                        key="lastoria_send_order_popover",
+                        type="primary",
+                        use_container_width=True
+                    ):
+
+                        try:
+
+                            order_id = create_order(
+                                table_number,
+                                st.session_state.lastoria_cart
+                            )
+
+                            st.session_state.lastoria_cart = []
+
+                            st.session_state.lastoria_last_order_id = (
+                                order_id
+                            )
+
+                            st.rerun()
+
+                        except Exception as error:
+
+                            st.error(
+                                "Поръчката не 
 
     # =====================================
     # МЕНЮ
@@ -987,14 +1186,18 @@ def render_lastoria_client() -> None:
                             f"{item_name} - {selected_variant}"
                         )
 
-                    add_to_cart(
-                        item_id=item_id,
-                        item_name=final_name,
-                        price=price,
-                        note=saved_comment
-                    )
-
-                    st.rerun()
+                                        add_to_cart(
+                                            item_id=item_id,
+                                            item_name=final_name,
+                                            price=price,
+                                            note=saved_comment
+                                        )
+                    
+                                        st.toast(
+                                            f"✅ Добавено: {final_name}"
+                                        )
+                    
+                                        st.rerun()
     # =====================================
     # КОЛИЧКА
     # =====================================
