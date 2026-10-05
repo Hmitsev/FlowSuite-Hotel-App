@@ -13,29 +13,22 @@ from lastoria.database.db import get_connection
 st.set_page_config(
     page_title="Сервитьор",
     page_icon="🤵",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 st.markdown("""
 <style>
 
-/* Скрива всички стрелки в Pages менюто */
-[data-testid="stSidebarNav"] svg {
-    display: none !important;
+[data-testid="stSidebar"] {
+    display:none !important;
 }
 
-/* Скрива бутона за expand */
-[data-testid="stSidebarNav"] button {
-    display: none !important;
-}
-
-/* Скрива всички chevron икони */
-[data-testid="stSidebarNav"] [data-testid="stIconMaterial"] {
-    display: none !important;
+section[data-testid="stSidebar"] {
+    display:none !important;
 }
 
 </style>
 """, unsafe_allow_html=True)
-
 # =====================================
 # BACKGROUND
 # =====================================
