@@ -578,7 +578,7 @@ def mark_notification_read(notification_id):
 
         cur.close()
         conn.close()
-        # =====================================
+# =====================================
 # ГРУПИРАНЕ НА ТЕКУЩИТЕ СМЕТКИ ПО МАСИ
 # =====================================
 
@@ -773,6 +773,37 @@ with waiter_bell_col:
             """,
             unsafe_allow_html=True
         )
+        # =====================================
+# ПОВИКВАНИЯ НА СЕРВИТЬОР
+# =====================================
+
+if notifications:
+
+    st.markdown("### 🔔 Повиквания")
+
+    for notification in notifications:
+
+        notification_id = notification[0]
+        table_id = notification[1]
+        message = notification[3]
+
+        col1, col2 = st.columns([5, 1])
+
+        with col1:
+            st.warning(message)
+
+        with col2:
+
+            if st.button(
+                "✅ Обслужена",
+                key=f"read_notification_{notification_id}"
+            ):
+
+                mark_notification_read(
+                    notification_id
+                )
+
+                st.rerun()
 # =====================================
 # КОМПАКТЕН ИЗГЛЕД: СМЕТКИ ПО МАСИ
 # =====================================
