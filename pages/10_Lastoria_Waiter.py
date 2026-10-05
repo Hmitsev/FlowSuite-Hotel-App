@@ -5,6 +5,16 @@ from streamlit_autorefresh import st_autorefresh
 
 from lastoria.database.db import get_connection
 
+
+# =====================================
+# НАСТРОЙКИ НА СТРАНИЦАТА
+# =====================================
+
+st.set_page_config(
+    page_title="Сервитьор",
+    page_icon="🤵",
+    layout="wide"
+)
 st.markdown("""
 <style>
 
@@ -25,15 +35,6 @@ st.markdown("""
 
 </style>
 """, unsafe_allow_html=True)
-# =====================================
-# НАСТРОЙКИ НА СТРАНИЦАТА
-# =====================================
-
-st.set_page_config(
-    page_title="Сервитьор",
-    page_icon="🤵",
-    layout="wide"
-)
 
 # =====================================
 # BACKGROUND
