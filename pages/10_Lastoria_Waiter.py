@@ -18,18 +18,18 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* Скрива стрелките в навигацията */
+/* Скрива всички стрелки в Pages менюто */
+[data-testid="stSidebarNav"] svg {
+    display: none !important;
+}
+
+/* Скрива бутона за expand */
 [data-testid="stSidebarNav"] button {
     display: none !important;
 }
 
-/* Скрива expand/collapse */
-[data-testid="stSidebarNavCollapseButton"] {
-    display: none !important;
-}
-
-/* Скрива хедъра на навигацията */
-[data-testid="stSidebarNav"] div[role="button"] {
+/* Скрива всички chevron икони */
+[data-testid="stSidebarNav"] [data-testid="stIconMaterial"] {
     display: none !important;
 }
 
