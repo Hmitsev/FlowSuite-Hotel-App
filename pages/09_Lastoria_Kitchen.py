@@ -633,7 +633,7 @@ with daily_menu_col:
 # =====================================
 
 st_autorefresh(
-    interval=15000,
+    interval=60000,
     key="kitchen_refresh"
 )
 
