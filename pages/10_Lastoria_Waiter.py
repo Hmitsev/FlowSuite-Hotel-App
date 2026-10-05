@@ -947,47 +947,43 @@ if view_mode == "🧾 Сметки по маси":
                         f"⏳ Има {len(blocking_items)} "
                         "артикула, които още не са готови."
                     )
+                                    confirm_payment = st.checkbox(
+                                        "Потвърждавам, че сметката е платена",
+                                        key=f"confirm_table_payment_{table_id}",
+                                        disabled=not can_complete_table
+                                    )
+                    
+                                    button_text = (
+                                        f"💳 Приключи и плати Маса № {table_number}"
+                                    )
+                    
+                                    if st.button(
+                                        button_text,
+                                        key=f"complete_table_bill_{table_id}",
+                                        type="primary",
+                                        use_container_width=True,
+                                        disabled=(
+                                            not can_complete_table
+                                            or not confirm_payment
+                                        )
+                                    ):
+                                        try:
+                                            complete_table_bill(table_id)
+                    
+                                            st.success(
+                                                f"Маса № {table_number} е приключена."
+                                            )
+                    
+                                            st.rerun()
+                    
+                                        except Exception as error:
+                                            st.error(
+                                                f"Грешка при приключване: {error}"
+                                            )
+                    
+                        st.stop()
 
-                confirm_payment = st.checkbox(
-                    "Потвърждавам, че сметката "
-                    "е платена",
-                    key=(
-                        "confirm_table_payment_"
-                        f"{table_id}"
-                    ),
-                    disabled=not can_complete_table
-                )
-                                button_text = (
-                    f"💳 Приключи и плати Маса № {table_number}"
-                )
-
-                if st.button(
-                    button_text,
-                    key=f"complete_table_bill_{table_id}",
-                    type="primary",
-                    use_container_width=True,
-                    disabled=(
-                        not can_complete_table
-                        or not confirm_payment
-                    )
-                ):
-                    try:
-                        complete_table_bill(table_id)
-
-                        st.success(
-                            f"Маса № {table_number} е приключена."
-                        )
-
-                        st.rerun()
-
-                    except Exception as error:
-                        st.error(
-                            f"Грешка при приключване: {error}"
-                        )
-
-    st.stop()
-
-
+                
 # =====================================
 # КОМПАКТЕН АРХИВ НА ПРИКЛЮЧЕНИТЕ СМЕТКИ
 # =====================================
