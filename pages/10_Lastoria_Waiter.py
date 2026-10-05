@@ -251,8 +251,7 @@ def get_waiter_orders():
               AND oi.kitchen_status IN (
                   'NEW',
                   'PREPARING',
-                  'READY',
-                  'SERVED'
+                  'READY'
               )
             ORDER BY
                 o.created_at ASC,
