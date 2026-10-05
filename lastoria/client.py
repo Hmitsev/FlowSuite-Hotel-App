@@ -363,21 +363,22 @@ def render_lastoria_client() -> None:
     # ЛЕНТА С МАСА И КОЛИЧКА
     # =====================================
 
-    cart_count = len(
-        st.session_state.lastoria_cart
-    )
-
-    table_col, cart_col = st.columns(
-        [6, 2],
-        vertical_alignment="center"
-    )
-
-    with table_col:
-        st.success(
-            f"{t['table']} {table_number}"
+        cart_count = len(
+            st.session_state.lastoria_cart
         )
-
-    with cart_col:
+    
+        table_col, cart_col = st.columns(
+            [6, 2],
+            vertical_alignment="center"
+        )
+    
+        with table_col:
+            st.success(
+                f"{t['table']} {table_number}"
+            )
+    
+    
+        with cart_col:
 
         with st.popover(
             f"🛒 Количка ({cart_count})",
