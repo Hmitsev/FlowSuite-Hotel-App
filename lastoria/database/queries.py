@@ -79,33 +79,29 @@ def get_items_by_category(category_name):
 # СЪЗДАВАНЕ НА ПОРЪЧКА
 # =====================================
 
-def create_order(table_number, cart):
-    if not cart:
-        raise ValueError("Количката е празна.")
-            raw_table = str(table_number).strip()
+    raw_table = str(table_number).strip()
 
-            normalized = (
-                raw_table.lower()
-                .replace("т", "t")
-                .replace("а", "a")
-                .replace("-", "_")
+    if raw_table.lower() in [
+        "take_away",
+        "takeaway",
+        "take-away"
+    ]:
+        table_number = "Take_Away"
+
+    else:
+        try:
+            table_number = int(raw_table)
+
+        except (TypeError, ValueError) as error:
+            raise ValueError(
+                f"DEBUG VALUE = [{raw_table}]"
+            ) from error
+
+        if table_number < 1:
+            raise ValueError(
+                "Номерът на масата трябва да бъде по-голям от 0."
             )
-        
-            if normalized in ["take_away", "takeaway"]:
-                raise ValueError(f"DEBUG TAKEAWAY = [{raw_table}]")
-        
-            try:
-                table_number = int(raw_table)
-        
-            except (TypeError, ValueError) as error:
-                raise ValueError(
-                    f"DEBUG VALUE = [{raw_table}]"
-                ) from error
-        
-            if table_number < 1:
-                raise ValueError(
-                    "Номерът на масата трябва да бъде по-голям от 0."
-                )
+
 
     conn = get_connection()
     cur = conn.cursor()
