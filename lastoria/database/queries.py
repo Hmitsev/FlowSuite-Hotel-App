@@ -256,7 +256,7 @@ def create_order(table_number, cart):
                 )
 
             )
-
+        )
         conn.commit()
 
         return order_id
