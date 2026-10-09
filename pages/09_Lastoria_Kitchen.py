@@ -8,10 +8,6 @@ from lastoria.database.db import get_connection
 # НАСТРОЙКИ
 # =====================================
 
-# =====================================
-# НАСТРОЙКИ
-# =====================================
-
 st.set_page_config(
     page_title="Кухня",
     page_icon="🔪",
@@ -975,8 +971,22 @@ else:
 
                 with item_col:
 
-                    st.write(
-                        f"**{item_name} x{quantity}**"
+                    st.markdown(
+                        f"""
+                        <div style="
+                            border:2px solid #FF4D4D;
+                            background:rgba(60,0,0,0.35);
+                            border-radius:10px;
+                            padding:12px;
+                            margin-bottom:6px;
+                            color:#FFFFFF;
+                            font-size:22px;
+                            font-weight:900;
+                        ">
+                            {item_name} x{quantity}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
                     )
 
                     if notes:
