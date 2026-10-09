@@ -85,11 +85,18 @@ def create_order(table_number, cart):
 
     raw_table = str(table_number).strip()
 
-    if raw_table.lower() in [
+    normalized_table = (
+        raw_table.lower()
+        .replace("т", "t")
+        .replace("а", "a")
+        .replace("-", "_")
+        .replace(" ", "")
+    )
+
+    if normalized_table in {
         "take_away",
-        "takeaway",
-        "take-away"
-    ]:
+        "takeaway"
+    }:
         table_number = 999
 
     else:
@@ -98,7 +105,7 @@ def create_order(table_number, cart):
 
         except (TypeError, ValueError) as error:
             raise ValueError(
-                f"DEBUG VALUE = [{raw_table}]"
+                f"Невалидна стойност за маса: {raw_table}"
             ) from error
 
         if table_number < 1:
@@ -108,6 +115,7 @@ def create_order(table_number, cart):
 
     conn = get_connection()
     cur = conn.cursor()
+    
     try:
         # Намираме вътрешното ID на масата
         cur.execute(
@@ -240,10 +248,14 @@ def create_order(table_number, cart):
                 table_id,
                 (
                     f"Нова поръчка №{order_id} "
-                    f"от маса №{table_number}"
+                    + (
+                        "за TAKEAWAY"
+                        if table_number == 999
+                        else f"от маса №{table_number}"
+                    )
                 )
+
             )
-        )
 
         conn.commit()
 
