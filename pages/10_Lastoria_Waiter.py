@@ -12,7 +12,6 @@ from lastoria.database.db import get_connection
 
 st.set_page_config(
     page_title="Сервитьор",
-    page_icon="🤵",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
