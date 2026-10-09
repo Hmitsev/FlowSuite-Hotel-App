@@ -90,7 +90,7 @@ def create_order(table_number, cart):
         "takeaway",
         "take-away"
     ]:
-        table_number = "Take_Away"
+        table_number = 999
 
     else:
         try:
