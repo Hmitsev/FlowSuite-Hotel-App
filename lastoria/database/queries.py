@@ -79,6 +79,10 @@ def get_items_by_category(category_name):
 # СЪЗДАВАНЕ НА ПОРЪЧКА
 # =====================================
 
+def create_order(table_number, cart):
+    if not cart:
+        raise ValueError("Количката е празна.")
+
     raw_table = str(table_number).strip()
 
     if raw_table.lower() in [
@@ -102,10 +106,8 @@ def get_items_by_category(category_name):
                 "Номерът на масата трябва да бъде по-голям от 0."
             )
 
-
     conn = get_connection()
     cur = conn.cursor()
-
     try:
         # Намираме вътрешното ID на масата
         cur.execute(
