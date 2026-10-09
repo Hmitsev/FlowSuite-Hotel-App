@@ -377,11 +377,11 @@ def render_lastoria_client() -> None:
             )
             st.stop()
 
-        if table_number < 1 or table_number > 20:
+        if table_number < 1:
             st.error(
                 "Невалиден QR код. "
                 "Номерът на масата трябва да бъде "
-                "между 1 и 20."
+                "по-голям от 0."
             )
             st.stop()
 
