@@ -1328,20 +1328,26 @@ else:
                     st.markdown(
                         f"""
                         <div style="
-                            border:2px solid #FF4D4D;
-                            background:rgba(60,0,0,0.35);
-                            border-radius:10px;
-                            padding:12px;
-                            margin-bottom:6px;
+                            border:3px solid #FF4D4D;
+                            background:rgba(80,0,0,0.45);
+                            border-radius:12px;
+                            padding:14px;
+                            margin-bottom:8px;
                             color:#FFFFFF;
-                            font-size:22px;
+                            font-size:24px;
                             font-weight:900;
+                            box-shadow:0 0 12px rgba(255,77,77,0.35);
                         ">
-                            {item_name} x{quantity}
+                            🍽️ {item_name} x{quantity}
                         </div>
                         """,
                         unsafe_allow_html=True
                     )
+                
+                    if notes:
+                        st.caption(
+                            f"📝 Коментар: {notes}"
+                        )
 
                     if notes:
                         st.caption(
