@@ -401,9 +401,7 @@ else:
     )
 
     with table_col:
-        st.success(
-            f"{t['table']} {table_number}"
-        )
+        st.success(table_display)
 
     with cart_col:
         with st.popover(
