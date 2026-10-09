@@ -341,51 +341,51 @@ def render_lastoria_client() -> None:
         )
 
 
-# =====================================
-# МАСА / TAKEAWAY ОТ QR КОДА
-# =====================================
+    # =====================================
+    # МАСА / TAKEAWAY ОТ QR КОДА
+    # =====================================
 
-raw_table_number = str(
-    st.query_params.get("table", "1")
-).strip()
+    raw_table_number = str(
+        st.query_params.get("table", "1")
+    ).strip()
 
-# Приемаме няколко варианта, но ги уеднаквяваме
-takeaway_values = {
-    "take_away",
-    "takeaway",
-    "take-away"
-}
+    # Приемаме няколко варианта, но ги уеднаквяваме
+    takeaway_values = {
+        "take_away",
+        "takeaway",
+        "take-away"
+    }
 
-is_takeaway = (
-    raw_table_number.lower()
-    in takeaway_values
-)
+    is_takeaway = (
+        raw_table_number.lower()
+        in takeaway_values
+    )
 
-if is_takeaway:
-    table_number = "Take_Away"
-    table_display = "🥡 TAKEAWAY"
+    if is_takeaway:
+        table_number = "Take_Away"
+        table_display = "🥡 TAKEAWAY"
 
-else:
-    try:
-        table_number = int(raw_table_number)
+    else:
+        try:
+            table_number = int(raw_table_number)
 
-    except (TypeError, ValueError):
-        st.error(
-            "Невалиден QR код. "
-            "Използвайте номер на маса между 1 и 20 "
-            "или Take_Away."
-        )
-        st.stop()
+        except (TypeError, ValueError):
+            st.error(
+                "Невалиден QR код. "
+                "Използвайте номер на маса между 1 и 20 "
+                "или Take_Away."
+            )
+            st.stop()
 
-    if table_number < 1 or table_number > 20:
-        st.error(
-            "Невалиден QR код. "
-            "Номерът на масата трябва да бъде "
-            "между 1 и 20."
-        )
-        st.stop()
+        if table_number < 1 or table_number > 20:
+            st.error(
+                "Невалиден QR код. "
+                "Номерът на масата трябва да бъде "
+                "между 1 и 20."
+            )
+            st.stop()
 
-    table_display = f"{t['table']} {table_number}"
+        table_display = f"{t['table']} {table_number}"
 
     # =====================================
     # ЛЕНТА С МАСА И КОЛИЧКА
