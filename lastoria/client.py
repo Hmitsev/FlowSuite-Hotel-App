@@ -341,7 +341,7 @@ def render_lastoria_client() -> None:
         )
 
 
-    # =====================================
+        # =====================================
     # МАСА / TAKEAWAY ОТ QR КОДА
     # =====================================
 
@@ -349,19 +349,23 @@ def render_lastoria_client() -> None:
         st.query_params.get("table", "1")
     ).strip()
 
-    # Приемаме няколко варианта, но ги уеднаквяваме
-    takeaway_values = {
-        "take_away",
-        "takeaway",
-        "take-away"
-    }
-
-    is_takeaway = (
+    # Уеднаквяване на латински и кирилски Т/А
+    normalized_table = (
         raw_table_number.lower()
-        in takeaway_values
+        .replace("т", "t")
+        .replace("а", "a")
+        .replace("-", "_")
+        .replace(" ", "")
     )
 
+    is_takeaway = normalized_table in {
+        "take_away",
+        "takeaway"
+    }
+
     if is_takeaway:
+        # В базата table_number е INTEGER,
+        # затова Takeaway използва служебна маса 999.
         table_number = 999
         table_display = "🥡 TAKEAWAY"
 
@@ -372,7 +376,7 @@ def render_lastoria_client() -> None:
         except (TypeError, ValueError):
             st.error(
                 "Невалиден QR код. "
-                "Използвайте номер на маса между 1 и 20 "
+                "Използвайте положителен номер на маса "
                 "или Take_Away."
             )
             st.stop()
