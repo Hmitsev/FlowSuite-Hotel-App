@@ -888,6 +888,12 @@ if view_mode == "🧾 Сметки по маси":
                 )
 
                 with header_col:
+                    display_table = (
+                        "🥡 TAKEAWAY"
+                        if int(table_number) == 999
+                        else f"🍽️ Маса № {table_number}"
+                    )
+                    
                     st.markdown(
                         f"""
                         <div style="
@@ -895,7 +901,7 @@ if view_mode == "🧾 Сметки по маси":
                             font-size:34px;
                             font-weight:900;
                         ">
-                            🍽️ Маса № {table_number}
+                            {display_table}
                         </div>
                         """,
                         unsafe_allow_html=True
