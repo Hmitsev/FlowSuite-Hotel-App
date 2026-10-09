@@ -905,6 +905,12 @@ else:
                     f"🍽️ Поръчка №{order_id}"
                 )
 
+                display_table = (
+                    "🥡 TAKEAWAY"
+                    if table_number == 999
+                    else f"Маса № {table_number}"
+                )
+                
                 st.markdown(
                     f"""
                     <div style="
@@ -914,12 +920,11 @@ else:
                         margin-top:5px;
                         margin-bottom:10px;
                     ">
-                       Маса № {table_number}
+                       {display_table}
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
-
             with time_col:
 
                 if created_at:
