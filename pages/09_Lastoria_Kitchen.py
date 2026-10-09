@@ -997,20 +997,6 @@ else:
                         st.success("🟢 Готово")
 
 
-                if item_status == "NEW":
-
-                    st.caption("🔴 Не е започнато")
-
-                elif item_status == "PREPARING":
-
-                    st.caption("🟡 Приготвя се")
-
-                elif item_status == "READY":
-
-                    st.caption("🟢 Готово")
-
-                st.divider()
-
             # =====================================
             # БУТОНИ ЗА ЦЯЛАТА ПОРЪЧКА
             # =====================================
