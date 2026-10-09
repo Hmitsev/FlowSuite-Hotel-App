@@ -362,7 +362,7 @@ def render_lastoria_client() -> None:
     )
 
     if is_takeaway:
-        table_number = "Take_Away"
+        table_number = 999
         table_display = "🥡 TAKEAWAY"
 
     else:
