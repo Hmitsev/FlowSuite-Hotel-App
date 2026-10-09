@@ -83,15 +83,22 @@ def create_order(table_number, cart):
     if not cart:
         raise ValueError("Количката е празна.")
 
-    try:
-        table_number = int(table_number)
-    except (TypeError, ValueError) as error:
-        raise ValueError("Невалиден номер на маса.") from error
-
-    if table_number < 1 or table_number > 20:
-        raise ValueError(
-            "Номерът на масата трябва да бъде между 1 и 20."
-        )
+    # Take_Away поръчки
+    if str(table_number).strip().lower() == "take_away":
+        table_number = "Take_Away"
+    
+    else:
+        try:
+            table_number = int(table_number)
+    
+        except (TypeError, ValueError) as error:
+            raise ValueError("Невалиден номер на маса.") from error
+    
+        if table_number < 1:
+            raise ValueError(
+                "Номерът на масата трябва да бъде по-голям от 0."
+            )
+    
 
     conn = get_connection()
     cur = conn.cursor()
