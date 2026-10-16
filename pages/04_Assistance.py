@@ -557,11 +557,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-department_options = [
-    t["maintenance"],
-    t["housekeeping"]
-]
-
 col1, col2 = st.columns(2)
 
 with col1:
@@ -589,12 +584,26 @@ if housekeeping_selected:
 
 selected_department = st.session_state.selected_department
 
+# Визуална индикация за избраната категория
 if selected_department == "MAINTENANCE":
+
+    st.success(
+        "✅ Избрана категория: Технически проблем\n\n"
+        "🔧 От менюто по-долу можете да изберете конкретния технически проблем."
+    )
+
     available_requests = maintenance_requests.get(
         language,
         maintenance_requests["bg"]
     )
+
 else:
+
+    st.success(
+        "✅ Избрана категория: Камериерско обслужване\n\n"
+        "🧹 От менюто по-долу можете да изберете конкретната услуга."
+    )
+
     available_requests = housekeeping_requests.get(
         language,
         housekeeping_requests["bg"]
