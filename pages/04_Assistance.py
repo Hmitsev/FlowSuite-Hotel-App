@@ -300,7 +300,13 @@ st.image(
 st.markdown(
     f"""
     <div class="assistance-header">
-        <div 
+        <div class="assistance-subtitle">
+            {t["subtitle"]}
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # =========================================================
 # УСПЕШНО ИЗПРАТЕНА ЗАЯВКА
