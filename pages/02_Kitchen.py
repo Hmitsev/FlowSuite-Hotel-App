@@ -2,8 +2,6 @@ import base64
 from pathlib import Path
 
 import streamlit as st
-from streamlit_autorefresh import st_autorefresh
-
 from database.db import get_connection
 
 
@@ -274,15 +272,13 @@ with logout_col:
         st.session_state.kitchen_auth = False
         st.rerun()
 
-
-# =====================================
-# АВТОМАТИЧНО ОБНОВЯВАНЕ
-# =====================================
-
-st_autorefresh(
-    interval=30000,
-    key="hotel_kitchen_refresh"
-)
+st.markdown("""
+<script>
+setTimeout(function() {
+    window.parent.location.reload();
+}, 30000);
+</script>
+""", unsafe_allow_html=True)
 # =====================================
 # BAR ITEMS FILTER
 # =====================================
@@ -925,21 +921,6 @@ else:
                         )
 
                         st.rerun()
-
-
-# =====================================
-# РЪЧНО ОБНОВЯВАНЕ
-# =====================================
-
-st.divider()
-
-if st.button(
-    "🔄 Обнови поръчките",
-    key="refresh_kitchen_orders",
-    use_container_width=True
-):
-    st.rerun()
-
 
 # =====================================
 # БРАНДИРАНЕ
