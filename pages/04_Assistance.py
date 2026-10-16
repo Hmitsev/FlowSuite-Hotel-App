@@ -293,7 +293,7 @@ room_number = st.session_state.get(
 # БАНЕР
 # =========================================================
 st.image(
-    "assets/help_banner.png",
+    "assets/Designer (24).png",
     use_container_width=True
 )
 
