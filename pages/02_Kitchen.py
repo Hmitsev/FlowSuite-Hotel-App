@@ -488,52 +488,50 @@ def kitchen_live_dashboard():
         )
 
         st.session_state.kitchen_error = None
-# =====================================
-# ЗАРЕЖДАНЕ НА ДАННИТЕ
-# =====================================
+    # =====================================
+    # ЗАРЕЖДАНЕ НА ДАННИТЕ
+    # =====================================
 
-try:
-    rows = get_kitchen_orders()
+    try:
+        rows = get_kitchen_orders()
 
-except Exception as error:
-    st.error(
-        "Поръчките не могат да бъдат заредени.\n\n"
-        f"Причина: {error}"
-    )
+    except Exception as error:
+        st.error(
+            "Поръчките не могат да бъдат заредени.\n\n"
+            f"Причина: {error}"
+        )
 
-    st.stop()
+        return
 
+    # =====================================
+    # ГРУПИРАНЕ ПО ПОРЪЧКА
+    # =====================================
 
-# =====================================
-# ГРУПИРАНЕ ПО ПОРЪЧКА
-# =====================================
+    orders = {}
 
-orders = {}
+    for row in rows:
+        order_id = row[0]
 
-for row in rows:
-    order_id = row[0]
+        if order_id not in orders:
+            orders[order_id] = {
+                "room_number": row[1],
+                "created_at": row[2],
+                "order_status": row[3],
+                "total_amount": row[4],
+                "items": []
+            }
 
-    if order_id not in orders:
-        orders[order_id] = {
-            "room_number": row[1],
-            "created_at": row[2],
-            "order_status": row[3],
-            "total_amount": row[4],
-            "items": []
-        }
-
-    orders[order_id]["items"].append(
-        {
-            "order_item_id": row[5],
-            "item_id": row[6],
-            "item_name": row[7],
-            "quantity": row[8],
-            "unit_price": row[9],
-            "notes": row[10],
-            "item_status": row[11]
-        }
-    )
-
+        orders[order_id]["items"].append(
+            {
+                "order_item_id": row[5],
+                "item_id": row[6],
+                "item_name": row[7],
+                "quantity": row[8],
+                "unit_price": row[9],
+                "notes": row[10],
+                "item_status": row[11]
+            }
+        )
 
 # =====================================
 # ОБОБЩЕНИЕ
