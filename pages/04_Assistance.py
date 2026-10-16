@@ -590,13 +590,19 @@ with col2:
 # Запаметяване на избраната категория
 if maintenance_selected:
     st.session_state.selected_department = "MAINTENANCE"
-    st.session_state.pop("assistance_request_type", None)
-    st.rerun()
+
+    st.session_state.pop(
+        "assistance_request_type",
+        None
+    )
 
 if housekeeping_selected:
     st.session_state.selected_department = "HOUSEKEEPING"
-    st.session_state.pop("assistance_request_type", None)
-    st.rerun()
+
+    st.session_state.pop(
+        "assistance_request_type",
+        None
+    )
 
 selected_department = st.session_state.selected_department
 
