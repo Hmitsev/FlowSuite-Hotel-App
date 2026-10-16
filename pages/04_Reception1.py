@@ -234,75 +234,6 @@ def get_room_service_orders():
     finally:
         cur.close()
         conn.close()
-        # =====================================
-# ДОБАВЯНЕ НА ROOM SERVICE КЪМ СМЕТКИТЕ ПО СТАИ
-# =====================================
-def sync_room_service_charges():
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        cur.execute(
-            """
-            INSERT INTO room_charges (
-                room_id,
-                source_type,
-                source_id,
-                source_item_id,
-                source_key,
-                description,
-                quantity,
-                unit_price,
-                total_amount,
-                charge_status,
-                created_at,
-                updated_at
-            )
-            SELECT
-                rso.room_id,
-                'ROOM_SERVICE',
-                rso.id,
-                rsoi.id,
-                'ROOM_SERVICE_ITEM:' || rsoi.id::text,
-                rsoi.item_name,
-                COALESCE(rsoi.quantity, 1),
-                COALESCE(rsoi.unit_price, 0),
-                (
-                    COALESCE(rsoi.quantity, 1)
-                    * COALESCE(rsoi.unit_price, 0)
-                ),
-                'OPEN',
-                COALESCE(
-                    rso.created_at,
-                    CURRENT_TIMESTAMP
-                ),
-                CURRENT_TIMESTAMP
-            FROM room_service_orders rso
-            JOIN room_service_order_items rsoi
-                ON rsoi.order_id = rso.id
-            WHERE rso.order_status <> 'CANCELLED'
-            ON CONFLICT (source_key)
-            DO UPDATE SET
-                description = EXCLUDED.description,
-                quantity = EXCLUDED.quantity,
-                unit_price = EXCLUDED.unit_price,
-                total_amount = EXCLUDED.total_amount,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE room_charges.charge_status = 'OPEN'
-            """
-        )
-
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cur.close()
-        conn.close()
-
 
 # =====================================
 # ИСТОРИЯ НА ПРИКЛЮЧЕНИТЕ ПОРЪЧКИ
@@ -347,15 +278,12 @@ def get_completed_room_service_orders():
     finally:
         cur.close()
         conn.close()
-
-
+        # =====================================
+# ПРОМЯНА НА ROOM SERVICE СТАТУС
 # =====================================
-# ПРОМЯНА НА СТАТУС НА ACTIVITY ЗАЯВКА
-# =====================================
-def update_activity_request_status(
-    request_id,
-    new_status,
-    total_amount=None
+def update_room_service_order_status(
+    order_id,
+    new_status
 ):
     conn = get_connection()
     cur = conn.cursor()
@@ -365,89 +293,42 @@ def update_activity_request_status(
             new_status
         ).strip().upper()
 
-        if normalized_status in (
-            "CONFIRMED",
+        allowed_statuses = (
+            "NEW",
+            "PREPARING",
+            "READY",
+            "DELIVERING",
             "COMPLETED"
-        ):
-            if total_amount is None:
-                raise ValueError(
-                    "Въведете цена на Activity услугата."
-                )
+        )
 
-            normalized_amount = float(
-                total_amount
+        if normalized_status not in allowed_statuses:
+            raise ValueError(
+                "Невалиден Room Service статус."
             )
 
-            if normalized_amount <= 0:
-                raise ValueError(
-                    "Цената трябва да бъде по-голяма от 0."
-                )
-
-            cur.execute(
-                """
-                UPDATE activity_requests
-                SET
-                    request_status = %s,
-                    total_amount = %s,
-                    updated_at = CURRENT_TIMESTAMP,
-                    completed_at = CASE
-                        WHEN %s = 'COMPLETED'
-                        THEN CURRENT_TIMESTAMP
-                        ELSE NULL
-                    END
-                WHERE id = %s
-                """,
-                (
-                    normalized_status,
-                    normalized_amount,
-                    normalized_status,
-                    request_id
-                )
+        cur.execute(
+            """
+            UPDATE room_service_orders
+            SET
+                order_status = %s,
+                updated_at = CURRENT_TIMESTAMP,
+                completed_at = CASE
+                    WHEN %s = 'COMPLETED'
+                    THEN CURRENT_TIMESTAMP
+                    ELSE NULL
+                END
+            WHERE id = %s
+            """,
+            (
+                normalized_status,
+                normalized_status,
+                order_id
             )
+        )
 
-        elif normalized_status == "CANCELLED":
-            cur.execute(
-                """
-                UPDATE activity_requests
-                SET
-                    request_status = 'CANCELLED',
-                    updated_at = CURRENT_TIMESTAMP,
-                    completed_at = CURRENT_TIMESTAMP
-                WHERE id = %s
-                """,
-                (request_id,)
-            )
-
-            # Анулира се само OPEN финансова позиция.
-            # POSTED позиция не се променя.
-            cur.execute(
-                """
-                UPDATE room_charges
-                SET
-                    charge_status = 'CANCELLED',
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE source_key = %s
-                  AND charge_status = 'OPEN'
-                """,
-                (
-                    f"ACTIVITY:{request_id}",
-                )
-            )
-
-        else:
-            cur.execute(
-                """
-                UPDATE activity_requests
-                SET
-                    request_status = %s,
-                    updated_at = CURRENT_TIMESTAMP,
-                    completed_at = NULL
-                WHERE id = %s
-                """,
-                (
-                    normalized_status,
-                    request_id
-                )
+        if cur.rowcount == 0:
+            raise ValueError(
+                "Room Service поръчката не е намерена."
             )
 
         conn.commit()
@@ -459,6 +340,7 @@ def update_activity_request_status(
     finally:
         cur.close()
         conn.close()
+
 # =====================================
 # ЗАРЕЖДАНЕ НА ACTIVITIES ЗАЯВКИТЕ
 # =====================================
@@ -476,7 +358,8 @@ def get_activity_requests():
                 ar.activity_name,
                 ar.guest_message,
                 ar.request_status,
-                ar.created_at
+                ar.created_at,
+                ar.total_amount
             FROM activity_requests ar
             JOIN hotel_rooms hr
                 ON hr.id = ar.room_id
@@ -540,7 +423,6 @@ def get_new_activity_notifications():
     finally:
         cur.close()
         conn.close()
-
 # =====================================
 # ПРОМЯНА НА СТАТУС НА ACTIVITY ЗАЯВКА
 # =====================================
@@ -556,6 +438,19 @@ def update_activity_request_status(
         normalized_status = str(
             new_status
         ).strip().upper()
+
+        allowed_statuses = (
+            "NEW",
+            "CONTACTED",
+            "CONFIRMED",
+            "COMPLETED",
+            "CANCELLED"
+        )
+
+        if normalized_status not in allowed_statuses:
+            raise ValueError(
+                "Невалиден Activity статус."
+            )
 
         if normalized_status in (
             "CONFIRMED",
@@ -610,8 +505,6 @@ def update_activity_request_status(
                 (request_id,)
             )
 
-            # Анулира се само OPEN финансова позиция.
-            # POSTED позиция не се променя.
             cur.execute(
                 """
                 UPDATE room_charges
@@ -642,53 +535,19 @@ def update_activity_request_status(
                 )
             )
 
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cur.close()
-        conn.close()
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        if new_status in (
-            "COMPLETED",
-            "CANCELLED"
-        ):
             cur.execute(
                 """
-                UPDATE activity_requests
+                UPDATE room_charges
                 SET
-                    request_status = %s,
-                    updated_at = CURRENT_TIMESTAMP,
-                    completed_at = CURRENT_TIMESTAMP
-                WHERE id = %s
+                    charge_status = 'CANCELLED',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE source_key = %s
+                  AND charge_status = 'OPEN'
                 """,
                 (
-                    new_status,
-                    request_id
+                    f"ACTIVITY:{request_id}",
                 )
-            )
-
-        else:
-            cur.execute(
-                """
-                UPDATE activity_requests
-                SET
-                    request_status = %s,
-                    updated_at = CURRENT_TIMESTAMP,
-                    completed_at = NULL
-                WHERE id = %s
-                """,
-                (
-                    new_status,
-                    request_id
-                )
-            )
+            )    
 
         conn.commit()
 
@@ -1076,8 +935,6 @@ def update_spa_request_status(
                 (request_id,)
             )
 
-            # Анулира се само OPEN финансова позиция.
-            # Вече POSTED позиция не се променя.
             cur.execute(
                 """
                 UPDATE room_charges
@@ -1105,6 +962,20 @@ def update_spa_request_status(
                 (
                     normalized_status,
                     request_id
+                )
+            )
+
+            cur.execute(
+                """
+                UPDATE room_charges
+                SET
+                    charge_status = 'CANCELLED',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE source_key = %s
+                  AND charge_status = 'OPEN'
+                """,
+                (
+                    f"SPA:{request_id}",
                 )
             )
 
@@ -1280,7 +1151,7 @@ def complete_room_bill(room_id):
     finally:
         cur.close()
         conn.close()
-        # =====================================
+# =====================================
 # ROOM SERVICE КЪМ СМЕТКИТЕ ПО СТАИ
 # САМО СЛЕД COMPLETED
 # =====================================
@@ -1344,8 +1215,8 @@ def sync_room_service_charges():
                 unit_price = EXCLUDED.unit_price,
                 total_amount = EXCLUDED.total_amount,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE room_charges.charge_status = 'OPEN'
-            """
+                WHERE room_charges.charge_status = 'OPEN'
+                """
         )
 
         conn.commit()
@@ -1357,160 +1228,7 @@ def sync_room_service_charges():
     finally:
         cur.close()
         conn.close()
-        # =====================================
-# SPA КЪМ СМЕТКИТЕ ПО СТАИ
-# САМО СЛЕД CONFIRMED ИЛИ COMPLETED
-# =====================================
-def sync_spa_charges():
 
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        cur.execute(
-            """
-            INSERT INTO room_charges (
-                room_id,
-                source_type,
-                source_id,
-                source_item_id,
-                source_key,
-                description,
-                quantity,
-                unit_price,
-                total_amount,
-                charge_status,
-                created_at,
-                updated_at
-            )
-            SELECT
-                sr.room_id,
-                'SPA',
-                sr.id,
-                NULL,
-                'SPA:' || sr.id::text,
-                sr.service_name,
-                1,
-                COALESCE(sr.total_amount, 0),
-                COALESCE(sr.total_amount, 0),
-                'OPEN',
-                COALESCE(
-                    sr.created_at,
-                    CURRENT_TIMESTAMP
-                ),
-                CURRENT_TIMESTAMP
-            FROM spa_requests sr
-            WHERE UPPER(
-                TRIM(
-                    COALESCE(
-                        sr.request_status,
-                        ''
-                    )
-                )
-            ) IN (
-                'CONFIRMED',
-                'COMPLETED'
-            )
-              AND COALESCE(
-                    sr.total_amount,
-                    0
-                  ) > 0
-            ON CONFLICT (source_key)
-            DO UPDATE SET
-                description = EXCLUDED.description,
-                unit_price = EXCLUDED.unit_price,
-                total_amount = EXCLUDED.total_amount,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE room_charges.charge_status = 'OPEN'
-            """
-        )
-
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cur.close()
-        conn.close()
-        # =====================================
-# ACTIVITIES КЪМ СМЕТКИТЕ ПО СТАИ
-# САМО СЛЕД CONFIRMED ИЛИ COMPLETED
-# =====================================
-def sync_activity_charges():
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-        cur.execute(
-            """
-            INSERT INTO room_charges (
-                room_id,
-                source_type,
-                source_id,
-                source_item_id,
-                source_key,
-                description,
-                quantity,
-                unit_price,
-                total_amount,
-                charge_status,
-                created_at,
-                updated_at
-            )
-            SELECT
-                ar.room_id,
-                'ACTIVITY',
-                ar.id,
-                NULL,
-                'ACTIVITY:' || ar.id::text,
-                ar.activity_name,
-                1,
-                COALESCE(ar.total_amount, 0),
-                COALESCE(ar.total_amount, 0),
-                'OPEN',
-                COALESCE(
-                    ar.created_at,
-                    CURRENT_TIMESTAMP
-                ),
-                CURRENT_TIMESTAMP
-            FROM activity_requests ar
-            WHERE UPPER(
-                TRIM(
-                    COALESCE(
-                        ar.request_status,
-                        ''
-                    )
-                )
-            ) IN (
-                'CONFIRMED',
-                'COMPLETED'
-            )
-              AND COALESCE(
-                    ar.total_amount,
-                    0
-                  ) > 0
-            ON CONFLICT (source_key)
-            DO UPDATE SET
-                description = EXCLUDED.description,
-                unit_price = EXCLUDED.unit_price,
-                total_amount = EXCLUDED.total_amount,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE room_charges.charge_status = 'OPEN'
-            """
-        )
-
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cur.close()
-        conn.close()
 # =====================================
 # ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
 # =====================================
@@ -1648,7 +1366,6 @@ view_mode = st.radio(
 # =====================================
 # ACTIVITIES ИЗГЛЕД
 # =====================================
-
 if view_mode == ACTIVITIES_VIEW:
 
     try:
@@ -1735,6 +1452,10 @@ if view_mode == ACTIVITIES_VIEW:
 
             created_at = activity_row[5]
 
+            saved_activity_amount = float(
+                activity_row[6] or 0
+            )
+
             with st.container(border=True):
 
                 title_col, status_col = st.columns(
@@ -1775,85 +1496,108 @@ if view_mode == ACTIVITIES_VIEW:
                     "#### Съобщение от госта"
                 )
 
-                st.info(
-                    guest_message
-                )
-                
-                
+                if guest_message:
+                    st.info(
+                        guest_message
+                    )
+                else:
+                    st.caption(
+                        "Няма допълнително съобщение."
+                    )
 
                 # =====================================
-# ФОРМА ЗА ACTIVITY СТАТУС
-# =====================================
-with st.form(
-    key=f"activity_status_form_{request_id}",
-    clear_on_submit=False
-):
+                # ФОРМА ЗА ACTIVITY СТАТУС И ЦЕНА
+                # =====================================
+                with st.form(
+                    key=(
+                        f"activity_status_form_"
+                        f"{request_id}"
+                    ),
+                    clear_on_submit=False
+                ):
 
-    status_select_col, price_col = st.columns(
-        [2, 2],
-        vertical_alignment="bottom"
+                    status_select_col, price_col = st.columns(
+                        [2, 2],
+                        vertical_alignment="bottom"
+                    )
+
+                    with status_select_col:
+                        selected_activity_status = (
+                            st.selectbox(
+                                "Статус",
+                                activity_statuses,
+                                index=(
+                                    activity_statuses.index(
+                                        request_status
+                                    )
+                                    if request_status
+                                    in activity_statuses
+                                    else 0
+                                ),
+                                key=(
+                                    f"activity_status_select_"
+                                    f"{request_id}"
+                                )
+                            )
+                        )
+
+                    with price_col:
+                        activity_total_amount = (
+                            st.number_input(
+                                "Цена на услугата (€)",
+                                min_value=0.00,
+                                value=saved_activity_amount,
+                                step=1.00,
+                                format="%.2f",
+                                key=(
+                                    f"activity_total_amount_"
+                                    f"{request_id}"
+                                ),
+                                help=(
+                                    "Цената се начислява "
+                                    "само при CONFIRMED "
+                                    "или COMPLETED."
+                                )
+                            )
+                        )
+
+                    save_activity_status = (
+                        st.form_submit_button(
+                            "💾 Запази статуса",
+                            type="primary",
+                            use_container_width=True
+                        )
+                    )
+
+                    if save_activity_status:
+                        try:
+                            update_activity_request_status(
+                                request_id=request_id,
+                                new_status=(
+                                    selected_activity_status
+                                ),
+                                total_amount=(
+                                    activity_total_amount
+                                )
+                            )
+
+                            st.rerun()
+
+                        except Exception as error:
+                            st.error(
+                                "Статусът не беше обновен."
+                                "\n\n"
+                                f"Причина: {error}"
+                            )
+
+    st.divider()
+
+    st.caption(
+        "Powered by HMITSEVAPPS"
     )
 
-    with status_select_col:
-        selected_activity_status = st.selectbox(
-            "Статус",
-            activity_statuses,
-            index=(
-                activity_statuses.index(
-                    request_status
-                )
-                if request_status in activity_statuses
-                else 0
-            ),
-            key=(
-                f"activity_status_select_"
-                f"{request_id}"
-            )
-        )
+    st.stop()
 
-    with price_col:
-        activity_total_amount = st.number_input(
-            "Цена на услугата (€)",
-            min_value=0.00,
-            value=0.00,
-            step=1.00,
-            format="%.2f",
-            key=(
-                f"activity_total_amount_"
-                f"{request_id}"
-            ),
-            help=(
-                "Цената се добавя към стаята само при "
-                "CONFIRMED или COMPLETED."
-            )
-        )
-
-    save_activity_status = st.form_submit_button(
-        "💾 Запази статуса",
-        type="primary",
-        use_container_width=True
-    )
-
-    if save_activity_status:
-        try:
-            update_activity_request_status(
-                request_id=request_id,
-                new_status=selected_activity_status,
-                total_amount=activity_total_amount
-            )
-
-            st.success(
-                "Activity заявката е обновена."
-            )
-
-            st.rerun()
-
-        except Exception as error:
-            st.error(
-                "Статусът не беше обновен."
-                "\n\n"
-                f"Причина: {error}"
-            )
                                
 # =====================================
 # ОБСЛУЖВАНЕ
@@ -2234,42 +1978,42 @@ if view_mode == SPA_VIEW:
                                 use_container_width=True
                             )
                         )
-
                         if save_spa_status:
                             try:
                                 from datetime import time
-                        
-                                selected_hour, selected_minute = map(
+
+                                (
+                                    selected_hour,
+                                    selected_minute
+                                ) = map(
                                     int,
                                     selected_time_text.split(":")
                                 )
-                        
+
                                 selected_reservation_time = time(
                                     selected_hour,
                                     selected_minute
                                 )
-                        
+
                                 update_spa_request_status(
                                     request_id=request_id,
                                     new_status=selected_spa_status,
-                                    reservation_date=selected_reservation_date,
-                                    reservation_time=selected_reservation_time,
+                                    reservation_date=(
+                                        selected_reservation_date
+                                    ),
+                                    reservation_time=(
+                                        selected_reservation_time
+                                    ),
                                     duration_minutes=duration_minutes,
                                     total_amount=spa_total_amount
                                 )
-                        
-                        
-                            except Exception as error:
-                                st.error(
-                                    "SPA заявката не беше обновена."
-                                    "\n\n"
-                                    f"Причина: {error}"
-                                )
+
+                                st.rerun()
 
                             except Exception as error:
                                 st.error(
-                                    "SPA заявката не беше обновена."
-                                    "\n\n"
+                                    "SPA заявката не беше "
+                                    "обновена.\n\n"
                                     f"Причина: {error}"
                                 )
 
@@ -2511,9 +2255,12 @@ if view_mode == ROOM_BILLS_VIEW:
     )
 
     try:
-        # Добавя липсващите Room Service позиции
-        # към общите сметки по стаи.
+        # Room Service се начислява само при COMPLETED.
+        # SPA и Activities се начисляват само при
+        # CONFIRMED или COMPLETED и цена над 0.
         sync_room_service_charges()
+        sync_spa_charges()
+        sync_activity_charges()
 
         open_charge_rows = get_open_room_charges()
 
@@ -2527,14 +2274,12 @@ if view_mode == ROOM_BILLS_VIEW:
             "заредени.\n\n"
             f"Причина: {error}"
         )
-
         st.stop()
 
     if not room_bills:
         st.success(
             "Няма отворени сметки по стаи."
         )
-
     else:
         total_open_value = sum(
             room_bill["grand_total"]
