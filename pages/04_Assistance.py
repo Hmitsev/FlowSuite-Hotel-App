@@ -150,7 +150,7 @@ st.markdown(
 
     .block-container {
         max-width: 980px;
-        padding-top: 1rem;
+        padding-top: 0.3rem;
         padding-bottom: 2rem;
     }
 
@@ -267,17 +267,14 @@ if "assistance_error" not in st.session_state:
 # =========================================================
 # НАВИГАЦИЯ
 # =========================================================
-nav_col1, nav_col2 = st.columns(
-    [1, 5]
-)
+if st.button(
+    t["back"],
+    key="assistance_back",
+    use_container_width=True
+):
+    st.switch_page("app.py")
 
-with nav_col1:
-    if st.button(
-        t["back"],
-        key="assistance_back",
-        use_container_width=True
-    ):
-        st.switch_page("app.py")
+st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
 
 # =========================================================
