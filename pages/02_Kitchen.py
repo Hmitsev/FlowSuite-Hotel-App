@@ -479,15 +479,14 @@ def kitchen_live_dashboard():
         st.success(
             st.session_state.kitchen_message
         )
-
         st.session_state.kitchen_message = None
 
     if st.session_state.kitchen_error:
         st.error(
             st.session_state.kitchen_error
         )
-
         st.session_state.kitchen_error = None
+
     # =====================================
     # ЗАРЕЖДАНЕ НА ДАННИТЕ
     # =====================================
@@ -500,7 +499,6 @@ def kitchen_live_dashboard():
             "Поръчките не могат да бъдат заредени.\n\n"
             f"Причина: {error}"
         )
-
         return
 
     # =====================================
@@ -533,57 +531,56 @@ def kitchen_live_dashboard():
             }
         )
 
-# =====================================
-# ОБОБЩЕНИЕ
-# =====================================
+    # =====================================
+    # ОБОБЩЕНИЕ
+    # =====================================
 
-new_orders = sum(
-    1
-    for order in orders.values()
-    if order["order_status"] == "NEW"
-)
-
-preparing_orders = sum(
-    1
-    for order in orders.values()
-    if order["order_status"] == "PREPARING"
-)
-
-metric_col1, metric_col2, metric_col3 = (
-    st.columns(3)
-)
-
-with metric_col1:
-    st.metric(
-        "Активни поръчки",
-        len(orders)
+    new_orders = sum(
+        1
+        for order in orders.values()
+        if order["order_status"] == "NEW"
     )
 
-with metric_col2:
-    st.metric(
-        "Нови",
-        new_orders
+    preparing_orders = sum(
+        1
+        for order in orders.values()
+        if order["order_status"] == "PREPARING"
     )
 
-with metric_col3:
-    st.metric(
-        "В подготовка",
-        preparing_orders
+    metric_col1, metric_col2, metric_col3 = (
+        st.columns(3)
     )
 
-st.divider()
+    with metric_col1:
+        st.metric(
+            "Активни поръчки",
+            len(orders)
+        )
 
+    with metric_col2:
+        st.metric(
+            "Нови",
+            new_orders
+        )
 
-# =====================================
-# ПОКАЗВАНЕ НА ПОРЪЧКИТЕ
-# =====================================
+    with metric_col3:
+        st.metric(
+            "В подготовка",
+            preparing_orders
+        )
 
-if not orders:
-    st.success(
-        "Няма активни Room Service поръчки."
-    )
+    st.divider()
 
-else:
+    # =====================================
+    # ПОКАЗВАНЕ НА ПОРЪЧКИТЕ
+    # =====================================
+
+    if not orders:
+        st.success(
+            "Няма активни Room Service поръчки."
+        )
+        return
+
     for order_id, order_data in orders.items():
         room_number = order_data[
             "room_number"
@@ -695,7 +692,7 @@ else:
                 if st.button(
                     "🟡 Започни подготовката",
                     key=f"start_order_{order_id}",
-                    use_container_width=True,
+                    width="stretch",
                     disabled=(
                         order_status == "PREPARING"
                     )
@@ -724,7 +721,7 @@ else:
                     "✅ Цялата поръчка е готова",
                     key=f"finish_order_{order_id}",
                     type="primary",
-                    use_container_width=True
+                    width="stretch"
                 ):
                     try:
                         finish_order(order_id)
@@ -745,7 +742,14 @@ else:
 
                         st.rerun()
 
+
+# =====================================
+# СТАРТИРАНЕ НА LIVE DASHBOARD
+# =====================================
+
 kitchen_live_dashboard()
+
+
 # =====================================
 # БРАНДИРАНЕ
 # =====================================
