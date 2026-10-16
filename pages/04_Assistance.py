@@ -161,8 +161,8 @@ st.markdown(
     .assistance-header {
         border: 1px solid rgba(212, 175, 55, 0.65);
         border-radius: 18px;
-        padding: 22px;
-        margin-top: 14px;
+        padding: 10px;
+        margin-top: 6px;
         margin-bottom: 20px;
         text-align: center;
         background:
