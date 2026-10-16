@@ -1,6 +1,6 @@
 
 import streamlit as st
-
+import uuid
 from database.db import get_connection
 from streamlit_autorefresh import st_autorefresh
 
@@ -850,7 +850,170 @@ def update_spa_request_status(
 
     finally:
         cur.close()
-        conn.close()  
+        conn.close()
+# =====================================
+# ОТВОРЕНИ ФИНАНСОВИ ПОЗИЦИИ ПО СТАИ
+# =====================================
+def get_open_room_charges():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                rc.id AS charge_id,
+                rc.room_id,
+                hr.room_number,
+                rc.source_type,
+                rc.source_id,
+                rc.source_item_id,
+                rc.description,
+                rc.quantity,
+                rc.unit_price,
+                rc.total_amount,
+                rc.created_at
+            FROM room_charges rc
+            JOIN hotel_rooms hr
+                ON hr.id = rc.room_id
+            WHERE rc.charge_status = 'OPEN'
+            ORDER BY
+                hr.room_number ASC,
+                rc.created_at ASC,
+                rc.id ASC
+            """
+        )
+
+        return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+# =====================================
+# ГРУПИРАНЕ НА СМЕТКИТЕ ПО СТАИ
+# =====================================
+def build_open_room_bills(rows):
+
+    room_bills = {}
+
+    for row in rows:
+
+        charge_id = row[0]
+        room_id = row[1]
+        room_number = row[2]
+        source_type = row[3]
+        source_id = row[4]
+        source_item_id = row[5]
+        description = row[6]
+        quantity = int(row[7] or 1)
+        unit_price = float(row[8] or 0)
+        total_amount = float(row[9] or 0)
+        created_at = row[10]
+
+        if room_id not in room_bills:
+            room_bills[room_id] = {
+                "room_id": room_id,
+                "room_number": room_number,
+                "first_charge_at": created_at,
+                "items": [],
+                "grand_total": 0.0
+            }
+
+        room_bill = room_bills[room_id]
+
+        room_bill["items"].append(
+            {
+                "charge_id": charge_id,
+                "source_type": source_type,
+                "source_id": source_id,
+                "source_item_id": source_item_id,
+                "description": description,
+                "quantity": quantity,
+                "unit_price": unit_price,
+                "total_amount": total_amount,
+                "created_at": created_at
+            }
+        )
+
+        room_bill["grand_total"] += total_amount
+
+        if (
+            created_at
+            and (
+                room_bill["first_charge_at"] is None
+                or created_at
+                < room_bill["first_charge_at"]
+            )
+        ):
+            room_bill["first_charge_at"] = created_at
+
+    return room_bills
+
+
+# =====================================
+# ФИНАЛИЗИРАНЕ НА СМЕТКАТА НА СТАЯТА
+# =====================================
+def complete_room_bill(room_id):
+
+    checkout_group_id = str(uuid.uuid4())
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT id
+            FROM room_charges
+            WHERE room_id = %s
+              AND charge_status = 'OPEN'
+            FOR UPDATE
+            """,
+            (room_id,)
+        )
+
+        charge_rows = cur.fetchall()
+
+        charge_ids = [
+            row[0]
+            for row in charge_rows
+        ]
+
+        if not charge_ids:
+            raise ValueError(
+                "Няма отворени позиции за тази стая."
+            )
+
+        cur.execute(
+            """
+            UPDATE room_charges
+            SET
+                charge_status = 'POSTED',
+                checkout_group_id = %s,
+                posted_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ANY(%s)
+            """,
+            (
+                checkout_group_id,
+                charge_ids
+            )
+        )
+
+        conn.commit()
+
+        return checkout_group_id
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
 # =====================================
 # ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
 # =====================================
@@ -947,6 +1110,7 @@ SPA_VIEW = (
 SERVICE_VIEW = (
     f"🔧 Обслужване ({new_service_count})"
 )
+ROOM_BILLS_VIEW = "🧾 Сметки по стаи"
 COMPLETED_VIEW = "📜 Приключени"
 
 # =====================================
@@ -958,6 +1122,7 @@ view_options = [
     ACTIVITIES_VIEW,
     SPA_VIEW,
     SERVICE_VIEW,
+    ROOM_BILLS_VIEW,
     COMPLETED_VIEW
 ]
 
@@ -1802,6 +1967,213 @@ if view_mode == SPA_VIEW:
                             )
 
     st.divider()
+    # =====================================
+# СМЕТКИ ПО СТАИ
+# =====================================
+if view_mode == ROOM_BILLS_VIEW:
+
+    st.markdown(
+        """
+        <div style="
+            color:#D4AF37;
+            font-size:28px;
+            font-weight:900;
+            margin-bottom:15px;
+        ">
+            🧾 ОБЩИ СМЕТКИ ПО СТАИ
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    try:
+        open_charge_rows = get_open_room_charges()
+
+        room_bills = build_open_room_bills(
+            open_charge_rows
+        )
+
+    except Exception as error:
+        st.error(
+            "Сметките по стаи не могат да бъдат "
+            "заредени.\n\n"
+            f"Причина: {error}"
+        )
+
+        st.stop()
+
+    if not room_bills:
+        st.success(
+            "Няма отворени сметки по стаи."
+        )
+
+    else:
+        total_open_value = sum(
+            room_bill["grand_total"]
+            for room_bill in room_bills.values()
+        )
+
+        metric_col1, metric_col2 = st.columns(2)
+
+        with metric_col1:
+            st.metric(
+                "Стаи с отворена сметка",
+                len(room_bills)
+            )
+
+        with metric_col2:
+            st.metric(
+                "Обща стойност",
+                f"€ {total_open_value:.2f}"
+            )
+
+        st.caption(
+            "Тук се събират всички платими услуги "
+            "и поръчки, натрупани по стаи."
+        )
+
+        st.divider()
+
+        for room_id, room_bill in room_bills.items():
+
+            room_number = room_bill["room_number"]
+            items = room_bill["items"]
+            grand_total = room_bill["grand_total"]
+            first_charge_at = room_bill["first_charge_at"]
+
+            with st.container(border=True):
+
+                header_col, total_col = st.columns(
+                    [5, 2],
+                    vertical_alignment="center"
+                )
+
+                with header_col:
+                    st.markdown(
+                        f"""
+                        <div style="
+                            color:#D4AF37;
+                            font-size:32px;
+                            font-weight:900;
+                        ">
+                            🛎️ Стая № {room_number}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                    if first_charge_at:
+                        st.caption(
+                            "Сметката се натрупва от: "
+                            f"{first_charge_at.strftime('%d.%m.%Y %H:%M')}"
+                        )
+
+                with total_col:
+                    st.metric(
+                        "Общо за стаята",
+                        f"€ {grand_total:.2f}"
+                    )
+
+                st.markdown(
+                    "#### Натрупани позиции"
+                )
+
+                source_labels = {
+                    "ROOM_SERVICE": "🍽️ Room Service",
+                    "SPA": "💆 SPA",
+                    "ACTIVITY": "🎿 Activity",
+                    "SERVICE": "🔧 Допълнителна услуга",
+                    "MANUAL": "➕ Добавена от рецепция"
+                }
+
+                for item in items:
+
+                    item_col, quantity_col, price_col = (
+                        st.columns(
+                            [6, 1, 2],
+                            vertical_alignment="center"
+                        )
+                    )
+
+                    with item_col:
+                        source_label = source_labels.get(
+                            item["source_type"],
+                            item["source_type"]
+                        )
+
+                        st.write(
+                            f"**{source_label}**"
+                        )
+
+                        st.write(
+                            item["description"]
+                        )
+
+                        if item["created_at"]:
+                            st.caption(
+                                item["created_at"].strftime(
+                                    "%d.%m.%Y %H:%M"
+                                )
+                            )
+
+                    with quantity_col:
+                        st.write(
+                            f"x{item['quantity']}"
+                        )
+
+                    with price_col:
+                        st.write(
+                            f"€ {item['total_amount']:.2f}"
+                        )
+
+                st.divider()
+
+                st.info(
+                    "След като сумата бъде добавена към "
+                    "хотелската система, потвърдете и "
+                    "финализирайте сметката."
+                )
+
+                confirm_transfer = st.checkbox(
+                    "Потвърждавам, че сумата е добавена "
+                    "към хотелската/PMS система",
+                    key=f"confirm_room_bill_{room_id}"
+                )
+
+                if st.button(
+                    f"✅ Финализирай сметката на "
+                    f"Стая № {room_number}",
+                    key=f"complete_room_bill_{room_id}",
+                    type="primary",
+                    use_container_width=True,
+                    disabled=not confirm_transfer
+                ):
+                    try:
+                        complete_room_bill(
+                            room_id
+                        )
+
+                        st.success(
+                            f"Сметката на Стая № "
+                            f"{room_number} е финализирана."
+                        )
+
+                        st.rerun()
+
+                    except Exception as error:
+                        st.error(
+                            "Сметката не беше финализирана."
+                            "\n\n"
+                            f"Причина: {error}"
+                        )
+
+    st.divider()
+
+    st.caption(
+        "Powered by HMITSEVAPPS"
+    )
+
+    st.stop()
 # =====================================
 # ЗАРЕЖДАНЕ НА ROOM SERVICE ДАННИТЕ
 # =====================================
