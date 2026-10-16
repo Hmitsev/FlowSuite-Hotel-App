@@ -562,31 +562,43 @@ department_options = [
     t["housekeeping"]
 ]
 
-selected_department_label = st.radio(
-    t["department"],
-    department_options,
-    horizontal=True,
-    label_visibility="collapsed",
-    key="assistance_department"
-)
+col1, col2 = st.columns(2)
 
-if selected_department_label == t["maintenance"]:
-    selected_department = "MAINTENANCE"
+with col1:
+    maintenance_selected = st.button(
+        t["maintenance"],
+        use_container_width=True,
+        key="btn_maintenance"
+    )
 
+with col2:
+    housekeeping_selected = st.button(
+        t["housekeeping"],
+        use_container_width=True,
+        key="btn_housekeeping"
+    )
+
+if "selected_department" not in st.session_state:
+    st.session_state.selected_department = "MAINTENANCE"
+
+if maintenance_selected:
+    st.session_state.selected_department = "MAINTENANCE"
+
+if housekeeping_selected:
+    st.session_state.selected_department = "HOUSEKEEPING"
+
+selected_department = st.session_state.selected_department
+
+if selected_department == "MAINTENANCE":
     available_requests = maintenance_requests.get(
         language,
         maintenance_requests["bg"]
     )
-
 else:
-    selected_department = "HOUSEKEEPING"
-
     available_requests = housekeeping_requests.get(
         language,
         housekeeping_requests["bg"]
     )
-
-
 # =========================================================
 # ИЗБОР НА КОНКРЕТЕН ВИД ЗАЯВКА
 # =========================================================
