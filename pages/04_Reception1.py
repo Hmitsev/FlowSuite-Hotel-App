@@ -575,7 +575,7 @@ def get_new_room_service_notifications():
             """
             SELECT COUNT(*)
             FROM room_service_orders
-            WHERE order_status <> 'COMPLETED'
+            WHERE UPPER(TRIM(order_status)) = 'NEW'
             """
         )
 
@@ -1228,6 +1228,168 @@ def sync_room_service_charges():
     finally:
         cur.close()
         conn.close()
+# =====================================
+# SPA КЪМ СМЕТКИТЕ ПО СТАИ
+# САМО СЛЕД CONFIRMED ИЛИ COMPLETED
+# =====================================
+def sync_spa_charges():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            INSERT INTO room_charges (
+                room_id,
+                source_type,
+                source_id,
+                source_item_id,
+                source_key,
+                description,
+                quantity,
+                unit_price,
+                total_amount,
+                charge_status,
+                created_at,
+                updated_at
+            )
+            SELECT
+                sr.room_id,
+                'SPA',
+                sr.id,
+                NULL,
+                'SPA:' || sr.id::text,
+                sr.service_name,
+                1,
+                COALESCE(sr.total_amount, 0),
+                COALESCE(sr.total_amount, 0),
+                'OPEN',
+                COALESCE(
+                    sr.created_at,
+                    CURRENT_TIMESTAMP
+                ),
+                CURRENT_TIMESTAMP
+            FROM spa_requests sr
+            WHERE UPPER(
+                TRIM(
+                    COALESCE(
+                        sr.request_status,
+                        ''
+                    )
+                )
+            ) IN (
+                'CONFIRMED',
+                'COMPLETED'
+            )
+              AND COALESCE(
+                    sr.total_amount,
+                    0
+                  ) > 0
+            ON CONFLICT (source_key)
+            DO UPDATE SET
+                description = EXCLUDED.description,
+                unit_price = EXCLUDED.unit_price,
+                total_amount = EXCLUDED.total_amount,
+                charge_status = 'OPEN',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE room_charges.charge_status IN (
+                'OPEN',
+                'CANCELLED'
+            )
+            """
+        )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+# =====================================
+# ACTIVITIES КЪМ СМЕТКИТЕ ПО СТАИ
+# САМО СЛЕД CONFIRMED ИЛИ COMPLETED
+# =====================================
+def sync_activity_charges():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            INSERT INTO room_charges (
+                room_id,
+                source_type,
+                source_id,
+                source_item_id,
+                source_key,
+                description,
+                quantity,
+                unit_price,
+                total_amount,
+                charge_status,
+                created_at,
+                updated_at
+            )
+            SELECT
+                ar.room_id,
+                'ACTIVITY',
+                ar.id,
+                NULL,
+                'ACTIVITY:' || ar.id::text,
+                ar.activity_name,
+                1,
+                COALESCE(ar.total_amount, 0),
+                COALESCE(ar.total_amount, 0),
+                'OPEN',
+                COALESCE(
+                    ar.created_at,
+                    CURRENT_TIMESTAMP
+                ),
+                CURRENT_TIMESTAMP
+            FROM activity_requests ar
+            WHERE UPPER(
+                TRIM(
+                    COALESCE(
+                        ar.request_status,
+                        ''
+                    )
+                )
+            ) IN (
+                'CONFIRMED',
+                'COMPLETED'
+            )
+              AND COALESCE(
+                    ar.total_amount,
+                    0
+                  ) > 0
+            ON CONFLICT (source_key)
+            DO UPDATE SET
+                description = EXCLUDED.description,
+                unit_price = EXCLUDED.unit_price,
+                total_amount = EXCLUDED.total_amount,
+                charge_status = 'OPEN',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE room_charges.charge_status IN (
+                'OPEN',
+                'CANCELLED'
+            )
+            """
+        )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
 
 # =====================================
 # ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
@@ -1308,29 +1470,16 @@ else:
     notification_bell_placeholder.empty()
 
 # =====================================
-# ПОСТОЯННИ ИМЕНА НА ИЗГЛЕДИТЕ
+# ПОСТОЯННИ ВЪТРЕШНИ ИМЕНА НА ИЗГЛЕДИТЕ
 # =====================================
 
-ACTIVE_VIEW = (
-    f"🍽️ Room Service ({new_room_service_count})"
-)
+ACTIVE_VIEW = "ROOM_SERVICE"
+ACTIVITIES_VIEW = "ACTIVITIES"
+SPA_VIEW = "SPA"
+SERVICE_VIEW = "SERVICE"
+ROOM_BILLS_VIEW = "ROOM_BILLS"
+COMPLETED_VIEW = "COMPLETED"
 
-ACTIVITIES_VIEW = (
-    f"🎿 Activities ({new_activity_count})"
-)
-
-SPA_VIEW = (
-    f"💆 SPA ({new_spa_count})"
-)
-SERVICE_VIEW = (
-    f"🔧 Обслужване ({new_service_count})"
-)
-ROOM_BILLS_VIEW = "🧾 Сметки по стаи"
-COMPLETED_VIEW = "📜 Приключени"
-
-# =====================================
-# ЗАПАЗВАНЕ НА ИЗБРАНИЯ ИЗГЛЕД
-# =====================================
 
 view_options = [
     ACTIVE_VIEW,
@@ -1341,28 +1490,41 @@ view_options = [
     COMPLETED_VIEW
 ]
 
+
+view_labels = {
+    ACTIVE_VIEW: (
+        f"🍽️ Room Service ({new_room_service_count})"
+    ),
+    ACTIVITIES_VIEW: (
+        f"🎿 Activities ({new_activity_count})"
+    ),
+    SPA_VIEW: (
+        f"💆 SPA ({new_spa_count})"
+    ),
+    SERVICE_VIEW: (
+        f"🔧 Обслужване ({new_service_count})"
+    ),
+    ROOM_BILLS_VIEW: "🧾 Сметки по стаи",
+    COMPLETED_VIEW: "📜 Приключени"
+}
+
+
 if "reception_view_mode" not in st.session_state:
     st.session_state.reception_view_mode = ACTIVE_VIEW
+
 
 if st.session_state.reception_view_mode not in view_options:
     st.session_state.reception_view_mode = ACTIVE_VIEW
 
-
-# =====================================
-# ИЗБОР НА ИЗГЛЕД
-# =====================================
 
 view_mode = st.radio(
     "Изглед",
     view_options,
     horizontal=True,
     label_visibility="collapsed",
-    key="reception_view_mode"
+    key="reception_view_mode",
+    format_func=lambda option: view_labels[option]
 )
-
-
-
-
 # =====================================
 # ACTIVITIES ИЗГЛЕД
 # =====================================
@@ -2234,7 +2396,16 @@ if view_mode == SPA_VIEW:
                                 f"{completed_at.strftime('%d.%m.%Y %H:%M')}"
                             )
 
+    # =====================================
+    # КРАЙ НА SPA ИЗГЛЕДА
+    # =====================================
     st.divider()
+
+    st.caption(
+        "Powered by HMITSEVAPPS"
+    )
+
+    st.stop()
 # =====================================
 # СМЕТКИ ПО СТАИ
 # =====================================
