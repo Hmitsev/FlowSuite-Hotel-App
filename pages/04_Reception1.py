@@ -350,66 +350,103 @@ def get_completed_room_service_orders():
 
 
 # =====================================
-# ПРОМЯНА НА СТАТУСА НА ПОРЪЧКАТА
+# ПРОМЯНА НА СТАТУС НА ACTIVITY ЗАЯВКА
 # =====================================
-
-def update_room_service_order_status(
-    order_id,
-    new_status
+def update_activity_request_status(
+    request_id,
+    new_status,
+    total_amount=None
 ):
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-        if new_status == "COMPLETED":
+        normalized_status = str(
+            new_status
+        ).strip().upper()
+
+        if normalized_status in (
+            "CONFIRMED",
+            "COMPLETED"
+        ):
+            if total_amount is None:
+                raise ValueError(
+                    "Въведете цена на Activity услугата."
+                )
+
+            normalized_amount = float(
+                total_amount
+            )
+
+            if normalized_amount <= 0:
+                raise ValueError(
+                    "Цената трябва да бъде по-голяма от 0."
+                )
+
             cur.execute(
                 """
-                UPDATE room_service_orders
+                UPDATE activity_requests
                 SET
-                    order_status = %s,
+                    request_status = %s,
+                    total_amount = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = CASE
+                        WHEN %s = 'COMPLETED'
+                        THEN CURRENT_TIMESTAMP
+                        ELSE NULL
+                    END
+                WHERE id = %s
+                """,
+                (
+                    normalized_status,
+                    normalized_amount,
+                    normalized_status,
+                    request_id
+                )
+            )
+
+        elif normalized_status == "CANCELLED":
+            cur.execute(
+                """
+                UPDATE activity_requests
+                SET
+                    request_status = 'CANCELLED',
                     updated_at = CURRENT_TIMESTAMP,
                     completed_at = CURRENT_TIMESTAMP
                 WHERE id = %s
                 """,
-                (
-                    new_status,
-                    order_id
-                )
+                (request_id,)
             )
 
+            # Анулира се само OPEN финансова позиция.
+            # POSTED позиция не се променя.
             cur.execute(
                 """
-                UPDATE room_service_order_items
-                SET item_status = 'COMPLETED'
-                WHERE order_id = %s
+                UPDATE room_charges
+                SET
+                    charge_status = 'CANCELLED',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE source_key = %s
+                  AND charge_status = 'OPEN'
                 """,
-                (order_id,)
+                (
+                    f"ACTIVITY:{request_id}",
+                )
             )
 
         else:
             cur.execute(
                 """
-                UPDATE room_service_orders
+                UPDATE activity_requests
                 SET
-                    order_status = %s,
-                    updated_at = CURRENT_TIMESTAMP
+                    request_status = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = NULL
                 WHERE id = %s
                 """,
                 (
-                    new_status,
-                    order_id
-                )
-            )
-
-            cur.execute(
-                """
-                UPDATE room_service_order_items
-                SET item_status = %s
-                WHERE order_id = %s
-                """,
-                (
-                    new_status,
-                    order_id
+                    normalized_status,
+                    request_id
                 )
             )
 
@@ -504,15 +541,116 @@ def get_new_activity_notifications():
         cur.close()
         conn.close()
 
-
 # =====================================
 # ПРОМЯНА НА СТАТУС НА ACTIVITY ЗАЯВКА
 # =====================================
-
 def update_activity_request_status(
     request_id,
-    new_status
+    new_status,
+    total_amount=None
 ):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        normalized_status = str(
+            new_status
+        ).strip().upper()
+
+        if normalized_status in (
+            "CONFIRMED",
+            "COMPLETED"
+        ):
+            if total_amount is None:
+                raise ValueError(
+                    "Въведете цена на Activity услугата."
+                )
+
+            normalized_amount = float(
+                total_amount
+            )
+
+            if normalized_amount <= 0:
+                raise ValueError(
+                    "Цената трябва да бъде по-голяма от 0."
+                )
+
+            cur.execute(
+                """
+                UPDATE activity_requests
+                SET
+                    request_status = %s,
+                    total_amount = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = CASE
+                        WHEN %s = 'COMPLETED'
+                        THEN CURRENT_TIMESTAMP
+                        ELSE NULL
+                    END
+                WHERE id = %s
+                """,
+                (
+                    normalized_status,
+                    normalized_amount,
+                    normalized_status,
+                    request_id
+                )
+            )
+
+        elif normalized_status == "CANCELLED":
+            cur.execute(
+                """
+                UPDATE activity_requests
+                SET
+                    request_status = 'CANCELLED',
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (request_id,)
+            )
+
+            # Анулира се само OPEN финансова позиция.
+            # POSTED позиция не се променя.
+            cur.execute(
+                """
+                UPDATE room_charges
+                SET
+                    charge_status = 'CANCELLED',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE source_key = %s
+                  AND charge_status = 'OPEN'
+                """,
+                (
+                    f"ACTIVITY:{request_id}",
+                )
+            )
+
+        else:
+            cur.execute(
+                """
+                UPDATE activity_requests
+                SET
+                    request_status = %s,
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = NULL
+                WHERE id = %s
+                """,
+                (
+                    normalized_status,
+                    request_id
+                )
+            )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
     conn = get_connection()
     cur = conn.cursor()
 
@@ -803,13 +941,13 @@ def get_new_spa_request_count():
 # =====================================
 # ПРОМЯНА НА SPA СТАТУС И РЕЗЕРВАЦИЯ
 # =====================================
-
 def update_spa_request_status(
     request_id,
     new_status,
     reservation_date=None,
     reservation_time=None,
-    duration_minutes=60
+    duration_minutes=60,
+    total_amount=None
 ):
     conn = get_connection()
     cur = conn.cursor()
@@ -820,6 +958,7 @@ def update_spa_request_status(
         ).strip().upper()
 
         if normalized_status == "CONFIRMED":
+
             if reservation_date is None:
                 raise ValueError(
                     "Изберете дата за резервацията."
@@ -830,7 +969,20 @@ def update_spa_request_status(
                     "Изберете час за резервацията."
                 )
 
-            # Проверяваме дали часът вече е зает.
+            if total_amount is None:
+                raise ValueError(
+                    "Въведете цена на SPA услугата."
+                )
+
+            normalized_amount = float(
+                total_amount
+            )
+
+            if normalized_amount <= 0:
+                raise ValueError(
+                    "Цената трябва да бъде по-голяма от 0."
+                )
+
             cur.execute(
                 """
                 SELECT id
@@ -863,6 +1015,7 @@ def update_spa_request_status(
                     reservation_date = %s,
                     reservation_time = %s,
                     duration_minutes = %s,
+                    total_amount = %s,
                     updated_at = CURRENT_TIMESTAMP,
                     completed_at = NULL
                 WHERE id = %s
@@ -871,26 +1024,70 @@ def update_spa_request_status(
                     reservation_date,
                     reservation_time,
                     int(duration_minutes),
+                    normalized_amount,
                     request_id
                 )
             )
 
-        elif normalized_status in (
-            "COMPLETED",
-            "CANCELLED"
-        ):
+        elif normalized_status == "COMPLETED":
+
+            if total_amount is None:
+                raise ValueError(
+                    "Въведете цена на SPA услугата."
+                )
+
+            normalized_amount = float(
+                total_amount
+            )
+
+            if normalized_amount <= 0:
+                raise ValueError(
+                    "Цената трябва да бъде по-голяма от 0."
+                )
+
             cur.execute(
                 """
                 UPDATE spa_requests
                 SET
-                    request_status = %s,
+                    request_status = 'COMPLETED',
+                    total_amount = %s,
                     updated_at = CURRENT_TIMESTAMP,
                     completed_at = CURRENT_TIMESTAMP
                 WHERE id = %s
                 """,
                 (
-                    normalized_status,
+                    normalized_amount,
                     request_id
+                )
+            )
+
+        elif normalized_status == "CANCELLED":
+
+            cur.execute(
+                """
+                UPDATE spa_requests
+                SET
+                    request_status = 'CANCELLED',
+                    updated_at = CURRENT_TIMESTAMP,
+                    completed_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (request_id,)
+            )
+
+            # Анулира се само OPEN финансова позиция.
+            # Вече POSTED позиция не се променя.
+            cur.execute(
+                """
+                UPDATE room_charges
+                SET
+                    charge_status = 'CANCELLED',
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE source_key = %s
+                  AND charge_status = 'OPEN'
+                """,
+                (
+                    f"SPA:{request_id}",
                 )
             )
 
@@ -1401,7 +1598,8 @@ if view_mode == ACTIVITIES_VIEW:
                     
                             update_activity_request_status(
                                 request_id=request_id,
-                                new_status=selected_activity_status
+                                new_status=selected_activity_status,
+                                total_amount=activity_total_amount
                             )
                     
                             st.rerun()
