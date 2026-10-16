@@ -652,45 +652,6 @@ if selected_department is not None:
             selected_category = selected_request_data[0]
             selected_request_type = selected_request_data[1]
             selected_priority = selected_request_data[2]
-# =========================================================
-# ИЗБОР НА КОНКРЕТЕН ВИД ЗАЯВКА
-# =========================================================
-st.markdown(
-    f'<div class="section-title">{t["request_type"]}</div>',
-    unsafe_allow_html=True
-)
-
-request_labels = [
-    request_data[1]
-    for request_data in available_requests
-]
-
-selected_request_label = st.selectbox(
-    t["request_type"],
-    request_labels,
-    label_visibility="collapsed",
-    key="assistance_request_type"
-)
-
-selected_request_data = next(
-    (
-        request_data
-        for request_data in available_requests
-        if request_data[1] == selected_request_label
-    ),
-    None
-)
-
-if selected_request_data is None:
-    st.error(
-        t["select_request"]
-    )
-
-    st.stop()
-
-selected_category = selected_request_data[0]
-selected_request_type = selected_request_data[1]
-selected_priority = selected_request_data[2]
 
 
 # =========================================================
