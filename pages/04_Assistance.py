@@ -550,76 +550,144 @@ housekeeping_requests = {
 
 
 # =========================================================
-# ИЗБОР НА КАТЕГОРИЯ
+# ИЗБОР НА КАТЕГОРИЯ И ВИД НА ЗАЯВКАТА
 # =========================================================
 st.markdown(
     f'<div class="section-title">{t["department"]}</div>',
     unsafe_allow_html=True
 )
 
-department_options = [
-    t["maintenance"],
-    t["housekeeping"]
-]
+# Начални стойности
+selected_department = None
+selected_category = None
+selected_request_type = None
+selected_priority = None
 
-selected_department_label = st.radio(
-    "",
-    department_options,
-    horizontal=True,
-    label_visibility="collapsed"
-)
 
-if selected_department_label == t["maintenance"]:
-
-    available_requests = maintenance_requests.get(
-        language,
-        maintenance_requests["bg"]
+# =========================================================
+# ФУНКЦИИ ПРИ ИЗБОР
+# =========================================================
+def select_maintenance_request():
+    selected_value = st.session_state.get(
+        "maintenance_request_select",
+        ""
     )
 
+    if selected_value:
+        st.session_state.housekeeping_request_select = ""
+
+
+def select_housekeeping_request():
+    selected_value = st.session_state.get(
+        "housekeeping_request_select",
+        ""
+    )
+
+    if selected_value:
+        st.session_state.maintenance_request_select = ""
+
+
+# =========================================================
+# СПИСЪЦИ СПОРЕД ЕЗИКА
+# =========================================================
+current_maintenance_requests = maintenance_requests.get(
+    language,
+    maintenance_requests["bg"]
+)
+
+current_housekeeping_requests = housekeeping_requests.get(
+    language,
+    housekeeping_requests["bg"]
+)
+
+maintenance_labels = [
+    request_data[1]
+    for request_data in current_maintenance_requests
+]
+
+housekeeping_labels = [
+    request_data[1]
+    for request_data in current_housekeeping_requests
+]
+
+
+# =========================================================
+# ДВЕ РАЗГЪВАЩИ СЕ КАТЕГОРИИ
+# =========================================================
+category_col1, category_col2 = st.columns(2)
+
+with category_col1:
+    with st.expander(
+        t["maintenance"],
+        expanded=False
+    ):
+        maintenance_choice = st.selectbox(
+            t["request_type"],
+            options=[""] + maintenance_labels,
+            format_func=lambda value: (
+                t["request_type"]
+                if value == ""
+                else value
+            ),
+            label_visibility="collapsed",
+            key="maintenance_request_select",
+            on_change=select_maintenance_request
+        )
+
+with category_col2:
+    with st.expander(
+        t["housekeeping"],
+        expanded=False
+    ):
+        housekeeping_choice = st.selectbox(
+            t["request_type"],
+            options=[""] + housekeeping_labels,
+            format_func=lambda value: (
+                t["request_type"]
+                if value == ""
+                else value
+            ),
+            label_visibility="collapsed",
+            key="housekeeping_request_select",
+            on_change=select_housekeeping_request
+        )
+
+
+# =========================================================
+# ОБРАБОТКА НА ИЗБРАНАТА ЗАЯВКА
+# =========================================================
+if maintenance_choice:
     selected_department = "MAINTENANCE"
 
-else:
-
-    available_requests = housekeeping_requests.get(
-        language,
-        housekeeping_requests["bg"]
+    selected_request_data = next(
+        (
+            request_data
+            for request_data in current_maintenance_requests
+            if request_data[1] == maintenance_choice
+        ),
+        None
     )
 
+elif housekeeping_choice:
     selected_department = "HOUSEKEEPING"
 
+    selected_request_data = next(
+        (
+            request_data
+            for request_data in current_housekeeping_requests
+            if request_data[1] == housekeeping_choice
+        ),
+        None
+    )
 
-# =========================================================
-# ИЗБОР НА ВИД ЗАЯВКА
-# =========================================================
-st.markdown(
-    f'<div class="section-title">{t["request_type"]}</div>',
-    unsafe_allow_html=True
-)
+else:
+    selected_request_data = None
 
-request_labels = [
-    request_data[1]
-    for request_data in available_requests
-]
 
-selected_request_label = st.selectbox(
-    t["request_type"],
-    request_labels,
-    label_visibility="collapsed",
-    key="assistance_request_type"
-)
-
-selected_request_data = next(
-    (
-        request_data
-        for request_data in available_requests
-        if request_data[1] == selected_request_label
-    ),
-    None
-)
-
-selected_category = selected_request_data[0]
-selected_request_type = selected_request_data[1]
-selected_priority = selected_request_data[2]d_priority = selected_request_data[2]
+if selected_request_data is not None:
+    selected_category = selected_request_data[0]
+    selected_request_type = selected_request_data[1]
+    selected_priority = selected_request_data[2]
 
 
 # =========================================================
