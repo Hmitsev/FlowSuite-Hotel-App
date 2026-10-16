@@ -553,7 +553,11 @@ housekeeping_requests = {
 # ИЗБОР НА ОСНОВНА КАТЕГОРИЯ
 # =========================================================
 st.markdown(
-    f'<div class="section-title">{t["department"]}</div>',
+    """
+    <div class="section-title">
+        1️⃣ Изберете категория
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
@@ -584,12 +588,10 @@ if housekeeping_selected:
 
 selected_department = st.session_state.selected_department
 
-# Визуална индикация за избраната категория
 if selected_department == "MAINTENANCE":
 
     st.success(
-        "✅ Избрана категория: Технически проблем\n\n"
-        "🔧 От менюто по-долу можете да изберете конкретния технически проблем."
+        "✅ Избрано: Технически проблем"
     )
 
     available_requests = maintenance_requests.get(
@@ -600,14 +602,22 @@ if selected_department == "MAINTENANCE":
 else:
 
     st.success(
-        "✅ Избрана категория: Камериерско обслужване\n\n"
-        "🧹 От менюто по-долу можете да изберете конкретната услуга."
+        "✅ Избрано: Камериерско обслужване"
     )
 
     available_requests = housekeeping_requests.get(
         language,
         housekeeping_requests["bg"]
     )
+
+st.markdown(
+    """
+    <div class="section-title">
+        2️⃣ Изберете вид на заявката
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # =========================================================
 # ИЗБОР НА КОНКРЕТЕН ВИД ЗАЯВКА
 # =========================================================
