@@ -228,6 +228,40 @@ st.markdown(
         border: 1px solid #F5D77B !important;
         color: #101010 !important;
     }
+    /* Разгъващи се категории */
+    div[data-testid="stExpander"] {
+        border: 1px solid rgba(212, 175, 55, 0.65) !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+        background: rgba(15, 23, 42, 0.90) !important;
+    }
+    
+    div[data-testid="stExpander"] details {
+        border: none !important;
+    }
+    
+    div[data-testid="stExpander"] summary {
+        min-height: 58px !important;
+        padding: 10px 16px !important;
+        font-weight: 800 !important;
+        color: #F5E6C8 !important;
+        background: rgba(15, 23, 42, 0.96) !important;
+    }
+    
+    div[data-testid="stExpander"] summary:hover {
+        background: rgba(26, 37, 58, 0.98) !important;
+        color: #F5D77B !important;
+    }
+    
+    div[data-testid="stExpander"] details[open] > summary {
+        border-bottom: 1px solid rgba(212, 175, 55, 0.45) !important;
+        color: #F5D77B !important;
+    }
+    
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        padding: 12px !important;
+        background: rgba(8, 14, 25, 0.96) !important;
+    }
 
     @media only screen and (max-width: 768px) {
         .block-container {
@@ -246,6 +280,11 @@ st.markdown(
 
         .assistance-subtitle {
             font-size: 14px;
+        }
+        div[data-testid="stExpander"] summary {
+            min-height: 52px !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
         }
     }
     </style>
