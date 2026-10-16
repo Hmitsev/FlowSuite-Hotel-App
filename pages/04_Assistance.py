@@ -228,37 +228,6 @@ st.markdown(
         border: 1px solid #F5D77B !important;
         color: #101010 !important;
     }
-    /* Radio бутони като карти */
-    div[role="radiogroup"] {
-        gap: 12px !important;
-    }
-    
-    div[role="radiogroup"] > label {
-        border: 2px solid #D4AF37 !important;
-        border-radius: 14px !important;
-        padding: 12px 18px !important;
-        background: rgba(15, 23, 42, 0.90) !important;
-        min-height: 60px !important;
-        display: flex !important;
-        align-items: center !important;
-        transition: all 0.2s ease !important;
-    }
-    
-    div[role="radiogroup"] > label:hover {
-        border-color: #F5D77B !important;
-        box-shadow: 0 0 12px rgba(212,175,55,0.25) !important;
-    }
-    
-    div[role="radiogroup"] > label[data-checked="true"] {
-        background: linear-gradient(
-            135deg,
-            #B98528 0%,
-            #D4AF37 48%,
-            #F5D77B 100%
-        ) !important;
-        color: #101010 !important;
-        border-color: #F5D77B !important;
-    }
 
     @media only screen and (max-width: 768px) {
         .block-container {
