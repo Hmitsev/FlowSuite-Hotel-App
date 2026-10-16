@@ -320,6 +320,14 @@ room_number = st.session_state.get(
 # =========================================================
 # БАНЕР
 # =========================================================
+col1, col2, col3 = st.columns([1, 3, 1])
+
+with col2:
+    st.image(
+        "assets/Designer (24).png",
+        use_container_width=True
+    )
+
 st.markdown(
     f"""
     <div class="assistance-header">
@@ -330,14 +338,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-col1, col2, col3 = st.columns([1, 3, 1])
-
-with col2:
-    st.image(
-        "assets/Designer (24).png",
-        use_container_width=True
-    )
 
 # =========================================================
 # УСПЕШНО ИЗПРАТЕНА ЗАЯВКА
