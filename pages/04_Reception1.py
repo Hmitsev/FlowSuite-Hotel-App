@@ -2,7 +2,7 @@
 import streamlit as st
 import uuid
 from database.db import get_connection
-from streamlit_autorefresh import st_autorefresh
+
 
 
 # =====================================
@@ -53,16 +53,6 @@ if not st.session_state.reception_auth:
 
     st.stop()
 
-
-# =====================================
-# AUTO REFRESH САМО СЛЕД ВХОД
-# =====================================
-
-st_autorefresh(
-    interval=30000,
-    limit=None,
-    key="reception_auto_refresh"
-)
 
 
 # =====================================
@@ -181,17 +171,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# =====================================
-# МЯСТО ЗА КАМБАНКАТА
-# =====================================
-
-bell_space, bell_col = st.columns(
-    [7, 1],
-    vertical_alignment="center"
-)
-
-with bell_col:
-    notification_bell_placeholder = st.empty()
 # =====================================
 # ЗАРЕЖДАНЕ НА ROOM SERVICE ПОРЪЧКИТЕ
 # =====================================
@@ -1392,526 +1371,167 @@ def sync_activity_charges():
         conn.close()
 
 # =====================================
-# ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
+# АВТОМАТИЧНО ОБНОВЯВАНЕ НА РЕЦЕПЦИЯТА
 # =====================================
 
-try:
-    (
-        new_activity_count,
-        new_activity_rooms
-    ) = get_new_activity_notifications()
+@st.fragment(run_every="30s")
+def reception_live_dashboard():
 
-except Exception:
-    new_activity_count = 0
-    new_activity_rooms = []
+    # =====================================
+    # МЯСТО ЗА КАМБАНКАТА
+    # =====================================
 
-
-try:
-    new_room_service_count = int(
-        get_new_room_service_notifications() or 0
+    bell_space, bell_col = st.columns(
+        [7, 1],
+        vertical_alignment="center"
     )
 
-except Exception:
-    new_room_service_count = 0
+    with bell_col:
+        notification_bell_placeholder = st.empty()
 
+    # =====================================
+    # ЗАРЕЖДАНЕ НА ИЗВЕСТИЯТА
+    # =====================================
 
-try:
-    new_spa_count = int(
-        get_new_spa_request_count() or 0
+    try:
+        (
+            new_activity_count,
+            new_activity_rooms
+        ) = get_new_activity_notifications()
+
+    except Exception:
+        new_activity_count = 0
+        new_activity_rooms = []
+
+    try:
+        new_room_service_count = int(
+            get_new_room_service_notifications() or 0
+        )
+
+    except Exception:
+        new_room_service_count = 0
+
+    try:
+        new_spa_count = int(
+            get_new_spa_request_count() or 0
+        )
+
+    except Exception:
+        new_spa_count = 0
+
+    try:
+        new_service_count = int(
+            get_new_service_request_count() or 0
+        )
+
+    except Exception:
+        new_service_count = 0
+
+    # =====================================
+    # ОБЩ БРОЙ НОВИ ИЗВЕСТИЯ
+    # =====================================
+
+    total_new_notifications = (
+        new_room_service_count
+        + int(new_activity_count or 0)
+        + new_spa_count
+        + new_service_count
     )
 
-except Exception:
-    new_spa_count = 0
+    # =====================================
+    # АНИМИРАНА КАМБАНКА С БРОЙ
+    # =====================================
 
-
-try:
-    new_service_count = int(
-        get_new_service_request_count() or 0
-    )
-
-except Exception:
-    new_service_count = 0
-
-
-# =====================================
-# ОБЩ БРОЙ НОВИ ИЗВЕСТИЯ
-# =====================================
-
-total_new_notifications = (
-    new_room_service_count
-    + int(new_activity_count or 0)
-    + new_spa_count
-    + new_service_count
-)
-
-
-# =====================================
-# АНИМИРАНА КАМБАНКА С БРОЙ
-# =====================================
-
-if total_new_notifications > 0:
-
-    notification_bell_placeholder.markdown(
-        f"""
-        <div class="notification-bell-wrapper">
-            <div class="notification-bell">
-                🔔
-                <span class="notification-count">
-                    {total_new_notifications}
-                </span>
+    if total_new_notifications > 0:
+        notification_bell_placeholder.markdown(
+            f"""
+            <div class="notification-bell-wrapper">
+                <div class="notification-bell">
+                    🔔
+                    <span class="notification-count">
+                        {total_new_notifications}
+                    </span>
+                </div>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-else:
-
-    notification_bell_placeholder.empty()
-
-# =====================================
-# ПОСТОЯННИ ВЪТРЕШНИ ИМЕНА НА ИЗГЛЕДИТЕ
-# =====================================
-
-ACTIVE_VIEW = "ROOM_SERVICE"
-ACTIVITIES_VIEW = "ACTIVITIES"
-SPA_VIEW = "SPA"
-SERVICE_VIEW = "SERVICE"
-ROOM_BILLS_VIEW = "ROOM_BILLS"
-COMPLETED_VIEW = "COMPLETED"
-
-
-view_options = [
-    ACTIVE_VIEW,
-    ACTIVITIES_VIEW,
-    SPA_VIEW,
-    SERVICE_VIEW,
-    ROOM_BILLS_VIEW,
-    COMPLETED_VIEW
-]
-
-
-view_labels = {
-    ACTIVE_VIEW: (
-        f"🍽️ Room Service ({new_room_service_count})"
-    ),
-    ACTIVITIES_VIEW: (
-        f"🎿 Activities ({new_activity_count})"
-    ),
-    SPA_VIEW: (
-        f"💆 SPA ({new_spa_count})"
-    ),
-    SERVICE_VIEW: (
-        f"🔧 Обслужване ({new_service_count})"
-    ),
-    ROOM_BILLS_VIEW: "🧾 Сметки по стаи",
-    COMPLETED_VIEW: "📜 Приключени"
-}
-
-
-if "reception_view_mode" not in st.session_state:
-    st.session_state.reception_view_mode = ACTIVE_VIEW
-
-
-if st.session_state.reception_view_mode not in view_options:
-    st.session_state.reception_view_mode = ACTIVE_VIEW
-
-
-view_mode = st.radio(
-    "Изглед",
-    view_options,
-    horizontal=True,
-    label_visibility="collapsed",
-    key="reception_view_mode",
-    format_func=lambda option: view_labels[option]
-)
-# =====================================
-# ACTIVITIES ИЗГЛЕД
-# =====================================
-if view_mode == ACTIVITIES_VIEW:
-
-    try:
-        activity_rows = get_activity_requests()
-
-    except Exception as error:
-        st.error(
-            "Activities заявките не могат "
-            "да бъдат заредени.\n\n"
-            f"Причина: {error}"
-        )
-        st.stop()
-
-    st.markdown(
-        """
-        <div style="
-            color:#D4AF37;
-            font-size:28px;
-            font-weight:900;
-            margin-bottom:15px;
-        ">
-            🎿 ACTIVITIES ЗАЯВКИ
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    activity_col1, activity_col2 = st.columns(2)
-
-    with activity_col1:
-        st.metric(
-            "Активни заявки",
-            len(activity_rows)
-        )
-
-    with activity_col2:
-        displayed_new_activity_count = sum(
-            1
-            for row in activity_rows
-            if str(
-                row[4] or ""
-            ).strip().upper() == "NEW"
-        )
-
-        st.metric(
-            "Нови заявки",
-            displayed_new_activity_count
-        )
-
-    st.divider()
-
-    if not activity_rows:
-        st.success(
-            "Няма активни Activities заявки."
+            """,
+            unsafe_allow_html=True
         )
 
     else:
-        activity_statuses = [
-            "NEW",
-            "CONTACTED",
-            "CONFIRMED",
-            "COMPLETED",
-            "CANCELLED"
-        ]
+        notification_bell_placeholder.empty()
 
-        activity_status_labels = {
-            "NEW": "🔴 NEW",
-            "CONTACTED": "🟡 CONTACTED",
-            "CONFIRMED": "🟢 CONFIRMED",
-            "COMPLETED": "✅ COMPLETED",
-            "CANCELLED": "❌ CANCELLED"
-        }
-
-        for activity_row in activity_rows:
-
-            request_id = activity_row[0]
-            room_number = activity_row[1]
-            activity_name = activity_row[2]
-            guest_message = activity_row[3]
-
-            request_status = str(
-                activity_row[4] or "NEW"
-            ).strip().upper()
-
-            created_at = activity_row[5]
-
-            saved_activity_amount = float(
-                activity_row[6] or 0
-            )
-
-            with st.container(border=True):
-
-                title_col, status_col = st.columns(
-                    [5, 2]
-                )
-
-                with title_col:
-                    st.subheader(
-                        f"🎿 Activities заявка #{request_id}"
-                    )
-
-                    st.markdown(
-                        f"### 🛎️ Стая №{room_number}"
-                    )
-
-                    st.write(
-                        f"**Дейност:** {activity_name}"
-                    )
-
-                with status_col:
-                    st.write(
-                        "Статус: "
-                        f"{activity_status_labels.get(
-                            request_status,
-                            request_status
-                        )}"
-                    )
-
-                    if created_at:
-                        st.caption(
-                            "Получена: "
-                            f"{created_at.strftime(
-                                '%d.%m.%Y %H:%M'
-                            )}"
-                        )
-
-                st.markdown(
-                    "#### Съобщение от госта"
-                )
-
-                if guest_message:
-                    st.info(
-                        guest_message
-                    )
-                else:
-                    st.caption(
-                        "Няма допълнително съобщение."
-                    )
-
-                # =====================================
-                # ФОРМА ЗА ACTIVITY СТАТУС И ЦЕНА
-                # =====================================
-                with st.form(
-                    key=(
-                        f"activity_status_form_"
-                        f"{request_id}"
-                    ),
-                    clear_on_submit=False
-                ):
-
-                    status_select_col, price_col = st.columns(
-                        [2, 2],
-                        vertical_alignment="bottom"
-                    )
-
-                    with status_select_col:
-                        selected_activity_status = (
-                            st.selectbox(
-                                "Статус",
-                                activity_statuses,
-                                index=(
-                                    activity_statuses.index(
-                                        request_status
-                                    )
-                                    if request_status
-                                    in activity_statuses
-                                    else 0
-                                ),
-                                key=(
-                                    f"activity_status_select_"
-                                    f"{request_id}"
-                                )
-                            )
-                        )
-
-                    with price_col:
-                        activity_total_amount = (
-                            st.number_input(
-                                "Цена на услугата (€)",
-                                min_value=0.00,
-                                value=saved_activity_amount,
-                                step=1.00,
-                                format="%.2f",
-                                key=(
-                                    f"activity_total_amount_"
-                                    f"{request_id}"
-                                ),
-                                help=(
-                                    "Цената се начислява "
-                                    "само при CONFIRMED "
-                                    "или COMPLETED."
-                                )
-                            )
-                        )
-
-                    save_activity_status = (
-                        st.form_submit_button(
-                            "💾 Запази статуса",
-                            type="primary",
-                            use_container_width=True
-                        )
-                    )
-
-                    if save_activity_status:
-                        try:
-                            update_activity_request_status(
-                                request_id=request_id,
-                                new_status=(
-                                    selected_activity_status
-                                ),
-                                total_amount=(
-                                    activity_total_amount
-                                )
-                            )
-
-                            st.rerun()
-
-                        except Exception as error:
-                            st.error(
-                                "Статусът не беше обновен."
-                                "\n\n"
-                                f"Причина: {error}"
-                            )
-
-    st.divider()
-
-    st.caption(
-        "Powered by HMITSEVAPPS"
-    )
-
-    st.stop()
-
-                               
-# =====================================
-# ОБСЛУЖВАНЕ
-# =====================================
-if view_mode == SERVICE_VIEW:
-
-    try:
-        service_rows = get_service_requests()
-
-    except Exception as error:
-        st.error(
-            "Заявките към обслужващия персонал "
-            "не могат да бъдат заредени.\n\n"
-            f"Причина: {error}"
-        )
-        st.stop()
-
-    st.markdown(
-        """
-        <div style="
-            color:#D4AF37;
-            font-size:28px;
-            font-weight:900;
-            margin-bottom:15px;
-        ">
-            🔧 ЗАЯВКИ КЪМ ОБСЛУЖВАЩ ПЕРСОНАЛ
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    if not service_rows:
-        st.success(
-            "Няма активни заявки."
-        )
-
-    else:
-        for row in service_rows:
-
-            request_id = row[0]
-            room_number = row[1]
-            department = row[2]
-            category = row[3]
-            request_type = row[4]
-            guest_message = row[5]
-            priority = row[6]
-            request_status = row[7]
-            created_at = row[8]
-
-            with st.container(border=True):
-
-                st.subheader(
-                    f"Заявка #{request_id}"
-                )
-
-                st.markdown(
-                    f"### 🏨 Стая №{room_number}"
-                )
-
-                st.write(
-                    f"**Тип:** {request_type}"
-                )
-
-                st.write(
-                    f"**Статус:** {request_status}"
-                )
-
-                st.write(
-                    f"**Приоритет:** {priority}"
-                )
-
-                if department == "MAINTENANCE":
-                    st.info(
-                        "🛠️ Технически проблем"
-                    )
-
-                elif department == "HOUSEKEEPING":
-                    st.info(
-                        "🧹 Камериерска заявка"
-                    )
-
-                if guest_message:
-                    st.markdown(
-                        "#### Коментар"
-                    )
-
-                    st.info(
-                        guest_message
-                    )
-
-                if created_at:
-                    st.caption(
-                        "Получена: "
-                        f"{created_at.strftime('%d.%m.%Y %H:%M')}"
-                    )
-
-    # Footer само за изглед Обслужване.
-    st.divider()
-
-    st.caption(
-        "Powered by HMITSEVAPPS"
-    )
-
-    # Спира изпълнението преди Room Service секцията.
-    st.stop()
-
-
-# =====================================
-# SPA ИЗГЛЕД
-# =====================================
-
-if view_mode == SPA_VIEW:
-
-    spa_view_options = [
-        "📋 Активни заявки",
-        "📅 SPA календар",
-        "🗄️ Архив"
+    # =====================================
+    # ПОСТОЯННИ ВЪТРЕШНИ ИМЕНА НА ИЗГЛЕДИТЕ
+    # =====================================
+    
+    ACTIVE_VIEW = "ROOM_SERVICE"
+    ACTIVITIES_VIEW = "ACTIVITIES"
+    SPA_VIEW = "SPA"
+    SERVICE_VIEW = "SERVICE"
+    ROOM_BILLS_VIEW = "ROOM_BILLS"
+    COMPLETED_VIEW = "COMPLETED"
+    
+    
+    view_options = [
+        ACTIVE_VIEW,
+        ACTIVITIES_VIEW,
+        SPA_VIEW,
+        SERVICE_VIEW,
+        ROOM_BILLS_VIEW,
+        COMPLETED_VIEW
     ]
-
-    if "spa_subview" not in st.session_state:
-        st.session_state.spa_subview = "📋 Активни заявки"
-
-    if st.session_state.spa_subview not in spa_view_options:
-        st.session_state.spa_subview = "📋 Активни заявки"
-
-    spa_subview = st.radio(
-        "SPA изглед",
-        spa_view_options,
+    
+    
+    view_labels = {
+        ACTIVE_VIEW: (
+            f"🍽️ Room Service ({new_room_service_count})"
+        ),
+        ACTIVITIES_VIEW: (
+            f"🎿 Activities ({new_activity_count})"
+        ),
+        SPA_VIEW: (
+            f"💆 SPA ({new_spa_count})"
+        ),
+        SERVICE_VIEW: (
+            f"🔧 Обслужване ({new_service_count})"
+        ),
+        ROOM_BILLS_VIEW: "🧾 Сметки по стаи",
+        COMPLETED_VIEW: "📜 Приключени"
+    }
+    
+    
+    if "reception_view_mode" not in st.session_state:
+        st.session_state.reception_view_mode = ACTIVE_VIEW
+    
+    
+    if st.session_state.reception_view_mode not in view_options:
+        st.session_state.reception_view_mode = ACTIVE_VIEW
+    
+    
+    view_mode = st.radio(
+        "Изглед",
+        view_options,
         horizontal=True,
         label_visibility="collapsed",
-        key="spa_subview"
+        key="reception_view_mode",
+        format_func=lambda option: view_labels[option]
     )
-
-    st.divider()
-
     # =====================================
-    # АКТИВНИ SPA ЗАЯВКИ
+    # ACTIVITIES ИЗГЛЕД
     # =====================================
-
-    if spa_subview == "📋 Активни заявки":
-
+    if view_mode == ACTIVITIES_VIEW:
+    
         try:
-            spa_rows = get_spa_requests()
-
+            activity_rows = get_activity_requests()
+    
         except Exception as error:
             st.error(
-                "SPA заявките не могат да бъдат заредени."
-                "\n\n"
+                "Activities заявките не могат "
+                "да бъдат заредени.\n\n"
                 f"Причина: {error}"
             )
-            st.stop()
-
+            return
+    
         st.markdown(
             """
             <div style="
@@ -1920,56 +1540,685 @@ if view_mode == SPA_VIEW:
                 font-weight:900;
                 margin-bottom:15px;
             ">
-                🧘 SPA ЗАЯВКИ
+                🎿 ACTIVITIES ЗАЯВКИ
             </div>
             """,
             unsafe_allow_html=True
         )
-
-        spa_col1, spa_col2 = st.columns(2)
-
-        with spa_col1:
+    
+        activity_col1, activity_col2 = st.columns(2)
+    
+        with activity_col1:
             st.metric(
-                "Активни SPA заявки",
-                len(spa_rows)
+                "Активни заявки",
+                len(activity_rows)
             )
-
-        with spa_col2:
-            displayed_new_spa_count = sum(
+    
+        with activity_col2:
+            displayed_new_activity_count = sum(
                 1
-                for row in spa_rows
-                if str(row[4] or "").strip().upper() == "NEW"
+                for row in activity_rows
+                if str(
+                    row[4] or ""
+                ).strip().upper() == "NEW"
             )
-
+    
             st.metric(
-                "Нови SPA заявки",
-                displayed_new_spa_count
+                "Нови заявки",
+                displayed_new_activity_count
             )
-
+    
         st.divider()
-
-        if not spa_rows:
+    
+        if not activity_rows:
             st.success(
-                "Няма активни SPA заявки."
+                "Няма активни Activities заявки."
             )
-
+    
         else:
-            spa_statuses = [
+            activity_statuses = [
                 "NEW",
                 "CONTACTED",
                 "CONFIRMED",
                 "COMPLETED",
                 "CANCELLED"
             ]
-
-            spa_status_labels = {
+    
+            activity_status_labels = {
                 "NEW": "🔴 NEW",
                 "CONTACTED": "🟡 CONTACTED",
                 "CONFIRMED": "🟢 CONFIRMED",
                 "COMPLETED": "✅ COMPLETED",
                 "CANCELLED": "❌ CANCELLED"
             }
-
+    
+            for activity_row in activity_rows:
+    
+                request_id = activity_row[0]
+                room_number = activity_row[1]
+                activity_name = activity_row[2]
+                guest_message = activity_row[3]
+    
+                request_status = str(
+                    activity_row[4] or "NEW"
+                ).strip().upper()
+    
+                created_at = activity_row[5]
+    
+                saved_activity_amount = float(
+                    activity_row[6] or 0
+                )
+    
+                with st.container(border=True):
+    
+                    title_col, status_col = st.columns(
+                        [5, 2]
+                    )
+    
+                    with title_col:
+                        st.subheader(
+                            f"🎿 Activities заявка #{request_id}"
+                        )
+    
+                        st.markdown(
+                            f"### 🛎️ Стая №{room_number}"
+                        )
+    
+                        st.write(
+                            f"**Дейност:** {activity_name}"
+                        )
+    
+                    with status_col:
+                        st.write(
+                            "Статус: "
+                            f"{activity_status_labels.get(
+                                request_status,
+                                request_status
+                            )}"
+                        )
+    
+                        if created_at:
+                            st.caption(
+                                "Получена: "
+                                f"{created_at.strftime(
+                                    '%d.%m.%Y %H:%M'
+                                )}"
+                            )
+    
+                    st.markdown(
+                        "#### Съобщение от госта"
+                    )
+    
+                    if guest_message:
+                        st.info(
+                            guest_message
+                        )
+                    else:
+                        st.caption(
+                            "Няма допълнително съобщение."
+                        )
+    
+                    # =====================================
+                    # ФОРМА ЗА ACTIVITY СТАТУС И ЦЕНА
+                    # =====================================
+                    with st.form(
+                        key=(
+                            f"activity_status_form_"
+                            f"{request_id}"
+                        ),
+                        clear_on_submit=False
+                    ):
+    
+                        status_select_col, price_col = st.columns(
+                            [2, 2],
+                            vertical_alignment="bottom"
+                        )
+    
+                        with status_select_col:
+                            selected_activity_status = (
+                                st.selectbox(
+                                    "Статус",
+                                    activity_statuses,
+                                    index=(
+                                        activity_statuses.index(
+                                            request_status
+                                        )
+                                        if request_status
+                                        in activity_statuses
+                                        else 0
+                                    ),
+                                    key=(
+                                        f"activity_status_select_"
+                                        f"{request_id}"
+                                    )
+                                )
+                            )
+    
+                        with price_col:
+                            activity_total_amount = (
+                                st.number_input(
+                                    "Цена на услугата (€)",
+                                    min_value=0.00,
+                                    value=saved_activity_amount,
+                                    step=1.00,
+                                    format="%.2f",
+                                    key=(
+                                        f"activity_total_amount_"
+                                        f"{request_id}"
+                                    ),
+                                    help=(
+                                        "Цената се начислява "
+                                        "само при CONFIRMED "
+                                        "или COMPLETED."
+                                    )
+                                )
+                            )
+    
+                        save_activity_status = (
+                            st.form_submit_button(
+                                "💾 Запази статуса",
+                                type="primary",
+                                use_container_width=True
+                            )
+                        )
+    
+                        if save_activity_status:
+                            try:
+                                update_activity_request_status(
+                                    request_id=request_id,
+                                    new_status=(
+                                        selected_activity_status
+                                    ),
+                                    total_amount=(
+                                        activity_total_amount
+                                    )
+                                )
+    
+                                st.rerun()
+    
+                            except Exception as error:
+                                st.error(
+                                    "Статусът не беше обновен."
+                                    "\n\n"
+                                    f"Причина: {error}"
+                                )
+    
+        st.divider()
+    
+        st.caption(
+            "Powered by HMITSEVAPPS"
+        )
+    
+        return
+    
+                                   
+    # =====================================
+    # ОБСЛУЖВАНЕ
+    # =====================================
+    if view_mode == SERVICE_VIEW:
+    
+        try:
+            service_rows = get_service_requests()
+    
+        except Exception as error:
+            st.error(
+                "Заявките към обслужващия персонал "
+                "не могат да бъдат заредени.\n\n"
+                f"Причина: {error}"
+            )
+            return
+    
+        st.markdown(
+            """
+            <div style="
+                color:#D4AF37;
+                font-size:28px;
+                font-weight:900;
+                margin-bottom:15px;
+            ">
+                🔧 ЗАЯВКИ КЪМ ОБСЛУЖВАЩ ПЕРСОНАЛ
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    
+        if not service_rows:
+            st.success(
+                "Няма активни заявки."
+            )
+    
+        else:
+            for row in service_rows:
+    
+                request_id = row[0]
+                room_number = row[1]
+                department = row[2]
+                category = row[3]
+                request_type = row[4]
+                guest_message = row[5]
+                priority = row[6]
+                request_status = row[7]
+                created_at = row[8]
+    
+                with st.container(border=True):
+    
+                    st.subheader(
+                        f"Заявка #{request_id}"
+                    )
+    
+                    st.markdown(
+                        f"### 🏨 Стая №{room_number}"
+                    )
+    
+                    st.write(
+                        f"**Тип:** {request_type}"
+                    )
+    
+                    st.write(
+                        f"**Статус:** {request_status}"
+                    )
+    
+                    st.write(
+                        f"**Приоритет:** {priority}"
+                    )
+    
+                    if department == "MAINTENANCE":
+                        st.info(
+                            "🛠️ Технически проблем"
+                        )
+    
+                    elif department == "HOUSEKEEPING":
+                        st.info(
+                            "🧹 Камериерска заявка"
+                        )
+    
+                    if guest_message:
+                        st.markdown(
+                            "#### Коментар"
+                        )
+    
+                        st.info(
+                            guest_message
+                        )
+    
+                    if created_at:
+                        st.caption(
+                            "Получена: "
+                            f"{created_at.strftime('%d.%m.%Y %H:%M')}"
+                        )
+    
+        # Footer само за изглед Обслужване.
+        st.divider()
+    
+        st.caption(
+            "Powered by HMITSEVAPPS"
+        )
+    
+        # Спира изпълнението преди Room Service секцията.
+        return
+    
+    
+    # =====================================
+    # SPA ИЗГЛЕД
+    # =====================================
+    
+    if view_mode == SPA_VIEW:
+    
+        spa_view_options = [
+            "📋 Активни заявки",
+            "📅 SPA календар",
+            "🗄️ Архив"
+        ]
+    
+        if "spa_subview" not in st.session_state:
+            st.session_state.spa_subview = "📋 Активни заявки"
+    
+        if st.session_state.spa_subview not in spa_view_options:
+            st.session_state.spa_subview = "📋 Активни заявки"
+    
+        spa_subview = st.radio(
+            "SPA изглед",
+            spa_view_options,
+            horizontal=True,
+            label_visibility="collapsed",
+            key="spa_subview"
+        )
+    
+        st.divider()
+    
+        # =====================================
+        # АКТИВНИ SPA ЗАЯВКИ
+        # =====================================
+    
+        if spa_subview == "📋 Активни заявки":
+    
+            try:
+                spa_rows = get_spa_requests()
+    
+            except Exception as error:
+                st.error(
+                    "SPA заявките не могат да бъдат заредени."
+                    "\n\n"
+                    f"Причина: {error}"
+                )
+                return
+    
+            st.markdown(
+                """
+                <div style="
+                    color:#D4AF37;
+                    font-size:28px;
+                    font-weight:900;
+                    margin-bottom:15px;
+                ">
+                    🧘 SPA ЗАЯВКИ
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+    
+            spa_col1, spa_col2 = st.columns(2)
+    
+            with spa_col1:
+                st.metric(
+                    "Активни SPA заявки",
+                    len(spa_rows)
+                )
+    
+            with spa_col2:
+                displayed_new_spa_count = sum(
+                    1
+                    for row in spa_rows
+                    if str(row[4] or "").strip().upper() == "NEW"
+                )
+    
+                st.metric(
+                    "Нови SPA заявки",
+                    displayed_new_spa_count
+                )
+    
+            st.divider()
+    
+            if not spa_rows:
+                st.success(
+                    "Няма активни SPA заявки."
+                )
+    
+            else:
+                spa_statuses = [
+                    "NEW",
+                    "CONTACTED",
+                    "CONFIRMED",
+                    "COMPLETED",
+                    "CANCELLED"
+                ]
+    
+                spa_status_labels = {
+                    "NEW": "🔴 NEW",
+                    "CONTACTED": "🟡 CONTACTED",
+                    "CONFIRMED": "🟢 CONFIRMED",
+                    "COMPLETED": "✅ COMPLETED",
+                    "CANCELLED": "❌ CANCELLED"
+                }
+    
+                spa_time_options = [
+                    "09:00",
+                    "10:00",
+                    "11:00",
+                    "12:00",
+                    "13:00",
+                    "14:00",
+                    "15:00",
+                    "16:00",
+                    "17:00",
+                    "18:00",
+                    "19:00"
+                ]
+    
+                for spa_row in spa_rows:
+    
+                    request_id = spa_row[0]
+                    room_number = spa_row[1]
+                    service_name = spa_row[2]
+                    guest_message = spa_row[3]
+    
+                    request_status = str(
+                        spa_row[4] or "NEW"
+                    ).strip().upper()
+    
+                    created_at = spa_row[5]
+                    saved_date = spa_row[6]
+                    saved_time = spa_row[7]
+                    saved_duration = spa_row[8] or 60
+                    saved_total_amount = float(
+                        spa_row[9] or 0
+                    )
+    
+                    with st.container(border=True):
+    
+                        title_col, status_col = st.columns(
+                            [5, 2]
+                        )
+    
+                        with title_col:
+                            st.subheader(
+                                f"🧘 SPA заявка #{request_id}"
+                            )
+    
+                            st.markdown(
+                                f"### 🛎️ Стая №{room_number}"
+                            )
+    
+                            st.write(
+                                f"**Услуга:** {service_name}"
+                            )
+    
+                        with status_col:
+                            st.write(
+                                "Статус: "
+                                f"{spa_status_labels.get(
+                                    request_status,
+                                    request_status
+                                )}"
+                            )
+    
+                            if created_at:
+                                st.caption(
+                                    "Получена: "
+                                    f"{created_at.strftime('%d.%m.%Y %H:%M')}"
+                                )
+    
+                        st.markdown(
+                            "#### Съобщение от госта"
+                        )
+    
+                        st.info(guest_message)
+    
+                        with st.form(
+                            key=f"spa_status_form_{request_id}",
+                            clear_on_submit=False
+                        ):
+    
+                            selected_spa_status = st.selectbox(
+                                "Статус",
+                                spa_statuses,
+                                index=(
+                                    spa_statuses.index(request_status)
+                                    if request_status in spa_statuses
+                                    else 0
+                                ),
+                                key=f"spa_status_select_{request_id}"
+                            )
+    
+                            reservation_col1, reservation_col2 = (
+                                st.columns(2)
+                            )
+    
+                            with reservation_col1:
+                                selected_reservation_date = (
+                                    st.date_input(
+                                        "Дата на резервацията",
+                                        value=(
+                                            saved_date
+                                            if saved_date is not None
+                                            else "today"
+                                        ),
+                                        key=f"spa_date_{request_id}"
+                                    )
+                                )
+    
+                            current_time = (
+                                saved_time.strftime("%H:%M")
+                                if saved_time is not None
+                                else "09:00"
+                            )
+    
+                            with reservation_col2:
+                                selected_time_text = st.selectbox(
+                                    "Час",
+                                    spa_time_options,
+                                    index=(
+                                        spa_time_options.index(
+                                            current_time
+                                        )
+                                        if current_time
+                                        in spa_time_options
+                                        else 0
+                                    ),
+                                    key=f"spa_time_{request_id}"
+                                )
+    
+                            duration_options = [
+                                30,
+                                60,
+                                90,
+                                120
+                            ]
+    
+                            duration_minutes = st.selectbox(
+                                "Продължителност",
+                                duration_options,
+                                index=(
+                                    duration_options.index(
+                                        saved_duration
+                                    )
+                                    if saved_duration
+                                    in duration_options
+                                    else 1
+                                ),
+                                format_func=lambda value: (
+                                    f"{value} минути"
+                                ),
+                                key=f"spa_duration_{request_id}"
+                            )
+                            spa_total_amount = st.number_input(
+                                "Цена на SPA услугата (€)",
+                                min_value=0.00,
+                                value=saved_total_amount,
+                                step=1.00,
+                                format="%.2f",
+                                key=f"spa_total_amount_{request_id}",
+                                help=(
+                                    "Цената се добавя към стаята само при "
+                                    "CONFIRMED или COMPLETED."
+                                )
+                           )
+    
+                            save_spa_status = (
+                                st.form_submit_button(
+                                    "💾 Запази статуса и резервацията",
+                                    type="primary",
+                                    use_container_width=True
+                                )
+                            )
+                            if save_spa_status:
+                                try:
+                                    from datetime import time
+    
+                                    (
+                                        selected_hour,
+                                        selected_minute
+                                    ) = map(
+                                        int,
+                                        selected_time_text.split(":")
+                                    )
+    
+                                    selected_reservation_time = time(
+                                        selected_hour,
+                                        selected_minute
+                                    )
+    
+                                    update_spa_request_status(
+                                        request_id=request_id,
+                                        new_status=selected_spa_status,
+                                        reservation_date=(
+                                            selected_reservation_date
+                                        ),
+                                        reservation_time=(
+                                            selected_reservation_time
+                                        ),
+                                        duration_minutes=duration_minutes,
+                                        total_amount=spa_total_amount
+                                    )
+    
+                                    st.rerun()
+    
+                                except Exception as error:
+                                    st.error(
+                                        "SPA заявката не беше "
+                                        "обновена.\n\n"
+                                        f"Причина: {error}"
+                                    )
+    
+        # =====================================
+        # SPA КАЛЕНДАР    
+        # =====================================
+    
+        elif spa_subview == "📅 SPA календар":
+    
+            from datetime import date
+    
+            st.markdown(
+                """
+                <div style="
+                    color:#D4AF37;
+                    font-size:28px;
+                    font-weight:900;
+                    margin-bottom:15px;
+                ">
+                    📅 SPA КАЛЕНДАР
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+    
+            calendar_date = st.date_input(
+                "Изберете дата",
+                value=date.today(),
+                key="spa_calendar_date"
+            )
+    
+            try:
+                calendar_reservations = (
+                    get_confirmed_spa_reservations(
+                        calendar_date
+                    )
+                )
+    
+            except Exception as error:
+                st.error(
+                    "SPA календарът не може да бъде зареден."
+                    "\n\n"
+                    f"Причина: {error}"
+                )
+                return
+    
+            reserved_by_time = {
+                row[4].strftime("%H:%M"): row
+                for row in calendar_reservations
+                if row[4] is not None
+            }
+    
             spa_time_options = [
                 "09:00",
                 "10:00",
@@ -1983,313 +2232,176 @@ if view_mode == SPA_VIEW:
                 "18:00",
                 "19:00"
             ]
-
-            for spa_row in spa_rows:
-
-                request_id = spa_row[0]
-                room_number = spa_row[1]
-                service_name = spa_row[2]
-                guest_message = spa_row[3]
-
-                request_status = str(
-                    spa_row[4] or "NEW"
-                ).strip().upper()
-
-                created_at = spa_row[5]
-                saved_date = spa_row[6]
-                saved_time = spa_row[7]
-                saved_duration = spa_row[8] or 60
-                saved_total_amount = float(
-                    spa_row[9] or 0
-                )
-
-                with st.container(border=True):
-
-                    title_col, status_col = st.columns(
-                        [5, 2]
-                    )
-
-                    with title_col:
-                        st.subheader(
-                            f"🧘 SPA заявка #{request_id}"
-                        )
-
-                        st.markdown(
-                            f"### 🛎️ Стая №{room_number}"
-                        )
-
-                        st.write(
-                            f"**Услуга:** {service_name}"
-                        )
-
-                    with status_col:
-                        st.write(
-                            "Статус: "
-                            f"{spa_status_labels.get(
-                                request_status,
-                                request_status
-                            )}"
-                        )
-
-                        if created_at:
-                            st.caption(
-                                "Получена: "
-                                f"{created_at.strftime('%d.%m.%Y %H:%M')}"
-                            )
-
-                    st.markdown(
-                        "#### Съобщение от госта"
-                    )
-
-                    st.info(guest_message)
-
-                    with st.form(
-                        key=f"spa_status_form_{request_id}",
-                        clear_on_submit=False
-                    ):
-
-                        selected_spa_status = st.selectbox(
-                            "Статус",
-                            spa_statuses,
-                            index=(
-                                spa_statuses.index(request_status)
-                                if request_status in spa_statuses
-                                else 0
-                            ),
-                            key=f"spa_status_select_{request_id}"
-                        )
-
-                        reservation_col1, reservation_col2 = (
-                            st.columns(2)
-                        )
-
-                        with reservation_col1:
-                            selected_reservation_date = (
-                                st.date_input(
-                                    "Дата на резервацията",
-                                    value=(
-                                        saved_date
-                                        if saved_date is not None
-                                        else "today"
-                                    ),
-                                    key=f"spa_date_{request_id}"
-                                )
-                            )
-
-                        current_time = (
-                            saved_time.strftime("%H:%M")
-                            if saved_time is not None
-                            else "09:00"
-                        )
-
-                        with reservation_col2:
-                            selected_time_text = st.selectbox(
-                                "Час",
-                                spa_time_options,
-                                index=(
-                                    spa_time_options.index(
-                                        current_time
-                                    )
-                                    if current_time
-                                    in spa_time_options
-                                    else 0
-                                ),
-                                key=f"spa_time_{request_id}"
-                            )
-
-                        duration_options = [
-                            30,
-                            60,
-                            90,
-                            120
-                        ]
-
-                        duration_minutes = st.selectbox(
-                            "Продължителност",
-                            duration_options,
-                            index=(
-                                duration_options.index(
-                                    saved_duration
-                                )
-                                if saved_duration
-                                in duration_options
-                                else 1
-                            ),
-                            format_func=lambda value: (
-                                f"{value} минути"
-                            ),
-                            key=f"spa_duration_{request_id}"
-                        )
-                        spa_total_amount = st.number_input(
-                            "Цена на SPA услугата (€)",
-                            min_value=0.00,
-                            value=saved_total_amount,
-                            step=1.00,
-                            format="%.2f",
-                            key=f"spa_total_amount_{request_id}",
-                            help=(
-                                "Цената се добавя към стаята само при "
-                                "CONFIRMED или COMPLETED."
-                            )
-                       )
-
-                        save_spa_status = (
-                            st.form_submit_button(
-                                "💾 Запази статуса и резервацията",
-                                type="primary",
-                                use_container_width=True
-                            )
-                        )
-                        if save_spa_status:
-                            try:
-                                from datetime import time
-
-                                (
-                                    selected_hour,
-                                    selected_minute
-                                ) = map(
-                                    int,
-                                    selected_time_text.split(":")
-                                )
-
-                                selected_reservation_time = time(
-                                    selected_hour,
-                                    selected_minute
-                                )
-
-                                update_spa_request_status(
-                                    request_id=request_id,
-                                    new_status=selected_spa_status,
-                                    reservation_date=(
-                                        selected_reservation_date
-                                    ),
-                                    reservation_time=(
-                                        selected_reservation_time
-                                    ),
-                                    duration_minutes=duration_minutes,
-                                    total_amount=spa_total_amount
-                                )
-
-                                st.rerun()
-
-                            except Exception as error:
-                                st.error(
-                                    "SPA заявката не беше "
-                                    "обновена.\n\n"
-                                    f"Причина: {error}"
-                                )
-
-    # =====================================
-    # SPA КАЛЕНДАР    
-    # =====================================
-
-    elif spa_subview == "📅 SPA календар":
-
-        from datetime import date
-
-        st.markdown(
-            """
-            <div style="
-                color:#D4AF37;
-                font-size:28px;
-                font-weight:900;
-                margin-bottom:15px;
-            ">
-                📅 SPA КАЛЕНДАР
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        calendar_date = st.date_input(
-            "Изберете дата",
-            value=date.today(),
-            key="spa_calendar_date"
-        )
-
-        try:
-            calendar_reservations = (
-                get_confirmed_spa_reservations(
-                    calendar_date
-                )
+    
+            st.caption(
+                f"График за "
+                f"{calendar_date.strftime('%d.%m.%Y')}"
             )
-
-        except Exception as error:
-            st.error(
-                "SPA календарът не може да бъде зареден."
-                "\n\n"
-                f"Причина: {error}"
-            )
-            st.stop()
-
-        reserved_by_time = {
-            row[4].strftime("%H:%M"): row
-            for row in calendar_reservations
-            if row[4] is not None
-        }
-
-        spa_time_options = [
-            "09:00",
-            "10:00",
-            "11:00",
-            "12:00",
-            "13:00",
-            "14:00",
-            "15:00",
-            "16:00",
-            "17:00",
-            "18:00",
-            "19:00"
-        ]
-
-        st.caption(
-            f"График за "
-            f"{calendar_date.strftime('%d.%m.%Y')}"
-        )
-
-        for row_start in range(
-            0,
-            len(spa_time_options),
-            4
-        ):
-            time_columns = st.columns(4)
-
-            row_times = spa_time_options[
-                row_start:row_start + 4
-            ]
-
-            for column, time_text in zip(
-                time_columns,
-                row_times
+    
+            for row_start in range(
+                0,
+                len(spa_time_options),
+                4
             ):
-                with column:
-                    reservation = reserved_by_time.get(
-                        time_text
+                time_columns = st.columns(4)
+    
+                row_times = spa_time_options[
+                    row_start:row_start + 4
+                ]
+    
+                for column, time_text in zip(
+                    time_columns,
+                    row_times
+                ):
+                    with column:
+                        reservation = reserved_by_time.get(
+                            time_text
+                        )
+    
+                        if reservation is None:
+                            st.success(
+                                f"🟢 {time_text}\n\nСвободно"
+                            )
+    
+                        else:
+                            reservation_id = reservation[0]
+                            room_number = reservation[1]
+                            service_name = reservation[2]
+    
+                            st.error(
+                                f"🔴 {time_text}\n\n"
+                                f"Стая {room_number}\n\n"
+                                f"{service_name}\n\n"
+                                f"Заявка #{reservation_id}"
+                            )
+    
+        # =====================================
+        # SPA АРХИВ
+        # =====================================
+    
+        elif spa_subview == "🗄️ Архив":
+    
+            st.markdown(
+                """
+                <div style="
+                    color:#D4AF37;
+                    font-size:28px;
+                    font-weight:900;
+                    margin-bottom:15px;
+                ">
+                    🗄️ SPA АРХИВ
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+    
+            try:
+                archived_spa_rows = (
+                    get_archived_spa_requests()
+                )
+    
+            except Exception as error:
+                st.error(
+                    "SPA архивът не може да бъде зареден."
+                    "\n\n"
+                    f"Причина: {error}"
+                )
+                return
+    
+            if not archived_spa_rows:
+                st.info(
+                    "Все още няма архивирани SPA заявки."
+                )
+    
+            else:
+                for archive_row in archived_spa_rows:
+    
+                    request_id = archive_row[0]
+                    room_number = archive_row[1]
+                    service_name = archive_row[2]
+                    guest_message = archive_row[3]
+    
+                    request_status = str(
+                        archive_row[4] or ""
+                    ).strip().upper()
+    
+                    reservation_date = archive_row[6]
+                    reservation_time = archive_row[7]
+                    duration_minutes = archive_row[8]
+                    completed_at = archive_row[9]
+    
+                    status_label = (
+                        "✅ Приключена"
+                        if request_status == "COMPLETED"
+                        else "❌ Отказана"
                     )
-
-                    if reservation is None:
-                        st.success(
-                            f"🟢 {time_text}\n\nСвободно"
+    
+                    with st.container(border=True):
+    
+                        archive_col1, archive_col2 = (
+                            st.columns([5, 2])
                         )
-
-                    else:
-                        reservation_id = reservation[0]
-                        room_number = reservation[1]
-                        service_name = reservation[2]
-
-                        st.error(
-                            f"🔴 {time_text}\n\n"
-                            f"Стая {room_number}\n\n"
-                            f"{service_name}\n\n"
-                            f"Заявка #{reservation_id}"
-                        )
-
+    
+                        with archive_col1:
+                            st.subheader(
+                                f"SPA заявка #{request_id}"
+                            )
+    
+                            st.markdown(
+                                f"### 🛎️ Стая №{room_number}"
+                            )
+    
+                            st.write(
+                                f"**Услуга:** {service_name}"
+                            )
+    
+                            if guest_message:
+                                st.info(guest_message)
+    
+                        with archive_col2:
+                            st.write(
+                                f"**Статус:** {status_label}"
+                            )
+    
+                            if reservation_date:
+                                st.write(
+                                    "**Дата:** "
+                                    f"{reservation_date.strftime('%d.%m.%Y')}"
+                                )
+    
+                            if reservation_time:
+                                st.write(
+                                    "**Час:** "
+                                    f"{reservation_time.strftime('%H:%M')}"
+                                )
+    
+                            if duration_minutes:
+                                st.write(
+                                    "**Продължителност:** "
+                                    f"{duration_minutes} минути"
+                                )
+    
+                            if completed_at:
+                                st.caption(
+                                    "Архивирана: "
+                                    f"{completed_at.strftime('%d.%m.%Y %H:%M')}"
+                                )
+    
+        # =====================================
+        # КРАЙ НА SPA ИЗГЛЕДА
+        # =====================================
+        st.divider()
+    
+        st.caption(
+            "Powered by HMITSEVAPPS"
+        )
+    
+        return
     # =====================================
-    # SPA АРХИВ
+    # СМЕТКИ ПО СТАИ
     # =====================================
-
-    elif spa_subview == "🗄️ Архив":
-
+    if view_mode == ROOM_BILLS_VIEW:
+    
         st.markdown(
             """
             <div style="
@@ -2298,598 +2410,482 @@ if view_mode == SPA_VIEW:
                 font-weight:900;
                 margin-bottom:15px;
             ">
-                🗄️ SPA АРХИВ
+                🧾 ОБЩИ СМЕТКИ ПО СТАИ
             </div>
             """,
             unsafe_allow_html=True
         )
-
+    
         try:
-            archived_spa_rows = (
-                get_archived_spa_requests()
+            # Room Service се начислява само при COMPLETED.
+            # SPA и Activities се начисляват само при
+            # CONFIRMED или COMPLETED и цена над 0.
+            sync_room_service_charges()
+            sync_spa_charges()
+            sync_activity_charges()
+    
+            open_charge_rows = get_open_room_charges()
+    
+            room_bills = build_open_room_bills(
+                open_charge_rows
             )
-
+    
         except Exception as error:
             st.error(
-                "SPA архивът не може да бъде зареден."
-                "\n\n"
+                "Сметките по стаи не могат да бъдат "
+                "заредени.\n\n"
                 f"Причина: {error}"
             )
-            st.stop()
-
-        if not archived_spa_rows:
-            st.info(
-                "Все още няма архивирани SPA заявки."
+            return
+    
+        if not room_bills:
+            st.success(
+                "Няма отворени сметки по стаи."
             )
-
         else:
-            for archive_row in archived_spa_rows:
-
-                request_id = archive_row[0]
-                room_number = archive_row[1]
-                service_name = archive_row[2]
-                guest_message = archive_row[3]
-
-                request_status = str(
-                    archive_row[4] or ""
-                ).strip().upper()
-
-                reservation_date = archive_row[6]
-                reservation_time = archive_row[7]
-                duration_minutes = archive_row[8]
-                completed_at = archive_row[9]
-
-                status_label = (
-                    "✅ Приключена"
-                    if request_status == "COMPLETED"
-                    else "❌ Отказана"
+            total_open_value = sum(
+                room_bill["grand_total"]
+                for room_bill in room_bills.values()
+            )
+    
+            metric_col1, metric_col2 = st.columns(2)
+    
+            with metric_col1:
+                st.metric(
+                    "Стаи с отворена сметка",
+                    len(room_bills)
                 )
-
+    
+            with metric_col2:
+                st.metric(
+                    "Обща стойност",
+                    f"€ {total_open_value:.2f}"
+                )
+    
+            st.caption(
+                "Тук се събират всички платими услуги "
+                "и поръчки, натрупани по стаи."
+            )
+    
+            st.divider()
+    
+            for room_id, room_bill in room_bills.items():
+    
+                room_number = room_bill["room_number"]
+                items = room_bill["items"]
+                grand_total = room_bill["grand_total"]
+                first_charge_at = room_bill["first_charge_at"]
+    
                 with st.container(border=True):
-
-                    archive_col1, archive_col2 = (
-                        st.columns([5, 2])
+    
+                    header_col, total_col = st.columns(
+                        [5, 2],
+                        vertical_alignment="center"
                     )
-
-                    with archive_col1:
-                        st.subheader(
-                            f"SPA заявка #{request_id}"
-                        )
-
+    
+                    with header_col:
                         st.markdown(
-                            f"### 🛎️ Стая №{room_number}"
+                            f"""
+                            <div style="
+                                color:#D4AF37;
+                                font-size:32px;
+                                font-weight:900;
+                            ">
+                                🛎️ Стая № {room_number}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
                         )
-
-                        st.write(
-                            f"**Услуга:** {service_name}"
-                        )
-
-                        if guest_message:
-                            st.info(guest_message)
-
-                    with archive_col2:
-                        st.write(
-                            f"**Статус:** {status_label}"
-                        )
-
-                        if reservation_date:
-                            st.write(
-                                "**Дата:** "
-                                f"{reservation_date.strftime('%d.%m.%Y')}"
-                            )
-
-                        if reservation_time:
-                            st.write(
-                                "**Час:** "
-                                f"{reservation_time.strftime('%H:%M')}"
-                            )
-
-                        if duration_minutes:
-                            st.write(
-                                "**Продължителност:** "
-                                f"{duration_minutes} минути"
-                            )
-
-                        if completed_at:
+    
+                        if first_charge_at:
                             st.caption(
-                                "Архивирана: "
-                                f"{completed_at.strftime('%d.%m.%Y %H:%M')}"
+                                "Сметката се натрупва от: "
+                                f"{first_charge_at.strftime('%d.%m.%Y %H:%M')}"
                             )
-
-    # =====================================
-    # КРАЙ НА SPA ИЗГЛЕДА
-    # =====================================
-    st.divider()
-
-    st.caption(
-        "Powered by HMITSEVAPPS"
-    )
-
-    st.stop()
-# =====================================
-# СМЕТКИ ПО СТАИ
-# =====================================
-if view_mode == ROOM_BILLS_VIEW:
-
-    st.markdown(
-        """
-        <div style="
-            color:#D4AF37;
-            font-size:28px;
-            font-weight:900;
-            margin-bottom:15px;
-        ">
-            🧾 ОБЩИ СМЕТКИ ПО СТАИ
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    try:
-        # Room Service се начислява само при COMPLETED.
-        # SPA и Activities се начисляват само при
-        # CONFIRMED или COMPLETED и цена над 0.
-        sync_room_service_charges()
-        sync_spa_charges()
-        sync_activity_charges()
-
-        open_charge_rows = get_open_room_charges()
-
-        room_bills = build_open_room_bills(
-            open_charge_rows
+    
+                    with total_col:
+                        st.metric(
+                            "Общо за стаята",
+                            f"€ {grand_total:.2f}"
+                        )
+    
+                    st.markdown(
+                        "#### Натрупани позиции"
+                    )
+    
+                    source_labels = {
+                        "ROOM_SERVICE": "🍽️ Room Service",
+                        "SPA": "💆 SPA",
+                        "ACTIVITY": "🎿 Activity",
+                        "SERVICE": "🔧 Допълнителна услуга",
+                        "MANUAL": "➕ Добавена от рецепция"
+                    }
+    
+                    for item in items:
+    
+                        item_col, quantity_col, price_col = (
+                            st.columns(
+                                [6, 1, 2],
+                                vertical_alignment="center"
+                            )
+                        )
+    
+                        with item_col:
+                            source_label = source_labels.get(
+                                item["source_type"],
+                                item["source_type"]
+                            )
+    
+                            st.write(
+                                f"**{source_label}**"
+                            )
+    
+                            st.write(
+                                item["description"]
+                            )
+    
+                            if item["created_at"]:
+                                st.caption(
+                                    item["created_at"].strftime(
+                                        "%d.%m.%Y %H:%M"
+                                    )
+                                )
+    
+                        with quantity_col:
+                            st.write(
+                                f"x{item['quantity']}"
+                            )
+    
+                        with price_col:
+                            st.write(
+                                f"€ {item['total_amount']:.2f}"
+                            )
+    
+                    st.divider()
+    
+                    st.info(
+                        "След като сумата бъде добавена към "
+                        "хотелската система, потвърдете и "
+                        "финализирайте сметката."
+                    )
+    
+                    confirm_transfer = st.checkbox(
+                        "Потвърждавам, че сумата е добавена "
+                        "към хотелската/PMS система",
+                        key=f"confirm_room_bill_{room_id}"
+                    )
+    
+                    if st.button(
+                        f"✅ Финализирай сметката на "
+                        f"Стая № {room_number}",
+                        key=f"complete_room_bill_{room_id}",
+                        type="primary",
+                        use_container_width=True,
+                        disabled=not confirm_transfer
+                    ):
+                        try:
+                            complete_room_bill(
+                                room_id
+                            )
+    
+                            st.success(
+                                f"Сметката на Стая № "
+                                f"{room_number} е финализирана."
+                            )
+    
+                            st.rerun()
+    
+                        except Exception as error:
+                            st.error(
+                                "Сметката не беше финализирана."
+                                "\n\n"
+                                f"Причина: {error}"
+                            )
+    
+        st.divider()
+    
+        st.caption(
+            "Powered by HMITSEVAPPS"
         )
-
+    
+        return
+    # =====================================
+    # ЗАРЕЖДАНЕ НА ROOM SERVICE ДАННИТЕ
+    # =====================================
+    
+    try:
+        if view_mode == ACTIVE_VIEW:
+            rows = get_room_service_orders()
+    
+        elif view_mode == COMPLETED_VIEW:
+            rows = get_completed_room_service_orders()
+    
+        else:
+            rows = []
+    
     except Exception as error:
         st.error(
-            "Сметките по стаи не могат да бъдат "
-            "заредени.\n\n"
+            "Поръчките не могат да бъдат заредени."
+            "\n\n"
             f"Причина: {error}"
         )
-        st.stop()
-
-    if not room_bills:
+    
+        return
+    
+    # =====================================
+    # ГРУПИРАНЕ ПО ПОРЪЧКА
+    # =====================================
+    
+    orders = {}
+    
+    for row in rows:
+        order_id = row[0]
+    
+        if order_id not in orders:
+            orders[order_id] = {
+                "room_number": row[1],
+                "created_at": row[2],
+                "order_status": row[3],
+                "total_amount": row[4],
+                "items": []
+            }
+    
+        orders[order_id]["items"].append(
+            {
+                "order_item_id": row[5],
+                "item_id": row[6],
+                "item_name": row[7],
+                "quantity": row[8],
+                "unit_price": row[9],
+                "notes": row[10],
+                "item_status": row[11]
+            }
+        )
+    
+    
+    # =====================================
+    # ОБОБЩЕНИЕ
+    # =====================================
+    
+    active_order_count = len(orders)
+    
+    metric_col1, metric_col2 = st.columns(2)
+    
+    with metric_col1:
+    
+        st.markdown(
+            """
+            <h3 style="
+                color:#D4AF37;
+                font-weight:900;
+                text-align:center;
+            ">
+                ROOM SERVICE ПОРЪЧКИ
+            </h3>
+            """,
+            unsafe_allow_html=True
+        )
+    
+        st.metric(
+            "",
+            active_order_count
+        )
+    
+    with metric_col2:
+        total_value = sum(
+            float(order["total_amount"] or 0)
+            for order in orders.values()
+        )
+    
+        st.metric(
+            "Обща стойност",
+            f"€ {total_value:.2f}"
+        )
+    
+    st.divider()
+    
+    
+    # =====================================
+    # ПОКАЗВАНЕ НА ПОРЪЧКИТЕ
+    # =====================================
+    
+    if not orders:
         st.success(
-            "Няма отворени сметки по стаи."
+            "Няма поръчки в този изглед."
         )
+    
     else:
-        total_open_value = sum(
-            room_bill["grand_total"]
-            for room_bill in room_bills.values()
-        )
-
-        metric_col1, metric_col2 = st.columns(2)
-
-        with metric_col1:
-            st.metric(
-                "Стаи с отворена сметка",
-                len(room_bills)
+        for order_id, order_data in orders.items():
+    
+            room_number = order_data["room_number"]
+            created_at = order_data["created_at"]
+            order_status = order_data["order_status"]
+    
+            total_amount = float(
+                order_data["total_amount"] or 0
             )
-
-        with metric_col2:
-            st.metric(
-                "Обща стойност",
-                f"€ {total_open_value:.2f}"
-            )
-
-        st.caption(
-            "Тук се събират всички платими услуги "
-            "и поръчки, натрупани по стаи."
-        )
-
-        st.divider()
-
-        for room_id, room_bill in room_bills.items():
-
-            room_number = room_bill["room_number"]
-            items = room_bill["items"]
-            grand_total = room_bill["grand_total"]
-            first_charge_at = room_bill["first_charge_at"]
-
+    
             with st.container(border=True):
-
-                header_col, total_col = st.columns(
-                    [5, 2],
-                    vertical_alignment="center"
+    
+                title_col, time_col, total_col = st.columns(
+                    [4, 2, 2]
                 )
-
-                with header_col:
+    
+                with title_col:
+    
+                    st.subheader(
+                        f"🍽️ Room Service Order #{order_id}"
+                    )
+    
                     st.markdown(
-                        f"""
-                        <div style="
-                            color:#D4AF37;
-                            font-size:32px;
-                            font-weight:900;
-                        ">
-                            🛎️ Стая № {room_number}
-                        </div>
-                        """,
-                        unsafe_allow_html=True
+                        f"### 🛎️ Стая №{room_number}"
                     )
-
-                    if first_charge_at:
+    
+                with time_col:
+    
+                    if created_at:
                         st.caption(
-                            "Сметката се натрупва от: "
-                            f"{first_charge_at.strftime('%d.%m.%Y %H:%M')}"
+                            "Получена: "
+                            f"{created_at.strftime('%d.%m.%Y %H:%M')}"
                         )
-
+    
+                    status_colors = {
+                        "NEW": "🔴 NEW",
+                        "PREPARING": "🟡 PREPARING",
+                        "READY": "🟢 READY",
+                        "DELIVERING": "🚚 DELIVERING",
+                        "COMPLETED": "✅ COMPLETED"
+                    }
+    
+                    st.write(
+                        f"Статус: "
+                        f"{status_colors.get(order_status, order_status)}"
+                    )
+    
                 with total_col:
+    
                     st.metric(
-                        "Общо за стаята",
-                        f"€ {grand_total:.2f}"
+                        "Общо",
+                        f"€ {total_amount:.2f}"
                     )
-
+    
                 st.markdown(
-                    "#### Натрупани позиции"
+                    "#### Артикули"
                 )
-
-                source_labels = {
-                    "ROOM_SERVICE": "🍽️ Room Service",
-                    "SPA": "💆 SPA",
-                    "ACTIVITY": "🎿 Activity",
-                    "SERVICE": "🔧 Допълнителна услуга",
-                    "MANUAL": "➕ Добавена от рецепция"
-                }
-
-                for item in items:
-
-                    item_col, quantity_col, price_col = (
-                        st.columns(
-                            [6, 1, 2],
-                            vertical_alignment="center"
-                        )
+    
+                for item in order_data["items"]:
+    
+                    item_col, qty_col, price_col = st.columns(
+                        [6, 1, 2]
                     )
-
+    
                     with item_col:
-                        source_label = source_labels.get(
-                            item["source_type"],
-                            item["source_type"]
-                        )
-
+    
                         st.write(
-                            f"**{source_label}**"
+                            f"**{item['item_name']}**"
                         )
-
-                        st.write(
-                            item["description"]
-                        )
-
-                        if item["created_at"]:
+    
+                        if item["notes"]:
                             st.caption(
-                                item["created_at"].strftime(
-                                    "%d.%m.%Y %H:%M"
-                                )
+                                f"📝 {item['notes']}"
                             )
-
-                    with quantity_col:
+    
+                    with qty_col:
+    
                         st.write(
                             f"x{item['quantity']}"
                         )
-
+    
                     with price_col:
+    
+                        item_total = (
+                            float(item["unit_price"])
+                            * int(item["quantity"])
+                        )
+    
                         st.write(
-                            f"€ {item['total_amount']:.2f}"
+                            f"€ {item_total:.2f}"
                         )
-
-                st.divider()
-
-                st.info(
-                    "След като сумата бъде добавена към "
-                    "хотелската система, потвърдете и "
-                    "финализирайте сметката."
-                )
-
-                confirm_transfer = st.checkbox(
-                    "Потвърждавам, че сумата е добавена "
-                    "към хотелската/PMS система",
-                    key=f"confirm_room_bill_{room_id}"
-                )
-
-                if st.button(
-                    f"✅ Финализирай сметката на "
-                    f"Стая № {room_number}",
-                    key=f"complete_room_bill_{room_id}",
-                    type="primary",
-                    use_container_width=True,
-                    disabled=not confirm_transfer
-                ):
-                    try:
-                        complete_room_bill(
-                            room_id
+    
+                # =====================================
+                # ROOM SERVICE СТАТУС
+                # =====================================
+    
+                if view_mode == ACTIVE_VIEW:
+    
+                    room_service_statuses = [
+                        "NEW",
+                        "PREPARING",
+                        "READY",
+                        "DELIVERING",
+                        "COMPLETED"
+                    ]
+    
+                    with st.form(
+                        key=f"room_service_status_form_{order_id}",
+                        clear_on_submit=False
+                    ):
+    
+                        status_col, action_col = st.columns(
+                            [2, 3]
                         )
-
-                        st.success(
-                            f"Сметката на Стая № "
-                            f"{room_number} е финализирана."
-                        )
-
-                        st.rerun()
-
-                    except Exception as error:
-                        st.error(
-                            "Сметката не беше финализирана."
-                            "\n\n"
-                            f"Причина: {error}"
-                        )
-
-    st.divider()
-
+    
+                        with status_col:
+    
+                            selected_status = st.selectbox(
+                                "Статус",
+                                room_service_statuses,
+                                index=(
+                                    room_service_statuses.index(
+                                        order_status
+                                    )
+                                    if order_status
+                                    in room_service_statuses
+                                    else 0
+                                ),
+                                key=f"room_service_status_{order_id}"
+                            )
+    
+                        with action_col:
+    
+                            save_status = (
+                                st.form_submit_button(
+                                    "💾 Запази статуса",
+                                    type="primary",
+                                    use_container_width=True
+                                )
+                            )
+    
+                            if save_status:
+    
+                                try:
+        
+                                    update_room_service_order_status(
+                                        order_id=order_id,
+                                        new_status=selected_status
+                                    )
+        
+                                    st.rerun()
+        
+                                except Exception as error:
+        
+                                    st.error(
+                                        "Статусът не беше обновен."
+                                        "\n\n"
+                                        f"Причина: {error}"
+                                    )
+            
+    
+    
+    # =====================================
+    # БРАНДИРАНЕ
+    # =====================================
+    
     st.caption(
         "Powered by HMITSEVAPPS"
     )
-
-    st.stop()
 # =====================================
-# ЗАРЕЖДАНЕ НА ROOM SERVICE ДАННИТЕ
+# СТАРТИРАНЕ НА LIVE RECEPTION DASHBOARD
 # =====================================
 
-try:
-    if view_mode == ACTIVE_VIEW:
-        rows = get_room_service_orders()
-
-    elif view_mode == COMPLETED_VIEW:
-        rows = get_completed_room_service_orders()
-
-    else:
-        rows = []
-
-except Exception as error:
-    st.error(
-        "Поръчките не могат да бъдат заредени."
-        "\n\n"
-        f"Причина: {error}"
-    )
-
-    st.stop()
-
-# =====================================
-# ГРУПИРАНЕ ПО ПОРЪЧКА
-# =====================================
-
-orders = {}
-
-for row in rows:
-    order_id = row[0]
-
-    if order_id not in orders:
-        orders[order_id] = {
-            "room_number": row[1],
-            "created_at": row[2],
-            "order_status": row[3],
-            "total_amount": row[4],
-            "items": []
-        }
-
-    orders[order_id]["items"].append(
-        {
-            "order_item_id": row[5],
-            "item_id": row[6],
-            "item_name": row[7],
-            "quantity": row[8],
-            "unit_price": row[9],
-            "notes": row[10],
-            "item_status": row[11]
-        }
-    )
-
-
-# =====================================
-# ОБОБЩЕНИЕ
-# =====================================
-
-active_order_count = len(orders)
-
-metric_col1, metric_col2 = st.columns(2)
-
-with metric_col1:
-
-    st.markdown(
-        """
-        <h3 style="
-            color:#D4AF37;
-            font-weight:900;
-            text-align:center;
-        ">
-            ROOM SERVICE ПОРЪЧКИ
-        </h3>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.metric(
-        "",
-        active_order_count
-    )
-
-with metric_col2:
-    total_value = sum(
-        float(order["total_amount"] or 0)
-        for order in orders.values()
-    )
-
-    st.metric(
-        "Обща стойност",
-        f"€ {total_value:.2f}"
-    )
-
-st.divider()
-
-
-# =====================================
-# ПОКАЗВАНЕ НА ПОРЪЧКИТЕ
-# =====================================
-
-if not orders:
-    st.success(
-        "Няма поръчки в този изглед."
-    )
-
-else:
-    for order_id, order_data in orders.items():
-
-        room_number = order_data["room_number"]
-        created_at = order_data["created_at"]
-        order_status = order_data["order_status"]
-
-        total_amount = float(
-            order_data["total_amount"] or 0
-        )
-
-        with st.container(border=True):
-
-            title_col, time_col, total_col = st.columns(
-                [4, 2, 2]
-            )
-
-            with title_col:
-
-                st.subheader(
-                    f"🍽️ Room Service Order #{order_id}"
-                )
-
-                st.markdown(
-                    f"### 🛎️ Стая №{room_number}"
-                )
-
-            with time_col:
-
-                if created_at:
-                    st.caption(
-                        "Получена: "
-                        f"{created_at.strftime('%d.%m.%Y %H:%M')}"
-                    )
-
-                status_colors = {
-                    "NEW": "🔴 NEW",
-                    "PREPARING": "🟡 PREPARING",
-                    "READY": "🟢 READY",
-                    "DELIVERING": "🚚 DELIVERING",
-                    "COMPLETED": "✅ COMPLETED"
-                }
-
-                st.write(
-                    f"Статус: "
-                    f"{status_colors.get(order_status, order_status)}"
-                )
-
-            with total_col:
-
-                st.metric(
-                    "Общо",
-                    f"€ {total_amount:.2f}"
-                )
-
-            st.markdown(
-                "#### Артикули"
-            )
-
-            for item in order_data["items"]:
-
-                item_col, qty_col, price_col = st.columns(
-                    [6, 1, 2]
-                )
-
-                with item_col:
-
-                    st.write(
-                        f"**{item['item_name']}**"
-                    )
-
-                    if item["notes"]:
-                        st.caption(
-                            f"📝 {item['notes']}"
-                        )
-
-                with qty_col:
-
-                    st.write(
-                        f"x{item['quantity']}"
-                    )
-
-                with price_col:
-
-                    item_total = (
-                        float(item["unit_price"])
-                        * int(item["quantity"])
-                    )
-
-                    st.write(
-                        f"€ {item_total:.2f}"
-                    )
-
-            # =====================================
-            # ROOM SERVICE СТАТУС
-            # =====================================
-
-            if view_mode == ACTIVE_VIEW:
-
-                room_service_statuses = [
-                    "NEW",
-                    "PREPARING",
-                    "READY",
-                    "DELIVERING",
-                    "COMPLETED"
-                ]
-
-                with st.form(
-                    key=f"room_service_status_form_{order_id}",
-                    clear_on_submit=False
-                ):
-
-                    status_col, action_col = st.columns(
-                        [2, 3]
-                    )
-
-                    with status_col:
-
-                        selected_status = st.selectbox(
-                            "Статус",
-                            room_service_statuses,
-                            index=(
-                                room_service_statuses.index(
-                                    order_status
-                                )
-                                if order_status
-                                in room_service_statuses
-                                else 0
-                            ),
-                            key=f"room_service_status_{order_id}"
-                        )
-
-                    with action_col:
-
-                        save_status = (
-                            st.form_submit_button(
-                                "💾 Запази статуса",
-                                type="primary",
-                                use_container_width=True
-                            )
-                        )
-
-                        if save_status:
-
-                            try:
-    
-                                update_room_service_order_status(
-                                    order_id=order_id,
-                                    new_status=selected_status
-                                )
-    
-                                st.rerun()
-    
-                            except Exception as error:
-    
-                                st.error(
-                                    "Статусът не беше обновен."
-                                    "\n\n"
-                                    f"Причина: {error}"
-                                )
-        
-
-
-# =====================================
-# БРАНДИРАНЕ
-# =====================================
-
-st.caption(
-    "Powered by HMITSEVAPPS"
-)
+reception_live_dashboard()
