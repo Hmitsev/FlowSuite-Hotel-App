@@ -290,22 +290,17 @@ room_number = st.session_state.get(
 
 
 # =========================================================
-# ЗАГЛАВНА СЕКЦИЯ
+# БАНЕР
 # =========================================================
+st.image(
+    "assets/help_banner.png",
+    use_container_width=True
+)
+
 st.markdown(
     f"""
     <div class="assistance-header">
-        <div class="assistance-title">
-            🛎️ {t["title"]}
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-st.caption(
-    t["subtitle"]
-)
+        <div 
 
 # =========================================================
 # УСПЕШНО ИЗПРАТЕНА ЗАЯВКА
