@@ -550,16 +550,16 @@ housekeeping_requests = {
 
 
 # =========================================================
-# ИЗБОР НА ОСНОВНА КАТЕГОРИЯ
+# ИЗБОР НА КАТЕГОРИЯ И ВИД НА ЗАЯВКАТА
 # =========================================================
 st.markdown(
-    """
-    <div class="section-title">
-        1️⃣ Изберете категория
-    </div>
-    """,
+    f'<div class="section-title">{t["department"]}</div>',
     unsafe_allow_html=True
 )
+
+# При първо отваряне няма автоматично избрана категория
+if "selected_department" not in st.session_state:
+    st.session_state.selected_department = None
 
 col1, col2 = st.columns(2)
 
@@ -567,57 +567,91 @@ with col1:
     maintenance_selected = st.button(
         t["maintenance"],
         use_container_width=True,
-        key="btn_maintenance"
+        key="btn_maintenance",
+        type=(
+            "primary"
+            if st.session_state.selected_department == "MAINTENANCE"
+            else "secondary"
+        )
     )
 
 with col2:
     housekeeping_selected = st.button(
         t["housekeeping"],
         use_container_width=True,
-        key="btn_housekeeping"
+        key="btn_housekeeping",
+        type=(
+            "primary"
+            if st.session_state.selected_department == "HOUSEKEEPING"
+            else "secondary"
+        )
     )
 
-if "selected_department" not in st.session_state:
-    st.session_state.selected_department = "MAINTENANCE"
-
+# Запаметяване на избраната категория
 if maintenance_selected:
     st.session_state.selected_department = "MAINTENANCE"
+    st.session_state.pop("assistance_request_type", None)
+    st.rerun()
 
 if housekeeping_selected:
     st.session_state.selected_department = "HOUSEKEEPING"
+    st.session_state.pop("assistance_request_type", None)
+    st.rerun()
 
 selected_department = st.session_state.selected_department
 
-if selected_department == "MAINTENANCE":
+# Стойности по подразбиране, докато няма избор
+selected_category = None
+selected_request_type = None
+selected_priority = None
 
-    st.success(
-        "✅ Избрано: Технически проблем"
+# Падащото меню се показва само след избор на категория
+if selected_department is not None:
+
+    if selected_department == "MAINTENANCE":
+        available_requests = maintenance_requests.get(
+            language,
+            maintenance_requests["bg"]
+        )
+    else:
+        available_requests = housekeeping_requests.get(
+            language,
+            housekeeping_requests["bg"]
+        )
+
+    st.markdown(
+        f'<div class="section-title">{t["request_type"]}</div>',
+        unsafe_allow_html=True
     )
 
-    available_requests = maintenance_requests.get(
-        language,
-        maintenance_requests["bg"]
+    request_labels = [
+        request_data[1]
+        for request_data in available_requests
+    ]
+
+    selected_request_label = st.selectbox(
+        t["request_type"],
+        options=[None] + request_labels,
+        index=0,
+        placeholder=t["request_type"],
+        label_visibility="collapsed",
+        key="assistance_request_type"
     )
 
-else:
+    if selected_request_label is not None:
+        selected_request_data = next(
+            (
+                request_data
+                for request_data in available_requests
+                if request_data[1] == selected_request_label
+            ),
+            None
+        )
 
-    st.success(
-        "✅ Избрано: Камериерско обслужване"
-    )
-
-    available_requests = housekeeping_requests.get(
-        language,
-        housekeeping_requests["bg"]
-    )
-
-st.markdown(
-    """
-    <div class="section-title">
-        2️⃣ Изберете вид на заявката
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        if selected_request_data is not None:
+            selected_category = selected_request_data[0]
+            selected_request_type = selected_request_data[1]
+            selected_priority = selected_request_data[2]
 # =========================================================
 # ИЗБОР НА КОНКРЕТЕН ВИД ЗАЯВКА
 # =========================================================
@@ -714,6 +748,14 @@ if st.button(
     type="primary",
     use_container_width=True
 ):
+    if selected_department is None:
+        st.warning(t["department"])
+        st.stop()
+
+    if selected_request_type is None:
+        st.warning(t["select_request"])
+        st.stop()
+
     try:
         guest_image_bytes = None
         guest_image_name = None
