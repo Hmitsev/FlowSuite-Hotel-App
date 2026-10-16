@@ -550,114 +550,76 @@ housekeeping_requests = {
 
 
 # =========================================================
-# ИЗБОР НА КАТЕГОРИЯ И ВИД НА ЗАЯВКАТА
+# ИЗБОР НА КАТЕГОРИЯ
 # =========================================================
 st.markdown(
     f'<div class="section-title">{t["department"]}</div>',
     unsafe_allow_html=True
 )
 
-# При първо отваряне няма автоматично избрана категория
-if "selected_department" not in st.session_state:
-    st.session_state.selected_department = None
+department_options = [
+    t["maintenance"],
+    t["housekeeping"]
+]
 
-col1, col2 = st.columns(2)
+selected_department_label = st.radio(
+    "",
+    department_options,
+    horizontal=True,
+    label_visibility="collapsed"
+)
 
-with col1:
-    maintenance_selected = st.button(
-        t["maintenance"],
-        use_container_width=True,
-        key="btn_maintenance",
-        type=(
-            "primary"
-            if st.session_state.selected_department == "MAINTENANCE"
-            else "secondary"
-        )
+if selected_department_label == t["maintenance"]:
+
+    available_requests = maintenance_requests.get(
+        language,
+        maintenance_requests["bg"]
     )
 
-with col2:
-    housekeeping_selected = st.button(
-        t["housekeeping"],
-        use_container_width=True,
-        key="btn_housekeeping",
-        type=(
-            "primary"
-            if st.session_state.selected_department == "HOUSEKEEPING"
-            else "secondary"
-        )
+    selected_department = "MAINTENANCE"
+
+else:
+
+    available_requests = housekeeping_requests.get(
+        language,
+        housekeeping_requests["bg"]
     )
 
-# Запаметяване на избраната категория
-if maintenance_selected:
-    st.session_state.selected_department = "MAINTENANCE"
+    selected_department = "HOUSEKEEPING"
 
-    st.session_state.pop(
-        "assistance_request_type",
-        None
-    )
 
-if housekeeping_selected:
-    st.session_state.selected_department = "HOUSEKEEPING"
+# =========================================================
+# ИЗБОР НА ВИД ЗАЯВКА
+# =========================================================
+st.markdown(
+    f'<div class="section-title">{t["request_type"]}</div>',
+    unsafe_allow_html=True
+)
 
-    st.session_state.pop(
-        "assistance_request_type",
-        None
-    )
+request_labels = [
+    request_data[1]
+    for request_data in available_requests
+]
 
-selected_department = st.session_state.selected_department
+selected_request_label = st.selectbox(
+    t["request_type"],
+    request_labels,
+    label_visibility="collapsed",
+    key="assistance_request_type"
+)
 
-# Стойности по подразбиране, докато няма избор
-selected_category = None
-selected_request_type = None
-selected_priority = None
-
-# Падащото меню се показва само след избор на категория
-if selected_department is not None:
-
-    if selected_department == "MAINTENANCE":
-        available_requests = maintenance_requests.get(
-            language,
-            maintenance_requests["bg"]
-        )
-    else:
-        available_requests = housekeeping_requests.get(
-            language,
-            housekeeping_requests["bg"]
-        )
-
-    st.markdown(
-        f'<div class="section-title">{t["request_type"]}</div>',
-        unsafe_allow_html=True
-    )
-
-    request_labels = [
-        request_data[1]
+selected_request_data = next(
+    (
+        request_data
         for request_data in available_requests
-    ]
+        if request_data[1] == selected_request_label
+    ),
+    None
+)
 
-    selected_request_label = st.selectbox(
-        t["request_type"],
-        options=[None] + request_labels,
-        index=0,
-        placeholder=t["request_type"],
-        label_visibility="collapsed",
-        key="assistance_request_type"
-    )
-
-    if selected_request_label is not None:
-        selected_request_data = next(
-            (
-                request_data
-                for request_data in available_requests
-                if request_data[1] == selected_request_label
-            ),
-            None
-        )
-
-        if selected_request_data is not None:
-            selected_category = selected_request_data[0]
-            selected_request_type = selected_request_data[1]
-            selected_priority = selected_request_data[2]
+selected_category = selected_request_data[0]
+selected_request_type = selected_request_data[1]
+selected_priority = selected_request_data[2]d_priority = selected_request_data[2]
 
 
 # =========================================================
