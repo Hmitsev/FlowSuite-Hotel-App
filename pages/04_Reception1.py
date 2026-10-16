@@ -234,6 +234,74 @@ def get_room_service_orders():
     finally:
         cur.close()
         conn.close()
+        # =====================================
+# ДОБАВЯНЕ НА ROOM SERVICE КЪМ СМЕТКИТЕ ПО СТАИ
+# =====================================
+def sync_room_service_charges():
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            INSERT INTO room_charges (
+                room_id,
+                source_type,
+                source_id,
+                source_item_id,
+                source_key,
+                description,
+                quantity,
+                unit_price,
+                total_amount,
+                charge_status,
+                created_at,
+                updated_at
+            )
+            SELECT
+                rso.room_id,
+                'ROOM_SERVICE',
+                rso.id,
+                rsoi.id,
+                'ROOM_SERVICE_ITEM:' || rsoi.id::text,
+                rsoi.item_name,
+                COALESCE(rsoi.quantity, 1),
+                COALESCE(rsoi.unit_price, 0),
+                (
+                    COALESCE(rsoi.quantity, 1)
+                    * COALESCE(rsoi.unit_price, 0)
+                ),
+                'OPEN',
+                COALESCE(
+                    rso.created_at,
+                    CURRENT_TIMESTAMP
+                ),
+                CURRENT_TIMESTAMP
+            FROM room_service_orders rso
+            JOIN room_service_order_items rsoi
+                ON rsoi.order_id = rso.id
+            WHERE rso.order_status <> 'CANCELLED'
+            ON CONFLICT (source_key)
+            DO UPDATE SET
+                description = EXCLUDED.description,
+                quantity = EXCLUDED.quantity,
+                unit_price = EXCLUDED.unit_price,
+                total_amount = EXCLUDED.total_amount,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE room_charges.charge_status = 'OPEN'
+            """
+        )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
 
 
 # =====================================
@@ -1967,7 +2035,7 @@ if view_mode == SPA_VIEW:
                             )
 
     st.divider()
-    # =====================================
+# =====================================
 # СМЕТКИ ПО СТАИ
 # =====================================
 if view_mode == ROOM_BILLS_VIEW:
@@ -1987,6 +2055,10 @@ if view_mode == ROOM_BILLS_VIEW:
     )
 
     try:
+        # Добавя липсващите Room Service позиции
+        # към общите сметки по стаи.
+        sync_room_service_charges()
+
         open_charge_rows = get_open_room_charges()
 
         room_bills = build_open_room_bills(
