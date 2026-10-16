@@ -272,79 +272,9 @@ with logout_col:
         st.session_state.kitchen_auth = False
         st.rerun()
 
-st.markdown("""
-<script>
-setTimeout(function() {
-    window.parent.location.reload();
-}, 30000);
-</script>
-""", unsafe_allow_html=True)
-# =====================================
-# BAR ITEMS FILTER
-# =====================================
-
-BAR_KEYWORDS = [
-    "water",
-    "минерална",
-    "вода",
-    "cola",
-    "coca",
-    "pepsi",
-    "sprite",
-    "fanta",
-    "juice",
-    "сок",
-    "tea",
-    "чай",
-    "coffee",
-    "кафе",
-    "espresso",
-    "еспресо",
-    "cappuccino",
-    "капучино",
-    "latte",
-    "лате",
-    "beer",
-    "бира",
-    "wine",
-    "вино",
-    "vodka",
-    "водка",
-    "whiskey",
-    "whisky",
-    "уиски",
-    "gin",
-    "джин",
-    "rum",
-    "ром",
-    "tequila",
-    "текила",
-    "cocktail",
-    "коктейл",
-    "prosecco",
-    "просеко",
-    "champagne",
-    "шампанско",
-    "mojito",
-    "мохито",
-    "aperol",
-    "аперол"
-]
-
-
-def is_bar_item(item_name):
-
-    item_name = str(
-        item_name or ""
-    ).lower()
-
-    return any(
-        keyword in item_name
-        for keyword in BAR_KEYWORDS
-    )
 
 # =====================================
-# ЗАРЕЖДАНЕ НА ROOM SERVICE ПОРЪЧКИТЕ
+# ЗАРЕЖДАНЕ НА ПОРЪЧКИТЕ
 # =====================================
 
 def get_kitchen_orders():
@@ -376,6 +306,20 @@ def get_kitchen_orders():
                 'NEW',
                 'PREPARING'
             )
+            AND LOWER(rsoi.item_name) NOT LIKE '%water%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%cola%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%coca%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%sprite%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%fanta%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%juice%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%tea%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%coffee%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%espresso%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%cappuccino%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%whiskey%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%vodka%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%wine%'
+            AND LOWER(rsoi.item_name) NOT LIKE '%beer%'
             ORDER BY
                 rso.created_at ASC,
                 rso.id ASC,
@@ -391,97 +335,41 @@ def get_kitchen_orders():
 
 
 # =====================================
-# ЗАРЕЖДАНЕ НА LOBBY BAR ПОРЪЧКИТЕ
+# ЦЯЛАТА ПОРЪЧКА СЕ ПРИГОТВЯ
 # =====================================
 
-def get_lobby_orders():
+def start_order(order_id):
     conn = get_connection()
     cur = conn.cursor()
 
     try:
         cur.execute(
             """
-            SELECT
-                lbo.id AS order_id,
-                CONCAT('TABLE-', lbo.table_number),
-                lbo.created_at,
-                lbo.order_status,
-                lbo.total_amount,
-                lboi.id AS order_item_id,
-                NULL AS item_id,
-                lboi.item_name,
-                lboi.quantity,
-                lboi.unit_price,
-                '' AS notes,
-                lboi.item_status
-            FROM lobby_bar_orders lbo
-            JOIN lobby_bar_order_items lboi
-                ON lboi.order_id = lbo.id
-            WHERE lbo.order_status IN (
-                'NEW',
-                'PREPARING'
-            )
-            ORDER BY lbo.created_at ASC
-            """
+            UPDATE room_service_orders
+            SET
+                order_status = 'PREPARING',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+              AND order_status IN (
+                  'NEW',
+                  'PREPARING'
+              )
+            """,
+            (order_id,)
         )
 
-        return cur.fetchall()
-
-    finally:
-        cur.close()
-        conn.close()
-# =====================================
-# ЦЯЛАТА ПОРЪЧКА СЕ ПРИГОТВЯ
-# =====================================
-
-def start_order(order_id, source):
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    try:
-
-        if source == "LOBBY":
-
-            cur.execute(
-                """
-                UPDATE lobby_bar_orders
-                SET order_status = 'PREPARING'
-                WHERE id = %s
-                """,
-                (order_id,)
-            )
-
-            cur.execute(
-                """
-                UPDATE lobby_bar_order_items
-                SET item_status = 'PREPARING'
-                WHERE order_id = %s
-                """,
-                (order_id,)
-            )
-
-        else:
-
-            cur.execute(
-                """
-                UPDATE room_service_orders
-                SET
-                    order_status = 'PREPARING',
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE id = %s
-                """,
-                (order_id,)
-            )
-
-            cur.execute(
-                """
-                UPDATE room_service_order_items
-                SET item_status = 'PREPARING'
-                WHERE order_id = %s
-                """,
-                (order_id,)
-            )
+        cur.execute(
+            """
+            UPDATE room_service_order_items
+            SET item_status = 'PREPARING'
+            WHERE order_id = %s
+              AND item_status IN (
+                  'NEW',
+                  'PREPARING'
+              )
+            """,
+            (order_id,)
+        )
 
         conn.commit()
 
@@ -498,54 +386,38 @@ def start_order(order_id, source):
 # ЦЯЛАТА ПОРЪЧКА Е ГОТОВА
 # =====================================
 
-def finish_order(order_id, source):
-
+def finish_order(order_id):
     conn = get_connection()
     cur = conn.cursor()
 
     try:
+        cur.execute(
+            """
+            UPDATE room_service_orders
+            SET
+                order_status = 'READY',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+              AND order_status IN (
+                  'NEW',
+                  'PREPARING'
+              )
+            """,
+            (order_id,)
+        )
 
-        if source == "LOBBY":
-
-            cur.execute(
-                """
-                UPDATE lobby_bar_orders
-                SET order_status = 'READY'
-                WHERE id = %s
-                """,
-                (order_id,)
-            )
-
-            cur.execute(
-                """
-                UPDATE lobby_bar_order_items
-                SET item_status = 'READY'
-                WHERE order_id = %s
-                """,
-                (order_id,)
-            )
-
-        else:
-
-            cur.execute(
-                """
-                UPDATE room_service_orders
-                SET
-                    order_status = 'READY',
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE id = %s
-                """,
-                (order_id,)
-            )
-
-            cur.execute(
-                """
-                UPDATE room_service_order_items
-                SET item_status = 'READY'
-                WHERE order_id = %s
-                """,
-                (order_id,)
-            )
+        cur.execute(
+            """
+            UPDATE room_service_order_items
+            SET item_status = 'READY'
+            WHERE order_id = %s
+              AND item_status IN (
+                  'NEW',
+                  'PREPARING'
+              )
+            """,
+            (order_id,)
+        )
 
         conn.commit()
 
@@ -556,6 +428,7 @@ def finish_order(order_id, source):
     finally:
         cur.close()
         conn.close()
+
 
 # =====================================
 # СТАТУС НА ОТДЕЛЕН АРТИКУЛ
@@ -591,36 +464,36 @@ def update_item_status(
         cur.close()
         conn.close()
 
-
 # =====================================
-# СЪОБЩЕНИЯ
+# АВТОМАТИЧНО ОБНОВЯВАНЕ
 # =====================================
 
-if st.session_state.kitchen_message:
-    st.success(
-        st.session_state.kitchen_message
-    )
+@st.fragment(run_every="15s")
+def kitchen_live_dashboard():
 
-    st.session_state.kitchen_message = None
+    # =====================================
+    # СЪОБЩЕНИЯ
+    # =====================================
 
+    if st.session_state.kitchen_message:
+        st.success(
+            st.session_state.kitchen_message
+        )
 
-if st.session_state.kitchen_error:
-    st.error(
-        st.session_state.kitchen_error
-    )
+        st.session_state.kitchen_message = None
 
-    st.session_state.kitchen_error = None
+    if st.session_state.kitchen_error:
+        st.error(
+            st.session_state.kitchen_error
+        )
 
-
+        st.session_state.kitchen_error = None
 # =====================================
 # ЗАРЕЖДАНЕ НА ДАННИТЕ
 # =====================================
 
 try:
-    room_rows = get_kitchen_orders()
-    lobby_rows = get_lobby_orders()
-    
-    rows = list(room_rows) + list(lobby_rows)
+    rows = get_kitchen_orders()
 
 except Exception as error:
     st.error(
@@ -640,28 +513,16 @@ orders = {}
 for row in rows:
     order_id = row[0]
 
-    source = (
-        "LOBBY"
-        if str(row[1]).startswith("TABLE-")
-        else "ROOM"
-    )
-
-    # Room Service #9 и Lobby Bar #9 трябва
-    # да бъдат две различни поръчки.
-    order_key = f"{source}-{order_id}"
-
-    if order_key not in orders:
-        orders[order_key] = {
-            "order_id": order_id,
-            "location": row[1],
+    if order_id not in orders:
+        orders[order_id] = {
+            "room_number": row[1],
             "created_at": row[2],
             "order_status": row[3],
             "total_amount": row[4],
-            "source": source,
             "items": []
         }
 
-    orders[order_key]["items"].append(
+    orders[order_id]["items"].append(
         {
             "order_item_id": row[5],
             "item_id": row[6],
@@ -672,6 +533,8 @@ for row in rows:
             "item_status": row[11]
         }
     )
+
+
 # =====================================
 # ОБОБЩЕНИЕ
 # =====================================
@@ -723,11 +586,10 @@ if not orders:
     )
 
 else:
-    for order_key, order_data in orders.items():
-
-        order_id = order_data["order_id"]
-        location = order_data["location"]
-        source = order_data["source"]
+    for order_id, order_data in orders.items():
+        room_number = order_data[
+            "room_number"
+        ]
 
         created_at = order_data[
             "created_at"
@@ -742,16 +604,6 @@ else:
         )
 
         items = order_data["items"]
-        visible_items = [
-            item
-            for item in items
-            if not is_bar_item(
-                item["item_name"]
-            )
-        ]
-        
-        if not visible_items:
-            continue
 
         with st.container(border=True):
             title_col, time_col, total_col = (
@@ -760,33 +612,16 @@ else:
                 )
             )
 
-            if source == "LOBBY":
+            with title_col:
                 st.subheader(
-                    f"🍸 Lobby Bar Order #{order_id}"
-                )
-            else:
-                st.subheader(
-                    f"🍽️ Room Service Order #{order_id}"
+                    f"🍽️ Room Service Order "
+                    f"#{order_id}"
                 )
 
+                st.markdown(
+                    f"### 🛎️ Стая №{room_number}"
+                )
 
-                if str(location).startswith("TABLE-"):
-
-                    table_no = str(location).replace(
-                        "TABLE-",
-                        ""
-                    )
-                
-                    st.markdown(
-                        f"### 🍸 Lobby Bar - Маса №{table_no}"
-                    )
-                
-                else:
-                
-                    st.markdown(
-                        f"### 🛎️ Стая №{location}"
-                    )
-                    
             with time_col:
                 if created_at:
                     st.caption(
@@ -814,11 +649,7 @@ else:
                 "#### Артикули"
             )
 
-            for item in visible_items:
-                if is_bar_item(
-                    item["item_name"]
-                ):
-                    continue
+            for item in items:
                 item_col, status_col = st.columns(
                     [5, 2],
                     vertical_alignment="center"
@@ -865,17 +696,14 @@ else:
             with preparing_col:
                 if st.button(
                     "🟡 Започни подготовката",
-                    key=f"start_order_{source}_{order_id}",
+                    key=f"start_order_{order_id}",
                     use_container_width=True,
                     disabled=(
                         order_status == "PREPARING"
                     )
                 ):
                     try:
-                        start_order(
-                            order_id,
-                            source
-                        )
+                        start_order(order_id)
 
                         st.session_state.kitchen_message = (
                             f"Поръчка №{order_id} "
@@ -896,15 +724,12 @@ else:
             with ready_col:
                 if st.button(
                     "✅ Цялата поръчка е готова",
-                    key=f"finish_order_{source}_{order_id}",
+                    key=f"finish_order_{order_id}",
                     type="primary",
                     use_container_width=True
                 ):
                     try:
-                        finish_order(
-                            order_id,
-                            source
-                        )
+                        finish_order(order_id)
 
                         st.session_state.kitchen_message = (
                             f"Поръчка №{order_id} "
@@ -922,6 +747,7 @@ else:
 
                         st.rerun()
 
+kitchen_live_dashboard()
 # =====================================
 # БРАНДИРАНЕ
 # =====================================
