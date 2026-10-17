@@ -376,6 +376,45 @@ def mark_order_item_served(order_item_id):
     finally:
         cur.close()
         conn.close()
+def handle_served_checkbox(
+    order_item_id,
+    checkbox_key,
+    department
+):
+    is_checked = bool(
+        st.session_state.get(
+            checkbox_key,
+            False
+        )
+    )
+
+    if not is_checked:
+        return
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            UPDATE order_items
+            SET kitchen_status = 'SERVED'
+            WHERE id = %s
+            """,
+            (order_item_id,)
+        )
+
+        conn.commit()
+
+        st.rerun(scope="fragment")
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cur.close()
+        conn.close()
 
 # =====================================
 # ПРИКЛЮЧВАНЕ НА ЦЯЛАТА СМЕТКА НА МАСАТА
