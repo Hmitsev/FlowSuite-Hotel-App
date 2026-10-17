@@ -350,24 +350,10 @@ def get_new_waiter_order_count():
         conn.close()
 
 # =====================================
-# CALLBACK ЗА ЧЕКБОКСА
+# ОТБЕЛЯЗВАНЕ НА АРТИКУЛ КАТО СЕРВИРАН
 # =====================================
 
-def handle_served_checkbox(
-    order_item_id,
-    checkbox_key,
-    department
-):
-    is_checked = bool(
-        st.session_state.get(
-            checkbox_key,
-            False
-        )
-    )
-
-    if not is_checked:
-        return
-
+def mark_order_item_served(order_item_id):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -377,6 +363,7 @@ def handle_served_checkbox(
             UPDATE order_items
             SET kitchen_status = 'SERVED'
             WHERE id = %s
+              AND kitchen_status <> 'SERVED'
             """,
             (order_item_id,)
         )
@@ -1401,36 +1388,55 @@ def waiter_live_dashboard():
                             st.success("🟢 Готово")
     
                     with served_col:
-                        checkbox_key = (
-                            f"waiter_served_{order_id}_{item_row_id}"
-                        )
-    
                         is_bar_item = department == "bar"
-    
+
                         can_be_served = (
                             is_bar_item
-                            or item_status in ("READY", "SERVED")
+                            or item_status == "READY"
                         )
-    
-                        st.checkbox(
-                            "Сервирано",
-                            value=(
-                                item_status == "SERVED"
-                            ),
-                            disabled=(
-                                item_status == "SERVED"
-                                or not can_be_served
-                            ),
-                            key=checkbox_key,
-                            on_change=handle_served_checkbox,
-                            args=(
-                                item_row_id,
-                                checkbox_key,
-                                department
+
+                        if item_status == "SERVED":
+                            st.success("✅ Сервирано")
+
+                        elif can_be_served:
+                            if st.button(
+                                "✅ Сервирай",
+                                key=(
+                                    f"serve_item_"
+                                    f"{order_id}_"
+                                    f"{item_row_id}"
+                                ),
+                                type="primary",
+                                use_container_width=True
+                            ):
+                                try:
+                                    mark_order_item_served(
+                                        item_row_id
+                                    )
+
+                                    st.rerun(
+                                        scope="fragment"
+                                    )
+
+                                except Exception as error:
+                                    st.error(
+                                        "Артикулът не беше "
+                                        "отбелязан като сервиран.\n\n"
+                                        f"Причина: {error}"
+                                    )
+
+                        else:
+                            st.button(
+                                "⏳ Не е готово",
+                                key=(
+                                    f"not_ready_item_"
+                                    f"{order_id}_"
+                                    f"{item_row_id}"
+                                ),
+                                disabled=True,
+                                use_container_width=True
                             )
-                        )
-    
-                        
+
                         st.divider()
     
                 # =====================================
