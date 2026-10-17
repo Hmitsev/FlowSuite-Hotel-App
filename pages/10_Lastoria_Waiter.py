@@ -750,7 +750,7 @@ def waiter_live_dashboard():
     )
 
     with waiter_title_col:
-        st.title("🤵 Сервитьор")
+        st.title(" Сервитьор")
 
     with waiter_bell_col:
         if total_waiter_notifications > 0:
