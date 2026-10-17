@@ -1,7 +1,6 @@
 import streamlit as st
 
 from database.db import get_connection
-from streamlit_autorefresh import st_autorefresh
 from datetime import timedelta
 
 # =========================================================
@@ -130,15 +129,7 @@ if not st.session_state.bar_auth:
     st.stop()
 
 
-# =========================================================
-# AUTO REFRESH
-# 60000 милисекунди = 1 минута
-# =========================================================
-st_autorefresh(
-    interval=60000,
-    limit=None,
-    key="bar_auto_refresh"
-)
+
 # =========================================================
 # TABLE NUMBER
 # =========================================================
@@ -152,9 +143,6 @@ table_number = st.session_state.get(
 # =========================================================
 # ПОМОЩНИ ФУНКЦИИ
 # =========================================================
-from datetime import timedelta
-
-
 def normalize_text(value):
     return str(
         value or ""
@@ -651,566 +639,581 @@ with logout_col:
 
 
 # =========================================================
-# ЗАРЕЖДАНЕ НА ROOM SERVICE НАПИТКИТЕ
+# АВТОМАТИЧНО ОБНОВЯВАНЕ НА BAR OPERATIONS
 # =========================================================
-try:
-    room_service_bar_rows = (
-        get_room_service_bar_items()
-    )
 
-except Exception as error:
-    st.error(
-        "Room Service напитките не могат "
-        "да бъдат заредени."
-        "\n\n"
-        f"Причина: {error}"
-    )
+@st.fragment(run_every="60s")
+def bar_live_dashboard():
 
-    room_service_bar_rows = []
-
-
-bar_counts = get_room_service_bar_counts(
-    room_service_bar_rows
-)
-# =========================================================
-# ЗАРЕЖДАНЕ НА LOBBY BAR ПОРЪЧКИТЕ
-# =========================================================
-try:
-    lobby_rows = get_lobby_bar_orders()
-
-except Exception as error:
-    st.error(
-        "Lobby Bar поръчките не могат "
-        "да бъдат заредени."
-        "\n\n"
-        f"Причина: {error}"
-    )
-
-    lobby_rows = []
-
-
-lobby_order_ids = {
-    row[0]
-    for row in lobby_rows
-}
-
-lobby_order_count = len(
-    lobby_order_ids
-)
-
-# =========================================================
-# KPI
-# =========================================================
-metric_col1, metric_col2, metric_col3 = st.columns(
-    3
-)
-
-with metric_col1:
-    st.metric(
-        "🔴 Нови поръчки",
-        bar_counts["NEW"]
-    )
-
-with metric_col2:
-    st.metric(
-        "🟡 Подготвят се",
-        bar_counts["PREPARING"]
-    )
-
-with metric_col3:
-    st.metric(
-        "🟢 Готови за доставка",
-        bar_counts["READY"]
-    )
-
-
-st.divider()
-
-
-# =========================================================
-# ИЗГЛЕДИ
-# =========================================================
-ROOM_SERVICE_VIEW = (
-    "🏨 Room Service "
-    f"({len(room_service_bar_rows)})"
-)
-
-LOBBY_BAR_VIEW = (
-    "🍸 Lobby Bar "
-    f"({lobby_order_count})"
-)
-
-bar_views = [
-    ROOM_SERVICE_VIEW,
-    LOBBY_BAR_VIEW
-]
-
-
-if "bar_view" not in st.session_state:
-    st.session_state.bar_view = ROOM_SERVICE_VIEW
-
-
-if st.session_state.bar_view not in bar_views:
-    st.session_state.bar_view = ROOM_SERVICE_VIEW
-
-
-bar_view = st.radio(
-    "Bar изглед",
-    bar_views,
-    horizontal=True,
-    label_visibility="collapsed",
-    key="bar_view"
-)
-
-
-st.divider()
-
-
-# =========================================================
-# ROOM SERVICE BAR ИЗГЛЕД
-# =========================================================
-if bar_view == ROOM_SERVICE_VIEW:
-
-    st.subheader(
-        "🏨 Room Service поръчки"
-    )
-
-    st.caption(
-        "Показват се всички активни Room Service "
-        "поръчки за обслужване на гостите."
-    )
-
-    room_service_bar_orders = (
-        group_room_service_bar_orders(
+        # =========================================================
+        # ЗАРЕЖДАНЕ НА ROOM SERVICE НАПИТКИТЕ
+        # =========================================================
+    
+        try:
+            room_service_bar_rows = (
+                get_room_service_bar_items()
+            )
+    
+        except Exception as error:
+            st.error(
+                "Room Service напитките не могат "
+                "да бъдат заредени."
+                "\n\n"
+                f"Причина: {error}"
+            )
+    
+            room_service_bar_rows = []
+    
+        bar_counts = get_room_service_bar_counts(
             room_service_bar_rows
         )
-    )
-
-    if not room_service_bar_orders:
-
-        st.success(
-            "Няма активни напитки за Room Service."
+    # =========================================================
+    # ЗАРЕЖДАНЕ НА LOBBY BAR ПОРЪЧКИТЕ
+    # =========================================================
+    try:
+        lobby_rows = get_lobby_bar_orders()
+    
+    except Exception as error:
+        st.error(
+            "Lobby Bar поръчките не могат "
+            "да бъдат заредени."
+            "\n\n"
+            f"Причина: {error}"
         )
-
-    else:
-        item_status_options = [
-            "NEW",
-            "PREPARING",
-            "READY",
-            "DELIVERING",
-            "COMPLETED",
-            "CANCELLED"
-        ]
-
-        for order_id, order_data in (
-            room_service_bar_orders.items()
-        ):
-            with st.container(
-                border=True
+    
+        lobby_rows = []
+    
+    
+    lobby_order_ids = {
+        row[0]
+        for row in lobby_rows
+    }
+    
+    lobby_order_count = len(
+        lobby_order_ids
+    )
+    
+    # =========================================================
+    # KPI
+    # =========================================================
+    metric_col1, metric_col2, metric_col3 = st.columns(
+        3
+    )
+    
+    with metric_col1:
+        st.metric(
+            "🔴 Нови поръчки",
+            bar_counts["NEW"]
+        )
+    
+    with metric_col2:
+        st.metric(
+            "🟡 Подготвят се",
+            bar_counts["PREPARING"]
+        )
+    
+    with metric_col3:
+        st.metric(
+            "🟢 Готови за доставка",
+            bar_counts["READY"]
+        )
+    
+    
+    st.divider()
+    
+    
+    # =========================================================
+    # ИЗГЛЕДИ
+    # =========================================================
+    ROOM_SERVICE_VIEW = (
+        "🏨 Room Service "
+        f"({len(room_service_bar_rows)})"
+    )
+    
+    LOBBY_BAR_VIEW = (
+        "🍸 Lobby Bar "
+        f"({lobby_order_count})"
+    )
+    
+    bar_views = [
+        ROOM_SERVICE_VIEW,
+        LOBBY_BAR_VIEW
+    ]
+    
+    
+    if "bar_view" not in st.session_state:
+        st.session_state.bar_view = ROOM_SERVICE_VIEW
+    
+    
+    if st.session_state.bar_view not in bar_views:
+        st.session_state.bar_view = ROOM_SERVICE_VIEW
+    
+    
+    bar_view = st.radio(
+        "Bar изглед",
+        bar_views,
+        horizontal=True,
+        label_visibility="collapsed",
+        key="bar_view"
+    )
+    
+    
+    st.divider()
+    
+    
+    # =========================================================
+    # ROOM SERVICE BAR ИЗГЛЕД
+    # =========================================================
+    if bar_view == ROOM_SERVICE_VIEW:
+    
+        st.subheader(
+            "🏨 Room Service поръчки"
+        )
+    
+        st.caption(
+            "Показват се всички активни Room Service "
+            "поръчки за обслужване на гостите."
+        )
+    
+        room_service_bar_orders = (
+            group_room_service_bar_orders(
+                room_service_bar_rows
+            )
+        )
+    
+        if not room_service_bar_orders:
+    
+            st.success(
+                "Няма активни напитки за Room Service."
+            )
+    
+        else:
+            item_status_options = [
+                "NEW",
+                "PREPARING",
+                "READY",
+                "DELIVERING",
+                "COMPLETED",
+                "CANCELLED"
+            ]
+    
+            for order_id, order_data in (
+                room_service_bar_orders.items()
             ):
-                title_column, time_column = st.columns(
-                    [5, 2]
-                )
-
-                with title_column:
-                    st.subheader(
-                        "🍸 Room Service "
-                        f"поръчка #{order_id}"
+                with st.container(
+                    border=True
+                ):
+                    title_column, time_column = st.columns(
+                        [5, 2]
                     )
-
-                    st.markdown(
-                        "### 🏨 "
-                        f"Стая №"
-                        f"{order_data['room_number']}"
-                    )
-
-                with time_column:
-                    if order_data["created_at"]:
-                        st.caption(
-                            "Получена: "
-                            f"{format_datetime(
-                                order_data['created_at']
-                            )}"
+    
+                    with title_column:
+                        st.subheader(
+                            "🍸 Room Service "
+                            f"поръчка #{order_id}"
                         )
-
-                    st.write(
-                        "**Общ статус на поръчката:** "
-                        f"{order_data['order_status']}"
-                    )
-
-                st.markdown(
-                    "#### Напитки"
-                )
-
-                for item in order_data["items"]:
-                    with st.container(
-                        border=True
-                    ):
-                        item_col, qty_col, price_col = (
-                            st.columns([5, 1, 2])
+    
+                        st.markdown(
+                            "### 🏨 "
+                            f"Стая №"
+                            f"{order_data['room_number']}"
                         )
-
-                        with item_col:
-                            st.markdown(
-                                f"""
-                                <div style="
-                                    color:#5DE0FF;
-                                    font-size:26px;
-                                    font-weight:800;
-                                    margin-bottom:6px;
-                                ">
-                                    {item['item_name']}
-                                </div>
-                                """,
-                                unsafe_allow_html=True
-                            )
-
-                            st.write(
-                                "Статус: "
-                                f"{get_item_status_label(
-                                    item['item_status']
+    
+                    with time_column:
+                        if order_data["created_at"]:
+                            st.caption(
+                                "Получена: "
+                                f"{format_datetime(
+                                    order_data['created_at']
                                 )}"
                             )
-
-                            if item["notes"]:
-                                st.caption(
-                                    "📝 "
-                                    f"{item['notes']}"
-                                )
-
-                        with qty_col:
-                            st.write(
-                                f"x{item['quantity']}"
-                            )
-
-                        with price_col:
-                            item_total = (
-                                item["unit_price"]
-                                * item["quantity"]
-                            )
-
-                            st.write(
-                                f"€ {item_total:.2f}"
-                            )
-
-                        with st.form(
-                            key=(
-                                "bar_item_form_"
-                                f"{item['order_item_id']}"
-                            ),
-                            clear_on_submit=False
+    
+                        st.write(
+                            "**Общ статус на поръчката:** "
+                            f"{order_data['order_status']}"
+                        )
+    
+                    st.markdown(
+                        "#### Напитки"
+                    )
+    
+                    for item in order_data["items"]:
+                        with st.container(
+                            border=True
                         ):
-                            form_col1, form_col2 = (
-                                st.columns(
-                                    [2, 3],
-                                    vertical_alignment="bottom"
-                                )
+                            item_col, qty_col, price_col = (
+                                st.columns([5, 1, 2])
                             )
-
-                            with form_col1:
-                                selected_status = (
-                                    st.selectbox(
-                                        "Статус на напитката",
-                                        item_status_options,
-                                        index=(
-                                            item_status_options.index(
-                                                item[
+    
+                            with item_col:
+                                st.markdown(
+                                    f"""
+                                    <div style="
+                                        color:#5DE0FF;
+                                        font-size:26px;
+                                        font-weight:800;
+                                        margin-bottom:6px;
+                                    ">
+                                        {item['item_name']}
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True
+                                )
+    
+                                st.write(
+                                    "Статус: "
+                                    f"{get_item_status_label(
+                                        item['item_status']
+                                    )}"
+                                )
+    
+                                if item["notes"]:
+                                    st.caption(
+                                        "📝 "
+                                        f"{item['notes']}"
+                                    )
+    
+                            with qty_col:
+                                st.write(
+                                    f"x{item['quantity']}"
+                                )
+    
+                            with price_col:
+                                item_total = (
+                                    item["unit_price"]
+                                    * item["quantity"]
+                                )
+    
+                                st.write(
+                                    f"€ {item_total:.2f}"
+                                )
+    
+                            with st.form(
+                                key=(
+                                    "bar_item_form_"
+                                    f"{item['order_item_id']}"
+                                ),
+                                clear_on_submit=False
+                            ):
+                                form_col1, form_col2 = (
+                                    st.columns(
+                                        [2, 3],
+                                        vertical_alignment="bottom"
+                                    )
+                                )
+    
+                                with form_col1:
+                                    selected_status = (
+                                        st.selectbox(
+                                            "Статус на напитката",
+                                            item_status_options,
+                                            index=(
+                                                item_status_options.index(
+                                                    item[
+                                                        "item_status"
+                                                    ]
+                                                )
+                                                if item[
                                                     "item_status"
                                                 ]
+                                                in item_status_options
+                                                else 0
+                                            ),
+                                            format_func=(
+                                                get_item_status_label
+                                            ),
+                                            key=(
+                                                "bar_item_status_"
+                                                f"{item[
+                                                    'order_item_id'
+                                                ]}"
                                             )
-                                            if item[
-                                                "item_status"
-                                            ]
-                                            in item_status_options
-                                            else 0
-                                        ),
-                                        format_func=(
-                                            get_item_status_label
-                                        ),
-                                        key=(
-                                            "bar_item_status_"
-                                            f"{item[
-                                                'order_item_id'
-                                            ]}"
                                         )
                                     )
-                                )
-
-                            with form_col2:
-                                save_item_status = (
-                                    st.form_submit_button(
-                                        "💾 Запази статуса",
-                                        type="primary",
-                                        use_container_width=True
-                                    )
-                                )
-
-                            if save_item_status:
-                                try:
-                                    update_room_service_bar_item_status(
-                                        order_item_id=(
-                                            item[
-                                                "order_item_id"
-                                            ]
-                                        ),
-                                        new_status=(
-                                            selected_status
+    
+                                with form_col2:
+                                    save_item_status = (
+                                        st.form_submit_button(
+                                            "💾 Запази статуса",
+                                            type="primary",
+                                            use_container_width=True
                                         )
                                     )
-
-                                    st.rerun()
-
-                                except Exception as error:
-                                    st.error(
-                                        "Статусът не беше "
-                                        "обновен."
-                                        "\n\n"
-                                        f"Причина: {error}"
-                                    )
-
-
-# =========================================================
-# LOBBY BAR ИЗГЛЕД
-# =========================================================
-elif bar_view == LOBBY_BAR_VIEW:
-
-    st.subheader(
-        "🍸 Lobby Bar поръчки"
-    )
-
-    st.caption(
-        "Активни поръчки от масите в Lobby Bar."
-    )
-
-    if not lobby_rows:
-
-        st.success(
-            "Няма активни Lobby Bar поръчки."
+    
+                                if save_item_status:
+                                    try:
+                                        update_room_service_bar_item_status(
+                                            order_item_id=(
+                                                item[
+                                                    "order_item_id"
+                                                ]
+                                            ),
+                                            new_status=(
+                                                selected_status
+                                            )
+                                        )
+    
+                                        st.rerun(scope="fragment")
+    
+                                    except Exception as error:
+                                        st.error(
+                                            "Статусът не беше "
+                                            "обновен."
+                                            "\n\n"
+                                            f"Причина: {error}"
+                                        )
+    
+    
+    # =========================================================
+    # LOBBY BAR ИЗГЛЕД
+    # =========================================================
+    elif bar_view == LOBBY_BAR_VIEW:
+    
+        st.subheader(
+            "🍸 Lobby Bar поръчки"
         )
-
-    else:
-        lobby_orders = {}
-
-        for row in lobby_rows:
-            order_id = row[0]
-
-            if order_id not in lobby_orders:
-                lobby_orders[order_id] = {
-                    "table_number": row[1],
-                    "created_at": row[2],
-                    "order_status": str(
-                        row[3] or "NEW"
-                    ).strip().upper(),
-                    "total_amount": float(
-                        row[4] or 0
-                    ),
-                    "items": []
-                }
-
-            lobby_orders[order_id][
-                "items"
-            ].append(
-                {
-                    "order_item_id": row[5],
-                    "item_name": row[6],
-                    "quantity": int(
-                        row[7] or 0
-                    ),
-                    "unit_price": float(
-                        row[8] or 0
-                    ),
-                    "item_status": str(
-                        row[9] or "NEW"
-                    ).strip().upper()
-                }
+    
+        st.caption(
+            "Активни поръчки от масите в Lobby Bar."
+        )
+    
+        if not lobby_rows:
+    
+            st.success(
+                "Няма активни Lobby Bar поръчки."
             )
-
-        lobby_status_options = [
-            "NEW",
-            "PREPARING",
-            "READY",
-            "DELIVERING",
-            "COMPLETED",
-            "CANCELLED"
-        ]
-
-        for order_id, order_data in (
-            lobby_orders.items()
-        ):
-            with st.container(
-                border=True
+    
+        else:
+            lobby_orders = {}
+    
+            for row in lobby_rows:
+                order_id = row[0]
+    
+                if order_id not in lobby_orders:
+                    lobby_orders[order_id] = {
+                        "table_number": row[1],
+                        "created_at": row[2],
+                        "order_status": str(
+                            row[3] or "NEW"
+                        ).strip().upper(),
+                        "total_amount": float(
+                            row[4] or 0
+                        ),
+                        "items": []
+                    }
+    
+                lobby_orders[order_id][
+                    "items"
+                ].append(
+                    {
+                        "order_item_id": row[5],
+                        "item_name": row[6],
+                        "quantity": int(
+                            row[7] or 0
+                        ),
+                        "unit_price": float(
+                            row[8] or 0
+                        ),
+                        "item_status": str(
+                            row[9] or "NEW"
+                        ).strip().upper()
+                    }
+                )
+    
+            lobby_status_options = [
+                "NEW",
+                "PREPARING",
+                "READY",
+                "DELIVERING",
+                "COMPLETED",
+                "CANCELLED"
+            ]
+    
+            for order_id, order_data in (
+                lobby_orders.items()
             ):
-                title_col, details_col = (
-                    st.columns([5, 2])
-                )
-
-                with title_col:
-                    st.subheader(
-                        "🍸 Lobby Bar "
-                        f"поръчка #{order_id}"
+                with st.container(
+                    border=True
+                ):
+                    title_col, details_col = (
+                        st.columns([5, 2])
                     )
-
-                    st.markdown(
-                        "### 🍽️ "
-                        f"Маса №"
-                        f"{order_data['table_number']}"
-                    )
-
-                with details_col:
-                    if order_data["created_at"]:
-                        st.caption(
-                            "Получена: "
-                            f"{format_datetime(
-                                order_data[
-                                    'created_at'
-                                ]
-                            )}"
+    
+                    with title_col:
+                        st.subheader(
+                            "🍸 Lobby Bar "
+                            f"поръчка #{order_id}"
                         )
-
-                    st.write(
-                        "**Общ статус:** "
-                        f"{get_item_status_label(
-                            order_data[
-                                'order_status'
-                            ]
-                        )}"
-                    )
-
-                    st.metric(
-                        "Общо",
-                        "€ "
-                        f"{order_data[
-                            'total_amount'
-                        ]:.2f}"
-                    )
-
-                st.markdown(
-                    "#### Артикули"
-                )
-
-                for item in order_data["items"]:
-                    with st.container(
-                        border=True
-                    ):
-                        item_col, qty_col, price_col = (
-                            st.columns([5, 1, 2])
+    
+                        st.markdown(
+                            "### 🍽️ "
+                            f"Маса №"
+                            f"{order_data['table_number']}"
                         )
-
-                        with item_col:
-                            st.write(
-                                f"**{item[
-                                    'item_name'
-                                ]}**"
-                            )
-
-                            st.write(
-                                "Статус: "
-                                f"{get_item_status_label(
-                                    item[
-                                        'item_status'
+    
+                    with details_col:
+                        if order_data["created_at"]:
+                            st.caption(
+                                "Получена: "
+                                f"{format_datetime(
+                                    order_data[
+                                        'created_at'
                                     ]
                                 )}"
                             )
-
-                        with qty_col:
-                            st.write(
-                                f"x{item['quantity']}"
-                            )
-
-                        with price_col:
-                            item_total = (
-                                item["unit_price"]
-                                * item["quantity"]
-                            )
-
-                            st.write(
-                                f"€ {item_total:.2f}"
-                            )
-
-                        with st.form(
-                            key=(
-                                "lobby_item_form_"
-                                f"{item[
-                                    'order_item_id'
-                                ]}"
-                            ),
-                            clear_on_submit=False
+    
+                        st.write(
+                            "**Общ статус:** "
+                            f"{get_item_status_label(
+                                order_data[
+                                    'order_status'
+                                ]
+                            )}"
+                        )
+    
+                        st.metric(
+                            "Общо",
+                            "€ "
+                            f"{order_data[
+                                'total_amount'
+                            ]:.2f}"
+                        )
+    
+                    st.markdown(
+                        "#### Артикули"
+                    )
+    
+                    for item in order_data["items"]:
+                        with st.container(
+                            border=True
                         ):
-                            form_col1, form_col2 = (
-                                st.columns(
-                                    [2, 3],
-                                    vertical_alignment=(
-                                        "bottom"
+                            item_col, qty_col, price_col = (
+                                st.columns([5, 1, 2])
+                            )
+    
+                            with item_col:
+                                st.write(
+                                    f"**{item[
+                                        'item_name'
+                                    ]}**"
+                                )
+    
+                                st.write(
+                                    "Статус: "
+                                    f"{get_item_status_label(
+                                        item[
+                                            'item_status'
+                                        ]
+                                    )}"
+                                )
+    
+                            with qty_col:
+                                st.write(
+                                    f"x{item['quantity']}"
+                                )
+    
+                            with price_col:
+                                item_total = (
+                                    item["unit_price"]
+                                    * item["quantity"]
+                                )
+    
+                                st.write(
+                                    f"€ {item_total:.2f}"
+                                )
+    
+                            with st.form(
+                                key=(
+                                    "lobby_item_form_"
+                                    f"{item[
+                                        'order_item_id'
+                                    ]}"
+                                ),
+                                clear_on_submit=False
+                            ):
+                                form_col1, form_col2 = (
+                                    st.columns(
+                                        [2, 3],
+                                        vertical_alignment=(
+                                            "bottom"
+                                        )
                                     )
                                 )
-                            )
-
-                            with form_col1:
-                                selected_status = (
-                                    st.selectbox(
-                                        "Статус",
-                                        lobby_status_options,
-                                        index=(
-                                            lobby_status_options.index(
-                                                item[
+    
+                                with form_col1:
+                                    selected_status = (
+                                        st.selectbox(
+                                            "Статус",
+                                            lobby_status_options,
+                                            index=(
+                                                lobby_status_options.index(
+                                                    item[
+                                                        "item_status"
+                                                    ]
+                                                )
+                                                if item[
                                                     "item_status"
                                                 ]
+                                                in lobby_status_options
+                                                else 0
+                                            ),
+                                            format_func=(
+                                                get_item_status_label
+                                            ),
+                                            key=(
+                                                "lobby_status_"
+                                                f"{item[
+                                                    'order_item_id'
+                                                ]}"
                                             )
-                                            if item[
-                                                "item_status"
-                                            ]
-                                            in lobby_status_options
-                                            else 0
-                                        ),
-                                        format_func=(
-                                            get_item_status_label
-                                        ),
-                                        key=(
-                                            "lobby_status_"
-                                            f"{item[
-                                                'order_item_id'
-                                            ]}"
                                         )
                                     )
-                                )
-
-                            with form_col2:
-                                save_lobby_status = (
-                                    st.form_submit_button(
-                                        "💾 Запази статуса",
-                                        type="primary",
-                                        use_container_width=True
-                                    )
-                                )
-
-                            if save_lobby_status:
-                                try:
-                                    update_lobby_bar_item_status(
-                                        order_item_id=(
-                                            item[
-                                                "order_item_id"
-                                            ]
-                                        ),
-                                        order_id=order_id,
-                                        new_status=(
-                                            selected_status
+    
+                                with form_col2:
+                                    save_lobby_status = (
+                                        st.form_submit_button(
+                                            "💾 Запази статуса",
+                                            type="primary",
+                                            use_container_width=True
                                         )
                                     )
+    
+                                if save_lobby_status:
+                                    try:
+                                        update_lobby_bar_item_status(
+                                            order_item_id=(
+                                                item[
+                                                    "order_item_id"
+                                                ]
+                                            ),
+                                            order_id=order_id,
+                                            new_status=(
+                                                selected_status
+                                            )
+                                        )
+    
+                                        st.rerun(scope="fragment")
+    
+                                    except Exception as error:
+                                        st.error(
+                                            "Статусът не беше "
+                                            "обновен."
+                                            "\n\n"
+                                            f"Причина: {error}"
+                                        )
+    # =========================================================
+    # БРАНДИРАНЕ
+    # =========================================================
 
-                                    st.rerun()
+    st.divider()
 
-                                except Exception as error:
-                                    st.error(
-                                        "Статусът не беше "
-                                        "обновен."
-                                        "\n\n"
-                                        f"Причина: {error}"
-                                    )
+    st.caption(
+        "Powered by HMITSEVAPPS"
+    )
+
+
 # =========================================================
-# БРАНДИРАНЕ
+# СТАРТИРАНЕ НА LIVE BAR DASHBOARD
 # =========================================================
-st.divider()
 
-st.caption(
-    "Powered by HMITSEVAPPS"
-)
+bar_live_dashboard()
