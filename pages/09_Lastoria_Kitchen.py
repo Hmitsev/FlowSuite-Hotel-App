@@ -1,6 +1,6 @@
 import streamlit as st
-
-from streamlit_autorefresh import st_autorefresh
+import base64
+from datetime import timedelta
 from lastoria.database.db import get_connection
 
 
@@ -14,8 +14,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
-
-import base64
 
 st.markdown("""
 <style>
@@ -442,33 +440,26 @@ def get_new_kitchen_order_count():
         cur.close()
         conn.close()
 # =====================================
-# ЗАГЛАВИЕ, КАМБАНКА И ДНЕВНО МЕНЮ
+# LIVE КАМБАНКА ЗА НОВИ ПОРЪЧКИ
 # =====================================
 
-try:
-    new_kitchen_order_count = (
-        get_new_kitchen_order_count()
-    )
+@st.fragment(run_every="35s")
+def kitchen_notification_bell():
 
-except Exception as error:
-    new_kitchen_order_count = 0
+    try:
+        new_kitchen_order_count = (
+            get_new_kitchen_order_count()
+        )
 
-    st.error(
-        "Броят на новите поръчки не може "
-        "да бъде зареден.\n\n"
-        f"Причина: {error}"
-    )
+    except Exception as error:
+        new_kitchen_order_count = 0
 
+        st.error(
+            "Броят на новите поръчки не може "
+            "да бъде зареден.\n\n"
+            f"Причина: {error}"
+        )
 
-title_col, bell_col, daily_menu_col = st.columns(
-    [5, 1.3, 2],
-    vertical_alignment="center"
-)
-
-with title_col:
-    st.title("🔪 Кухня")
-
-with bell_col:
     if new_kitchen_order_count > 0:
         st.markdown(
             f"""
@@ -481,9 +472,23 @@ with bell_col:
             """,
             unsafe_allow_html=True
         )
+# =====================================
+# ЗАГЛАВИЕ, КАМБАНКА И ДНЕВНО МЕНЮ
+# =====================================
+
+
+title_col, bell_col, daily_menu_col = st.columns(
+    [5, 1.3, 2],
+    vertical_alignment="center"
+)
+
+with title_col:
+    st.title("🔪 Кухня")
+
+with bell_col:
+    kitchen_notification_bell()
 
 with daily_menu_col:
-
     with st.popover(
         "📅 Дневно меню",
         use_container_width=True
@@ -652,15 +657,6 @@ with daily_menu_col:
                 st.error(
                     f"Грешка при добавяне: {error}"
                 )
-
-# =====================================
-# АВТОМАТИЧНО ОБНОВЯВАНЕ
-# =====================================
-
-st_autorefresh(
-    interval=25000,
-    key="kitchen_refresh"
-)
 
 # =====================================
 # ЗАРЕЖДАНЕ НА АКТИВНИТЕ ПОРЪЧКИ
@@ -836,206 +832,232 @@ def finish_order(order_id):
 
 
 # =====================================
-# ГРУПИРАНЕ ПО ПОРЪЧКА
+# LIVE КУХНЕНСКИ ПОРЪЧКИ
 # =====================================
 
-rows = get_kitchen_orders()
-active_count = len(set(row[0] for row in rows))
+@st.fragment(run_every="25s")
+def kitchen_live_orders():
+    # =====================================
+    # ЗАРЕЖДАНЕ И ГРУПИРАНЕ НА ПОРЪЧКИТЕ
+    # =====================================
 
-st.info(
-    f"👨‍🍳 Активни поръчки: {active_count}"
-)
-orders = {}
+    try:
+        rows = get_kitchen_orders()
 
-for row in rows:
+    except Exception as error:
+        st.error(
+            "Активните поръчки не могат "
+            "да бъдат заредени.\n\n"
+            f"Причина: {error}"
+        )
 
-    order_id = row[0]
-    table_number = row[1]
-    created_at = row[2]
-    order_status = row[3]
+        return
 
-    order_item = {
-        "row_id": row[4],
-        "name": row[5],
-        "quantity": row[6],
-        "notes": row[7],
-        "status": row[8]
-    }
+    active_count = len(
+        {
+            row[0]
+            for row in rows
+        }
+    )
 
-    if order_id not in orders:
+    st.info(
+        f"👨‍🍳 Активни поръчки: {active_count}"
+    )
 
-        orders[order_id] = {
-            "table_number": table_number,
-            "created_at": created_at,
-            "order_status": order_status,
-            "items": []
+    orders = {}
+
+    for row in rows:
+        order_id = row[0]
+        table_number = row[1]
+        created_at = row[2]
+        order_status = row[3]
+
+        order_item = {
+            "row_id": row[4],
+            "name": row[5],
+            "quantity": row[6],
+            "notes": row[7],
+            "status": row[8]
         }
 
-    orders[order_id]["items"].append(order_item)
+        if order_id not in orders:
+            orders[order_id] = {
+                "table_number": table_number,
+                "created_at": created_at,
+                "order_status": order_status,
+                "items": []
+            }
 
+        orders[order_id]["items"].append(
+            order_item
+        )
 
-# =====================================
-# ПОКАЗВАНЕ
-# =====================================
-
-if not orders:
-
-    st.success("Няма активни поръчки.")
-
-else:
-
-    for order_id, order_data in orders.items():
-
-        table_number = order_data["table_number"]
-        created_at = order_data["created_at"]
-        order_status = order_data["order_status"]
-        items = order_data["items"]
-
-        with st.container(border=True):
-
-            title_col, time_col = st.columns([4, 2])
-
-            with title_col:
-
-                st.subheader(
-                    f"🍽️ Поръчка №{order_id}"
-                )
-
-                display_table = (
-                    "🥡 TAKEAWAY"
-                    if table_number == 999
-                    else f"Маса № {table_number}"
-                )
-                
-                st.markdown(
-                    f"""
-                    <div style="
-                        color:#FF8C42;
-                        font-size:34px;
-                        font-weight:800;
-                        margin-top:5px;
-                        margin-bottom:10px;
-                    ">
-                       {display_table}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-            with time_col:
-
-                if created_at:
-
-                    from datetime import timedelta
-
-                    local_time = created_at + timedelta(hours=3)
-                    
-                    st.caption(
-                        "Получена: "
-                        f"{local_time.strftime('%H:%M:%S')}"
+        
+    # =====================================
+    # ПОКАЗВАНЕ
+    # =====================================
+    
+    if not orders:
+    
+        st.success("Няма активни поръчки.")
+    
+    else:
+    
+        for order_id, order_data in orders.items():
+    
+            table_number = order_data["table_number"]
+            created_at = order_data["created_at"]
+            order_status = order_data["order_status"]
+            items = order_data["items"]
+    
+            with st.container(border=True):
+    
+                title_col, time_col = st.columns([4, 2])
+    
+                with title_col:
+    
+                    st.subheader(
+                        f"🍽️ Поръчка №{order_id}"
                     )
-
-            # =====================================
-            # ОБЩ СТАТУС
-            # =====================================
-
-            if order_status == "NEW":
-
-                st.error("🔴 НОВА ПОРЪЧКА")
-
-            elif order_status == "IN_PROGRESS":
-
-                st.warning("🟡 В ПОДГОТОВКА")
-
-            elif order_status == "READY":
-
-                st.success("🟢 ГОТОВА ПОРЪЧКА")
-
-            st.markdown("#### Артикули")
-
-            # =====================================
-            # АРТИКУЛИ С ОТМЕТКИ
-            # =====================================
-
-            for item in items:
-
-                item_row_id = item["row_id"]
-                item_name = item["name"]
-                quantity = item["quantity"]
-                notes = item["notes"]
-                item_status = item["status"]
-
-                item_col, status_col = st.columns(
-                    [5, 2],
-                    vertical_alignment="center"
-                )
-
-                with item_col:
-
+    
+                    display_table = (
+                        "🥡 TAKEAWAY"
+                        if table_number == 999
+                        else f"Маса № {table_number}"
+                    )
+                    
                     st.markdown(
                         f"""
                         <div style="
-                            border:2px solid #FF4D4D;
-                            background:rgba(60,0,0,0.35);
-                            border-radius:10px;
-                            padding:12px;
-                            margin-bottom:6px;
-                            color:#FFFFFF;
-                            font-size:22px;
-                            font-weight:900;
+                            color:#FF8C42;
+                            font-size:34px;
+                            font-weight:800;
+                            margin-top:5px;
+                            margin-bottom:10px;
                         ">
-                            {item_name} x{quantity}
+                           {display_table}
                         </div>
                         """,
                         unsafe_allow_html=True
                     )
-
-                    if notes:
-
+                with time_col:
+    
+                    if created_at:
+    
+                        local_time = created_at + timedelta(hours=3)
+                        
                         st.caption(
-                            f"📝 Коментар: {notes}"
+                            "Получена: "
+                            f"{local_time.strftime('%H:%M:%S')}"
                         )
+    
+                # =====================================
+                # ОБЩ СТАТУС
+                # =====================================
+    
+                if order_status == "NEW":
+    
+                    st.error("🔴 НОВА ПОРЪЧКА")
+    
+                elif order_status == "IN_PROGRESS":
+    
+                    st.warning("🟡 В ПОДГОТОВКА")
+    
+                elif order_status == "READY":
+    
+                    st.success("🟢 ГОТОВА ПОРЪЧКА")
+    
+                st.markdown("#### Артикули")
+    
+                # =====================================
+                # АРТИКУЛИ С ОТМЕТКИ
+                # =====================================
+    
+                for item in items:
+    
+                    item_row_id = item["row_id"]
+                    item_name = item["name"]
+                    quantity = item["quantity"]
+                    notes = item["notes"]
+                    item_status = item["status"]
+    
+                    item_col, status_col = st.columns(
+                        [5, 2],
+                        vertical_alignment="center"
+                    )
+    
+                    with item_col:
+    
+                        st.markdown(
+                            f"""
+                            <div style="
+                                border:2px solid #FF4D4D;
+                                background:rgba(60,0,0,0.35);
+                                border-radius:10px;
+                                padding:12px;
+                                margin-bottom:6px;
+                                color:#FFFFFF;
+                                font-size:22px;
+                                font-weight:900;
+                            ">
+                                {item_name} x{quantity}
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+    
+                        if notes:
+    
+                            st.caption(
+                                f"📝 Коментар: {notes}"
+                            )
+    
+                    with status_col:
+    
+                        if item_status == "NEW":
+                            st.error("🔴 Нова")
+                    
+                        elif item_status == "PREPARING":
+                            st.warning("🟡 Приготвя се")
+                    
+                        elif item_status == "READY":
+                            st.success("🟢 Готово")
+    
+    
+                # =====================================
+                # БУТОНИ ЗА ЦЯЛАТА ПОРЪЧКА
+                # =====================================
+    
+                preparing_col, ready_col = st.columns(2)
+    
+                with preparing_col:
+    
+                    if st.button(
+                        "🟡 Приготвя се",
+                        key=f"start_order_{order_id}",
+                        use_container_width=True
+                    ):
+    
+                        start_order(order_id)
+                        st.cache_data.clear()
+    
+                        st.rerun(scope="fragment")
+    
+                with ready_col:
+    
+                    if st.button(
+                        "✅ Цялата поръчка е готова",
+                        key=f"finish_order_{order_id}",
+                        type="primary",
+                        use_container_width=True
+                    ):
+    
+                        finish_order(order_id)
+                        st.cache_data.clear()
+    
+                        st.rerun(scope="fragment")
+# =====================================
+# СТАРТИРАНЕ НА LIVE КУХНЕНСКИ ПОРЪЧКИ
+# =====================================
 
-                with status_col:
-
-                    if item_status == "NEW":
-                        st.error("🔴 Нова")
-                
-                    elif item_status == "PREPARING":
-                        st.warning("🟡 Приготвя се")
-                
-                    elif item_status == "READY":
-                        st.success("🟢 Готово")
-
-
-            # =====================================
-            # БУТОНИ ЗА ЦЯЛАТА ПОРЪЧКА
-            # =====================================
-
-            preparing_col, ready_col = st.columns(2)
-
-            with preparing_col:
-
-                if st.button(
-                    "🟡 Приготвя се",
-                    key=f"start_order_{order_id}",
-                    use_container_width=True
-                ):
-
-                    start_order(order_id)
-                    st.cache_data.clear()
-
-                    st.rerun()
-
-            with ready_col:
-
-                if st.button(
-                    "✅ Цялата поръчка е готова",
-                    key=f"finish_order_{order_id}",
-                    type="primary",
-                    use_container_width=True
-                ):
-
-                    finish_order(order_id)
-                    st.cache_data.clear()
-
-                    st.rerun()
+kitchen_live_orders()
