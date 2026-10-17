@@ -906,446 +906,446 @@ def admin_live_dashboard():
         }
 
 
-# =========================================================
-# KPI КАРТИ
-# =========================================================
-kpi_col1, kpi_col2, kpi_col3 = st.columns(
-    3
-)
-
-with kpi_col1:
-    st.metric(
-        "🍽️ Активен Room Service",
-        kpis["room_service"]
+    # =========================================================
+    # KPI КАРТИ
+    # =========================================================
+    kpi_col1, kpi_col2, kpi_col3 = st.columns(
+        3
     )
-
-with kpi_col2:
-    st.metric(
-        "💆 Активни SPA заявки",
-        kpis["spa"]
-    )
-
-with kpi_col3:
-    st.metric(
-        "🎿 Активни Activities",
-        kpis["activities"]
-    )
-
-
-kpi_col4, kpi_col5, kpi_col6 = st.columns(
-    3
-)
-
-with kpi_col4:
-    st.metric(
-        "🔧 Активни сервизни задачи",
-        kpis["service"]
-    )
-
-with kpi_col5:
-    st.metric(
-        "⚠️ Без изпълнител",
-        kpis["unassigned"]
-    )
-
-with kpi_col6:
-    st.metric(
-        "✅ Завършени днес",
-        kpis["completed_today"]
-    )
-
-
-st.divider()
-
-
-# =========================================================
-# ИЗГЛЕДИ
-# =========================================================
-OVERVIEW_VIEW = "📋 Оперативен център"
-STATISTICS_VIEW = "📊 Статистика"
-STAFF_VIEW = "👥 Служители"
-ROOMS_VIEW = "🏨 Стаи"
-
-admin_views = [
-    OVERVIEW_VIEW,
-    STATISTICS_VIEW,
-    STAFF_VIEW,
-    ROOMS_VIEW
-]
-
-if "admin_view" not in st.session_state:
-    st.session_state.admin_view = OVERVIEW_VIEW
-
-if st.session_state.admin_view not in admin_views:
-    st.session_state.admin_view = OVERVIEW_VIEW
-
-admin_view = st.radio(
-    "Admin изглед",
-    admin_views,
-    horizontal=True,
-    label_visibility="collapsed",
-    key="admin_view"
-)
-
-
-st.divider()
-
-
-# =========================================================
-# ОПЕРАТИВЕН ЦЕНТЪР
-# =========================================================
-if admin_view == OVERVIEW_VIEW:
-
-    st.subheader(
-        "📋 Всички активни операции"
-    )
-
-    try:
-        active_operations = (
-            get_all_active_operations()
+    
+    with kpi_col1:
+        st.metric(
+            "🍽️ Активен Room Service",
+            kpis["room_service"]
         )
-
-    except Exception as error:
-        st.error(
-            "Активните операции не могат "
-            "да бъдат заредени."
-            "\n\n"
-            f"Причина: {error}"
+    
+    with kpi_col2:
+        st.metric(
+            "💆 Активни SPA заявки",
+            kpis["spa"]
         )
-
-        active_operations = []
-
-    if not active_operations:
-        st.success(
-            "В момента няма активни операции."
+    
+    with kpi_col3:
+        st.metric(
+            "🎿 Активни Activities",
+            kpis["activities"]
         )
-
-    else:
-        for operation in active_operations:
-
-            module = operation["module"]
-
-            module_labels = {
-                "ROOM_SERVICE": "🍽️ Room Service",
-                "SPA": "💆 SPA",
-                "ACTIVITIES": "🎿 Activities",
-                "SERVICE": "🔧 Обслужване"
+    
+    
+    kpi_col4, kpi_col5, kpi_col6 = st.columns(
+        3
+    )
+    
+    with kpi_col4:
+        st.metric(
+            "🔧 Активни сервизни задачи",
+            kpis["service"]
+        )
+    
+    with kpi_col5:
+        st.metric(
+            "⚠️ Без изпълнител",
+            kpis["unassigned"]
+        )
+    
+    with kpi_col6:
+        st.metric(
+            "✅ Завършени днес",
+            kpis["completed_today"]
+        )
+    
+    
+    st.divider()
+    
+    
+    # =========================================================
+    # ИЗГЛЕДИ
+    # =========================================================
+    OVERVIEW_VIEW = "📋 Оперативен център"
+    STATISTICS_VIEW = "📊 Статистика"
+    STAFF_VIEW = "👥 Служители"
+    ROOMS_VIEW = "🏨 Стаи"
+    
+    admin_views = [
+        OVERVIEW_VIEW,
+        STATISTICS_VIEW,
+        STAFF_VIEW,
+        ROOMS_VIEW
+    ]
+    
+    if "admin_view" not in st.session_state:
+        st.session_state.admin_view = OVERVIEW_VIEW
+    
+    if st.session_state.admin_view not in admin_views:
+        st.session_state.admin_view = OVERVIEW_VIEW
+    
+    admin_view = st.radio(
+        "Admin изглед",
+        admin_views,
+        horizontal=True,
+        label_visibility="collapsed",
+        key="admin_view"
+    )
+    
+    
+    st.divider()
+    
+    
+    # =========================================================
+    # ОПЕРАТИВЕН ЦЕНТЪР
+    # =========================================================
+    if admin_view == OVERVIEW_VIEW:
+    
+        st.subheader(
+            "📋 Всички активни операции"
+        )
+    
+        try:
+            active_operations = (
+                get_all_active_operations()
+            )
+    
+        except Exception as error:
+            st.error(
+                "Активните операции не могат "
+                "да бъдат заредени."
+                "\n\n"
+                f"Причина: {error}"
+            )
+    
+            active_operations = []
+    
+        if not active_operations:
+            st.success(
+                "В момента няма активни операции."
+            )
+    
+        else:
+            for operation in active_operations:
+    
+                module = operation["module"]
+    
+                module_labels = {
+                    "ROOM_SERVICE": "🍽️ Room Service",
+                    "SPA": "💆 SPA",
+                    "ACTIVITIES": "🎿 Activities",
+                    "SERVICE": "🔧 Обслужване"
+                }
+    
+                with st.container(
+                    border=True
+                ):
+                    row_col1, row_col2, row_col3 = (
+                        st.columns([5, 2, 2])
+                    )
+    
+                    with row_col1:
+                        st.subheader(
+                            module_labels.get(
+                                module,
+                                module
+                            )
+                        )
+    
+                        st.markdown(
+                            "### 🏨 "
+                            f"Стая №"
+                            f"{operation['room_number']}"
+                        )
+    
+                        st.write(
+                            f"**{operation['title']}**"
+                        )
+    
+                        if (
+                            operation.get(
+                                "reservation"
+                            )
+                        ):
+                            st.write(
+                                "📅 Резервация: "
+                                f"{operation['reservation']}"
+                            )
+    
+                        if (
+                            module == "SERVICE"
+                            and operation.get(
+                                "assigned_to"
+                            )
+                        ):
+                            st.success(
+                                "👤 Изпълнител: "
+                                f"{operation['assigned_to']}"
+                            )
+    
+                        elif module == "SERVICE":
+                            st.warning(
+                                "⚠️ Няма назначен изпълнител"
+                            )
+    
+                    with row_col2:
+                        st.write(
+                            "**Статус:**"
+                        )
+    
+                        st.write(
+                            get_status_label(
+                                operation["status"]
+                            )
+                        )
+    
+                        if operation.get(
+                            "priority"
+                        ):
+                            st.write(
+                                "**Приоритет:** "
+                                f"{operation['priority']}"
+                            )
+    
+                    with row_col3:
+                        if operation.get(
+                            "amount"
+                        ) is not None:
+                            st.metric(
+                                "Стойност",
+                                "€ "
+                                f"{operation['amount']:.2f}"
+                            )
+    
+                        if operation.get(
+                            "created_at"
+                        ):
+                            st.caption(
+                                "Получена: "
+                                f"{format_datetime(
+                                    operation['created_at']
+                                )}"
+                            )
+    
+    
+    # =========================================================
+    # СТАТИСТИКА
+    # =========================================================
+    elif admin_view == STATISTICS_VIEW:
+    
+        st.subheader(
+            "📊 Оперативна статистика"
+        )
+    
+        try:
+            today_statistics = (
+                get_today_statistics()
+            )
+    
+            top_service_types = (
+                get_top_service_request_types()
+            )
+    
+        except Exception as error:
+            st.error(
+                "Статистиката не може да бъде заредена."
+                "\n\n"
+                f"Причина: {error}"
+            )
+    
+            today_statistics = {
+                "room_service": 0,
+                "spa": 0,
+                "activities": 0,
+                "service": 0,
+                "room_service_revenue": 0
             }
-
-            with st.container(
-                border=True
-            ):
-                row_col1, row_col2, row_col3 = (
-                    st.columns([5, 2, 2])
-                )
-
-                with row_col1:
-                    st.subheader(
-                        module_labels.get(
-                            module,
-                            module
-                        )
-                    )
-
-                    st.markdown(
-                        "### 🏨 "
-                        f"Стая №"
-                        f"{operation['room_number']}"
-                    )
-
-                    st.write(
-                        f"**{operation['title']}**"
-                    )
-
-                    if (
-                        operation.get(
-                            "reservation"
-                        )
-                    ):
-                        st.write(
-                            "📅 Резервация: "
-                            f"{operation['reservation']}"
-                        )
-
-                    if (
-                        module == "SERVICE"
-                        and operation.get(
-                            "assigned_to"
-                        )
-                    ):
-                        st.success(
-                            "👤 Изпълнител: "
-                            f"{operation['assigned_to']}"
-                        )
-
-                    elif module == "SERVICE":
-                        st.warning(
-                            "⚠️ Няма назначен изпълнител"
-                        )
-
-                with row_col2:
-                    st.write(
-                        "**Статус:**"
-                    )
-
-                    st.write(
-                        get_status_label(
-                            operation["status"]
-                        )
-                    )
-
-                    if operation.get(
-                        "priority"
-                    ):
-                        st.write(
-                            "**Приоритет:** "
-                            f"{operation['priority']}"
-                        )
-
-                with row_col3:
-                    if operation.get(
-                        "amount"
-                    ) is not None:
-                        st.metric(
-                            "Стойност",
-                            "€ "
-                            f"{operation['amount']:.2f}"
-                        )
-
-                    if operation.get(
-                        "created_at"
-                    ):
-                        st.caption(
-                            "Получена: "
-                            f"{format_datetime(
-                                operation['created_at']
-                            )}"
-                        )
-
-
-# =========================================================
-# СТАТИСТИКА
-# =========================================================
-elif admin_view == STATISTICS_VIEW:
-
-    st.subheader(
-        "📊 Оперативна статистика"
-    )
-
-    try:
-        today_statistics = (
-            get_today_statistics()
+    
+            top_service_types = []
+    
+        stat_col1, stat_col2, stat_col3, stat_col4 = (
+            st.columns(4)
         )
-
-        top_service_types = (
-            get_top_service_request_types()
-        )
-
-    except Exception as error:
-        st.error(
-            "Статистиката не може да бъде заредена."
-            "\n\n"
-            f"Причина: {error}"
-        )
-
-        today_statistics = {
-            "room_service": 0,
-            "spa": 0,
-            "activities": 0,
-            "service": 0,
-            "room_service_revenue": 0
-        }
-
-        top_service_types = []
-
-    stat_col1, stat_col2, stat_col3, stat_col4 = (
-        st.columns(4)
-    )
-
-    with stat_col1:
-        st.metric(
-            "🍽️ Room Service днес",
-            today_statistics["room_service"]
-        )
-
-    with stat_col2:
-        st.metric(
-            "💆 SPA днес",
-            today_statistics["spa"]
-        )
-
-    with stat_col3:
-        st.metric(
-            "🎿 Activities днес",
-            today_statistics["activities"]
-        )
-
-    with stat_col4:
-        st.metric(
-            "🔧 Сервизни заявки днес",
-            today_statistics["service"]
-        )
-
-    st.metric(
-        "💶 Room Service оборот днес",
-        "€ "
-        f"{today_statistics[
-            'room_service_revenue'
-        ]:.2f}"
-    )
-
-    st.divider()
-
-    st.subheader(
-        "🔧 Най-чести сервизни заявки "
-        "за последните 30 дни"
-    )
-
-    if not top_service_types:
-        st.info(
-            "Няма достатъчно данни за периода."
-        )
-
-    else:
-        for request_type, request_count in (
-            top_service_types
-        ):
-            st.write(
-                f"**{request_type}**"
+    
+        with stat_col1:
+            st.metric(
+                "🍽️ Room Service днес",
+                today_statistics["room_service"]
             )
-
-            st.progress(
-                min(
-                    float(request_count)
-                    / float(
-                        top_service_types[0][1] or 1
+    
+        with stat_col2:
+            st.metric(
+                "💆 SPA днес",
+                today_statistics["spa"]
+            )
+    
+        with stat_col3:
+            st.metric(
+                "🎿 Activities днес",
+                today_statistics["activities"]
+            )
+    
+        with stat_col4:
+            st.metric(
+                "🔧 Сервизни заявки днес",
+                today_statistics["service"]
+            )
+    
+        st.metric(
+            "💶 Room Service оборот днес",
+            "€ "
+            f"{today_statistics[
+                'room_service_revenue'
+            ]:.2f}"
+        )
+    
+        st.divider()
+    
+        st.subheader(
+            "🔧 Най-чести сервизни заявки "
+            "за последните 30 дни"
+        )
+    
+        if not top_service_types:
+            st.info(
+                "Няма достатъчно данни за периода."
+            )
+    
+        else:
+            for request_type, request_count in (
+                top_service_types
+            ):
+                st.write(
+                    f"**{request_type}**"
+                )
+    
+                st.progress(
+                    min(
+                        float(request_count)
+                        / float(
+                            top_service_types[0][1] or 1
+                        ),
+                        1.0
                     ),
-                    1.0
-                ),
-                text=(
-                    f"{request_count} заявки"
+                    text=(
+                        f"{request_count} заявки"
+                    )
                 )
+    
+    
+    # =========================================================
+    # СЛУЖИТЕЛИ
+    # =========================================================
+    elif admin_view == STAFF_VIEW:
+    
+        st.subheader(
+            "👥 Натоварване по служители"
+        )
+    
+        try:
+            staff_rows = get_staff_workload()
+    
+        except Exception as error:
+            st.error(
+                "Натоварването по служители "
+                "не може да бъде заредено."
+                "\n\n"
+                f"Причина: {error}"
             )
-
-
-# =========================================================
-# СЛУЖИТЕЛИ
-# =========================================================
-elif admin_view == STAFF_VIEW:
-
-    st.subheader(
-        "👥 Натоварване по служители"
-    )
-
-    try:
-        staff_rows = get_staff_workload()
-
-    except Exception as error:
-        st.error(
-            "Натоварването по служители "
-            "не може да бъде заредено."
-            "\n\n"
-            f"Причина: {error}"
-        )
-
-        staff_rows = []
-
-    if not staff_rows:
-        st.info(
-            "Няма назначени активни задачи."
-        )
-
-    else:
-        for staff_name, active_count, in_progress_count in (
-            staff_rows
-        ):
-            with st.container(
-                border=True
+    
+            staff_rows = []
+    
+        if not staff_rows:
+            st.info(
+                "Няма назначени активни задачи."
+            )
+    
+        else:
+            for staff_name, active_count, in_progress_count in (
+                staff_rows
             ):
-                staff_col1, staff_col2, staff_col3 = (
-                    st.columns([4, 2, 2])
-                )
-
-                with staff_col1:
-                    st.subheader(
-                        f"👤 {staff_name}"
+                with st.container(
+                    border=True
+                ):
+                    staff_col1, staff_col2, staff_col3 = (
+                        st.columns([4, 2, 2])
                     )
-
-                with staff_col2:
-                    st.metric(
-                        "Активни задачи",
-                        int(active_count or 0)
-                    )
-
-                with staff_col3:
-                    st.metric(
-                        "В процес",
-                        int(in_progress_count or 0)
-                    )
-
-
-# =========================================================
-# СТАИ
-# =========================================================
-elif admin_view == ROOMS_VIEW:
-
-    st.subheader(
-        "🏨 Натоварване по стаи "
-        "за последните 30 дни"
-    )
-
-    try:
-        room_rows = get_room_workload()
-
-    except Exception as error:
-        st.error(
-            "Натоварването по стаи "
-            "не може да бъде заредено."
-            "\n\n"
-            f"Причина: {error}"
-        )
-
-        room_rows = []
-
-    if not room_rows:
-        st.info(
-            "Няма достатъчно данни за периода."
-        )
-
-    else:
-        maximum_room_requests = float(
-            room_rows[0][1] or 1
-        )
-
-        for room_number, total_requests in (
-            room_rows
-        ):
-            st.write(
-                f"**🏨 Стая №{room_number}**"
-            )
-
-            st.progress(
-                min(
-                    float(total_requests)
-                    / maximum_room_requests,
-                    1.0
-                ),
-                text=(
-                    f"{int(total_requests or 0)} "
-                    "операции"
-                )
-            )
-
-
+    
+                    with staff_col1:
+                        st.subheader(
+                            f"👤 {staff_name}"
+                        )
+    
+                    with staff_col2:
+                        st.metric(
+                            "Активни задачи",
+                            int(active_count or 0)
+                        )
+    
+                    with staff_col3:
+                        st.metric(
+                            "В процес",
+                            int(in_progress_count or 0)
+                        )
+    
+    
     # =========================================================
-    # БРАНДИРАНЕ
+    # СТАИ
     # =========================================================
-
-    st.divider()
-
-    st.caption(
-        "Powered by HMITSEVAPPS"
-    )
+    elif admin_view == ROOMS_VIEW:
+    
+        st.subheader(
+            "🏨 Натоварване по стаи "
+            "за последните 30 дни"
+        )
+    
+        try:
+            room_rows = get_room_workload()
+    
+        except Exception as error:
+            st.error(
+                "Натоварването по стаи "
+                "не може да бъде заредено."
+                "\n\n"
+                f"Причина: {error}"
+            )
+    
+            room_rows = []
+    
+        if not room_rows:
+            st.info(
+                "Няма достатъчно данни за периода."
+            )
+    
+        else:
+            maximum_room_requests = float(
+                room_rows[0][1] or 1
+            )
+    
+            for room_number, total_requests in (
+                room_rows
+            ):
+                st.write(
+                    f"**🏨 Стая №{room_number}**"
+                )
+    
+                st.progress(
+                    min(
+                        float(total_requests)
+                        / maximum_room_requests,
+                        1.0
+                    ),
+                    text=(
+                        f"{int(total_requests or 0)} "
+                        "операции"
+                    )
+                )
+    
+    
+        # =========================================================
+        # БРАНДИРАНЕ
+        # =========================================================
+    
+        st.divider()
+    
+        st.caption(
+            "Powered by HMITSEVAPPS"
+        )
 
 
 # =========================================================
