@@ -261,8 +261,7 @@ def get_waiter_orders():
               AND oi.kitchen_status IN (
                   'NEW',
                   'PREPARING',
-                  'READY',
-                  'SERVED'
+                  'READY'
               )
             ORDER BY
                 o.created_at ASC,
@@ -1388,6 +1387,10 @@ def waiter_live_dashboard():
                             st.success("🟢 Готово")
     
                     with served_col:
+                        checkbox_key = (
+                            f"waiter_served_{order_id}_{item_row_id}"
+                        )
+
                         is_bar_item = department == "bar"
 
                         can_be_served = (
@@ -1395,47 +1398,18 @@ def waiter_live_dashboard():
                             or item_status == "READY"
                         )
 
-                        if item_status == "SERVED":
-                            st.success("✅ Сервирано")
-
-                        elif can_be_served:
-                            if st.button(
-                                "✅ Сервирай",
-                                key=(
-                                    f"serve_item_"
-                                    f"{order_id}_"
-                                    f"{item_row_id}"
-                                ),
-                                type="primary",
-                                use_container_width=True
-                            ):
-                                try:
-                                    mark_order_item_served(
-                                        item_row_id
-                                    )
-
-                                    st.rerun(
-                                        scope="fragment"
-                                    )
-
-                                except Exception as error:
-                                    st.error(
-                                        "Артикулът не беше "
-                                        "отбелязан като сервиран.\n\n"
-                                        f"Причина: {error}"
-                                    )
-
-                        else:
-                            st.button(
-                                "⏳ Не е готово",
-                                key=(
-                                    f"not_ready_item_"
-                                    f"{order_id}_"
-                                    f"{item_row_id}"
-                                ),
-                                disabled=True,
-                                use_container_width=True
+                        st.checkbox(
+                            "Сервирано",
+                            value=False,
+                            disabled=not can_be_served,
+                            key=checkbox_key,
+                            on_change=handle_served_checkbox,
+                            args=(
+                                item_row_id,
+                                checkbox_key,
+                                department
                             )
+                        )
 
                         st.divider()
     
