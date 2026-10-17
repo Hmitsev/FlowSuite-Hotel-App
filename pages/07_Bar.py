@@ -645,34 +645,36 @@ with logout_col:
 @st.fragment(run_every="60s")
 def bar_live_dashboard():
 
-        # =========================================================
-        # ЗАРЕЖДАНЕ НА ROOM SERVICE НАПИТКИТЕ
-        # =========================================================
-    
-        try:
-            room_service_bar_rows = (
-                get_room_service_bar_items()
-            )
-    
-        except Exception as error:
-            st.error(
-                "Room Service напитките не могат "
-                "да бъдат заредени."
-                "\n\n"
-                f"Причина: {error}"
-            )
-    
-            room_service_bar_rows = []
-    
-        bar_counts = get_room_service_bar_counts(
-            room_service_bar_rows
+    # =========================================================
+    # ЗАРЕЖДАНЕ НА ROOM SERVICE НАПИТКИТЕ
+    # =========================================================
+
+    try:
+        room_service_bar_rows = (
+            get_room_service_bar_items()
         )
+
+    except Exception as error:
+        st.error(
+            "Room Service напитките не могат "
+            "да бъдат заредени."
+            "\n\n"
+            f"Причина: {error}"
+        )
+
+        room_service_bar_rows = []
+
+    bar_counts = get_room_service_bar_counts(
+        room_service_bar_rows
+    )
+
     # =========================================================
     # ЗАРЕЖДАНЕ НА LOBBY BAR ПОРЪЧКИТЕ
     # =========================================================
+
     try:
         lobby_rows = get_lobby_bar_orders()
-    
+
     except Exception as error:
         st.error(
             "Lobby Bar поръчките не могат "
@@ -680,7 +682,7 @@ def bar_live_dashboard():
             "\n\n"
             f"Причина: {error}"
         )
-    
+
         lobby_rows = []
     
     
