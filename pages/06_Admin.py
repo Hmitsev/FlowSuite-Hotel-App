@@ -1,7 +1,6 @@
 import streamlit as st
 
 from database.db import get_connection
-from streamlit_autorefresh import st_autorefresh
 
 
 # =========================================================
@@ -126,18 +125,6 @@ if not st.session_state.admin_auth:
             )
 
     st.stop()
-
-
-# =========================================================
-# AUTO REFRESH
-# 120000 милисекунди = 2 минути
-# =========================================================
-st_autorefresh(
-    interval=120000,
-    limit=None,
-    key="admin_auto_refresh"
-)
-
 
 # =========================================================
 # ПОМОЩНИ ФУНКЦИИ
@@ -888,27 +875,35 @@ with logout_col:
 
 
 # =========================================================
-# ЗАРЕЖДАНЕ НА KPI
+# АВТОМАТИЧНО ОБНОВЯВАНЕ НА ADMIN DASHBOARD
 # =========================================================
-try:
-    kpis = get_admin_kpis()
 
-except Exception as error:
-    st.error(
-        "Управленските показатели не могат "
-        "да бъдат заредени."
-        "\n\n"
-        f"Причина: {error}"
-    )
+@st.fragment(run_every="120s")
+def admin_live_dashboard():
 
-    kpis = {
-        "room_service": 0,
-        "spa": 0,
-        "activities": 0,
-        "service": 0,
-        "unassigned": 0,
-        "completed_today": 0
-    }
+    # =========================================================
+    # ЗАРЕЖДАНЕ НА KPI
+    # =========================================================
+
+    try:
+        kpis = get_admin_kpis()
+
+    except Exception as error:
+        st.error(
+            "Управленските показатели не могат "
+            "да бъдат заредени."
+            "\n\n"
+            f"Причина: {error}"
+        )
+
+        kpis = {
+            "room_service": 0,
+            "spa": 0,
+            "activities": 0,
+            "service": 0,
+            "unassigned": 0,
+            "completed_today": 0
+        }
 
 
 # =========================================================
@@ -1342,11 +1337,19 @@ elif admin_view == ROOMS_VIEW:
             )
 
 
-# =========================================================
-# БРАНДИРАНЕ
-# =========================================================
-st.divider()
+    # =========================================================
+    # БРАНДИРАНЕ
+    # =========================================================
 
-st.caption(
-    "Powered by HMITSEVAPPS"
-)
+    st.divider()
+
+    st.caption(
+        "Powered by HMITSEVAPPS"
+    )
+
+
+# =========================================================
+# СТАРТИРАНЕ НА LIVE ADMIN DASHBOARD
+# =========================================================
+
+admin_live_dashboard()
