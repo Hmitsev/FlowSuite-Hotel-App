@@ -296,6 +296,10 @@ def get_lobby_bar_orders():
 
             WHERE UPPER(TRIM(lbo.order_status))
                   <> 'COMPLETED'
+              AND COALESCE(
+                    lbi.department,
+                    'BAR'
+                  ) = 'BAR'
 
             ORDER BY
                 lbo.created_at ASC,
