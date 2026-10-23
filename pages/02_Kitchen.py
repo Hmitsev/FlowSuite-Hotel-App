@@ -616,7 +616,7 @@ def kitchen_live_dashboard():
                                 "Статусът не беше обновен. "
                                 f"Причина: {error}"
                             )
-                        st.rerun()
+                        st.rerun(scope="fragment")
 
                 with ready_col:
                     if st.button(
@@ -635,7 +635,7 @@ def kitchen_live_dashboard():
                                 "Поръчката не беше отбелязана като готова. "
                                 f"Причина: {error}"
                             )
-                        st.rerun()
+                        st.rerun(scope="fragment")
 
     st.divider()
 
@@ -713,7 +713,7 @@ def kitchen_live_dashboard():
                                 "Статусът на Lobby Bar поръчката не беше обновен. "
                                 f"Причина: {error}"
                             )
-                        st.rerun()
+                        st.rerun(scope="fragment")
 
                 with ready_col:
                     if st.button(
@@ -733,7 +733,7 @@ def kitchen_live_dashboard():
                                 "Артикулите не бяха отбелязани като готови. "
                                 f"Причина: {error}"
                             )
-                        st.rerun()
+                        st.rerun(scope="fragment")
 
 
 # =====================================
