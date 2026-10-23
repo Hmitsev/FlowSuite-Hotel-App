@@ -180,73 +180,85 @@ LOBBY_MENU = [
         "name": "Минерална вода",
         "description": "330 мл",
         "price": 3.50,
-        "category": "Безалкохолни"
+        "category": "Безалкохолни",
+        "department": "BAR"
     },
     {
         "name": "Coca-Cola",
         "description": "330 мл",
         "price": 4.50,
-        "category": "Безалкохолни"
+        "category": "Безалкохолни",
+        "department": "BAR"
     },
     {
         "name": "Портокалов сок",
         "description": "250 мл",
         "price": 5.00,
-        "category": "Безалкохолни"
+        "category": "Безалкохолни",
+        "department": "BAR"
     },
     {
         "name": "Еспресо",
         "description": "Класическо еспресо",
         "price": 3.50,
-        "category": "Топли напитки"
+        "category": "Топли напитки",
+        "department": "BAR"
     },
     {
         "name": "Капучино",
         "description": "Еспресо с млечна пяна",
         "price": 5.50,
-        "category": "Топли напитки"
+        "category": "Топли напитки",
+        "department": "BAR"
     },
     {
         "name": "Лате",
         "description": "Кафе с мляко",
         "price": 6.00,
-        "category": "Топли напитки"
+        "category": "Топли напитки",
+        "department": "BAR"
     },
     {
         "name": "Бира",
         "description": "330 мл",
         "price": 6.50,
-        "category": "Алкохолни"
+        "category": "Алкохолни",
+        "department": "BAR"
     },
     {
         "name": "Чаша бяло вино",
         "description": "150 мл",
         "price": 8.50,
-        "category": "Алкохолни"
+        "category": "Алкохолни",
+        "department": "BAR"
     },
     {
         "name": "Аперол Шприц",
         "description": "Класически коктейл",
         "price": 12.00,
-        "category": "Коктейли"
+        "category": "Коктейли",
+        "department": "BAR"
     },
     {
         "name": "Мохито",
         "description": "Ром, лайм, мента и сода",
         "price": 13.00,
-        "category": "Коктейли"
+        "category": "Коктейли",
+        "department": "BAR"
     },
     {
         "name": "Клуб сандвич",
         "description": "Сервира се с пържени картофи",
         "price": 14.50,
-        "category": "Храна"
+        "category": "Храна",
+        "department": "KITCHEN"
     },
     {
         "name": "Шоколадово суфле",
         "description": "Топъл шоколадов десерт",
         "price": 9.00,
-        "category": "Храна"
+        "category": "Храна",
+        "department": "KITCHEN"
     }
 ]
 
@@ -310,12 +322,24 @@ if "lobby_order_error" not in st.session_state:
 # =========================================================
 def add_to_cart(
     item_name,
-    unit_price
+    unit_price,
+    department
 ):
+    normalized_department = str(
+        department or "BAR"
+    ).strip().upper()
+
+    if normalized_department not in (
+        "BAR",
+        "KITCHEN"
+    ):
+        normalized_department = "BAR"
+
     if item_name not in st.session_state.lobby_cart:
         st.session_state.lobby_cart[item_name] = {
             "quantity": 0,
-            "unit_price": float(unit_price)
+            "unit_price": float(unit_price),
+            "department": normalized_department
         }
 
     st.session_state.lobby_cart[
@@ -423,10 +447,12 @@ def create_lobby_order(
                     item_name,
                     quantity,
                     unit_price,
+                    department,
                     item_status,
                     created_at
                 )
                 VALUES (
+                    %s,
                     %s,
                     %s,
                     %s,
@@ -439,7 +465,13 @@ def create_lobby_order(
                     order_id,
                     item_name,
                     int(item_data["quantity"]),
-                    float(item_data["unit_price"])
+                    float(item_data["unit_price"]),
+                    str(
+                        item_data.get(
+                            "department",
+                            "BAR"
+                        )
+                    ).strip().upper()
                 )
             )
 
@@ -614,7 +646,8 @@ for menu_item in filtered_menu:
             ):
                 add_to_cart(
                     item_name=menu_item["name"],
-                    unit_price=menu_item["price"]
+                    unit_price=menu_item["price"],
+                    department=menu_item["department"]
                 )
 
                 st.rerun()
