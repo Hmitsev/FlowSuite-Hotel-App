@@ -493,6 +493,7 @@ def kitchen_live_dashboard():
 
     try:
         rows = get_kitchen_orders()
+        lobby_rows = get_lobby_kitchen_orders()
 
     except Exception as error:
         st.error(
@@ -500,7 +501,44 @@ def kitchen_live_dashboard():
             f"Причина: {error}"
         )
         return
+        
+def get_lobby_kitchen_orders():
 
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+
+        cur.execute(
+            """
+            SELECT
+                lbo.id,
+                lbo.table_number,
+                lbo.created_at,
+                lbo.order_status,
+                lbo.total_amount,
+                lbi.id,
+                lbi.item_name,
+                lbi.quantity,
+                lbi.unit_price,
+                lbi.item_status
+            FROM lobby_bar_orders lbo
+            JOIN lobby_bar_order_items lbi
+                 ON lbi.order_id = lbo.id
+            WHERE COALESCE(
+                    lbi.department,
+                    'BAR'
+                  ) = 'KITCHEN'
+              AND lbo.order_status <> 'COMPLETED'
+            ORDER BY lbo.created_at
+            """
+        )
+
+        return cur.fetchall()
+
+    finally:
+        cur.close()
+        conn.close()
     # =====================================
     # ГРУПИРАНЕ ПО ПОРЪЧКА
     # =====================================
