@@ -1734,7 +1734,7 @@ def reception_live_dashboard():
                                     )
                                 )
     
-                                st.rerun()
+                                st.rerun(scope="fragment")
     
                             except Exception as error:
                                 st.error(
@@ -2161,7 +2161,7 @@ def reception_live_dashboard():
                                         total_amount=spa_total_amount
                                     )
     
-                                    st.rerun()
+                                    st.rerun(scope="fragment")
     
                                 except Exception as error:
                                     st.error(
@@ -2593,7 +2593,7 @@ def reception_live_dashboard():
                                 f"{room_number} е финализирана."
                             )
     
-                            st.rerun()
+                            st.rerun(scope="fragment")
     
                         except Exception as error:
                             st.error(
@@ -2865,7 +2865,7 @@ def reception_live_dashboard():
                                         new_status=selected_status
                                     )
         
-                                    st.rerun()
+                                    st.rerun(scope="fragment")
         
                                 except Exception as error:
         
