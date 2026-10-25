@@ -669,7 +669,7 @@ def render_provance_client() -> None:
 
     categories = get_categories()
 
-    now = datetime.now().time()
+    now = datetime.strptime("12:00", "%H:%M").time()
 
     daily_end = datetime.strptime("16:00", "%H:%M").time()
 
